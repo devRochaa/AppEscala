@@ -9,6 +9,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using Image = iText.Layout.Element.Image;
 
+
 namespace AppEscala
 {
     public partial class Form1 : Form
@@ -51,14 +52,14 @@ namespace AppEscala
                     .SetBackgroundColor(ColorConstants.WHITE)
                     .SetTextAlignment(TextAlignment.CENTER)
                     .SetBorder(Border.NO_BORDER);
-                    
+
                 tabela.AddHeaderCell(cellFotter);
-                
+
 
                 tabela.AddHeaderCell(new Cell(1, 5).Add(new Paragraph("Escala dos acólitos")
                     .SetFont(fonte)
                     .SetFontSize(18)
-                    
+
                     .SetFontColor(ColorConstants.BLUE)
                     .SetBackgroundColor(ColorConstants.YELLOW)
                     .SetTextAlignment(TextAlignment.CENTER)));
@@ -76,16 +77,16 @@ namespace AppEscala
                     .Add(new Paragraph("HORÁRIO")));
                 tabela.AddHeaderCell(new Cell()
                     .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
-                    .SetTextAlignment(TextAlignment.CENTER)                   
+                    .SetTextAlignment(TextAlignment.CENTER)
                     .Add(new Paragraph("ACÓLITOS")));
                 tabela.AddHeaderCell(new Cell()
                     .SetTextAlignment(TextAlignment.RIGHT)
-                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)                    
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .Add(new Paragraph(" ")));
                 tabela.SetSkipFirstHeader(false);
                 tabela.AddHeaderCell(new Cell()
                     .SetTextAlignment(TextAlignment.CENTER)
-                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)                 
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
                     .Add(new Paragraph("LOCAL")));
                 tabela.SetSkipFirstHeader(false);
 
@@ -125,6 +126,36 @@ namespace AppEscala
 
                 MessageBox.Show("Arquivo PDF gerado em " + arquivo);
             }
+        }
+
+        bool menuExpand = false;
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void menuTransition_Tick(object sender, EventArgs e)
+        {
+            if (menuExpand == false)
+            {
+                menuContainer.Height += 10;
+                if (menuContainer.Height == )
+            }
+        }
+
+        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
     public class Produtos
