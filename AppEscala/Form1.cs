@@ -19,7 +19,7 @@ namespace AppEscala
             InitializeComponent();
             InitializeComponent();
         }
-        //okey okey 
+        
         private void button1_Click(object sender, EventArgs e)
         {
             GerarPdf();
