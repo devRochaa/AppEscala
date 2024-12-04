@@ -19,7 +19,7 @@ namespace AppEscala
             InitializeComponent();
             InitializeComponent();
         }
-        
+
         private void button1_Click(object sender, EventArgs e)
         {
             GerarPdf();
@@ -130,12 +130,32 @@ namespace AppEscala
         }
 
         bool menuExpand = false;
-        private void button2_Click(object sender, EventArgs e)
-        {
 
+
+        private void menuTransition_Tick(object sender, EventArgs e)
+        {
+            if (menuExpand == false)
+            {
+                MenuContainer.Height += 10;
+                if (MenuContainer.Height >= 186)
+                {
+                    menuTransition.Stop();
+                    menuExpand = true;
+                }
+            }
+
+            else
+            {
+                MenuContainer.Height -= 10;
+                if (MenuContainer.Height <= 71)
+                {
+                    menuTransition.Stop();
+                    menuExpand = false;
+                }
+            }
         }
 
-        private void panel1_Paint(object sender, PaintEventArgs e)
+        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
         {
 
         }
@@ -145,16 +165,17 @@ namespace AppEscala
 
         }
 
-        private void menuTransition_Tick(object sender, EventArgs e)
+        private void btnMenu_Click(object sender, EventArgs e)
         {
-            if (menuExpand == false)
-            {
-                menuContainer.Height += 10;
-                if (menuContainer.Height == )
-            }
+            menuTransition.Start();
         }
 
-        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        private void button7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timerSideBarTransition_Tick(object sender, EventArgs e)
         {
 
         }
