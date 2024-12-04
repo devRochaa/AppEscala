@@ -17,7 +17,6 @@ namespace AppEscala
         public Form1()
         {
             InitializeComponent();
-            InitializeComponent();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -136,7 +135,7 @@ namespace AppEscala
         {
             if (menuExpand == false)
             {
-                MenuContainer.Height += 10;
+                MenuContainer.Height += 5;
                 if (MenuContainer.Height >= 186)
                 {
                     menuTransition.Stop();
@@ -146,7 +145,7 @@ namespace AppEscala
 
             else
             {
-                MenuContainer.Height -= 10;
+                MenuContainer.Height -= 15;
                 if (MenuContainer.Height <= 71)
                 {
                     menuTransition.Stop();
@@ -167,15 +166,43 @@ namespace AppEscala
 
         private void btnMenu_Click(object sender, EventArgs e)
         {
-            menuTransition.Start();
+             menuTransition.Start();
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
 
         }
-
+        bool sidebarExpand = true;
         private void timerSideBarTransition_Tick(object sender, EventArgs e)
+        {
+            if (sidebarExpand)
+            {
+                sidebar.Width -= 5;
+                if (sidebar.Width <= 40)
+                {
+
+                    timerSideBarTransition.Stop();
+                    sidebarExpand = false;
+                }
+            }
+            else
+            {
+                sidebar.Width += 10;
+                if (sidebar.Width >= 189)
+                {
+                    sidebarExpand = true;
+                    timerSideBarTransition.Stop();
+                }
+            }
+        }
+
+        private void btnHam_Click(object sender, EventArgs e)
+        {
+            timerSideBarTransition.Start();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
         {
 
         }
