@@ -135,8 +135,8 @@ namespace AppEscala
         {
             if (menuExpand == false)
             {
-                MenuContainer.Height += 5;
-                if (MenuContainer.Height >= 186)
+                MenuContainer.Height += 3;
+                if (MenuContainer.Height >= 145)
                 {
                     menuTransition.Stop();
                     menuExpand = true;
@@ -145,8 +145,8 @@ namespace AppEscala
 
             else
             {
-                MenuContainer.Height -= 15;
-                if (MenuContainer.Height <= 71)
+                MenuContainer.Height -= 3;
+                if (MenuContainer.Height <= 55)
                 {
                     menuTransition.Stop();
                     menuExpand = false;
@@ -188,7 +188,7 @@ namespace AppEscala
             }
             else
             {
-                sidebar.Width += 10;
+                sidebar.Width += 5;
                 if (sidebar.Width >= 189)
                 {
                     sidebarExpand = true;
@@ -196,7 +196,7 @@ namespace AppEscala
                 }
             }
         }
-
+        //
         private void btnHam_Click(object sender, EventArgs e)
         {
             timerSideBarTransition.Start();

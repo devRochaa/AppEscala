@@ -41,12 +41,12 @@ namespace AppEscala
             button4 = new Button();
             panel4 = new Panel();
             button5 = new Button();
-            panel6 = new Panel();
+            pnEscala = new Panel();
             button7 = new Button();
-            panel8 = new Panel();
+            pnConfig = new Panel();
             button2 = new Button();
             button9 = new Button();
-            panel7 = new Panel();
+            pnLogout = new Panel();
             button8 = new Button();
             timerSideBarTransition = new System.Windows.Forms.Timer(components);
             btnHam = new PictureBox();
@@ -58,16 +58,16 @@ namespace AppEscala
             panel3.SuspendLayout();
             panel2.SuspendLayout();
             panel4.SuspendLayout();
-            panel6.SuspendLayout();
-            panel8.SuspendLayout();
-            panel7.SuspendLayout();
+            pnEscala.SuspendLayout();
+            pnConfig.SuspendLayout();
+            pnLogout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)btnHam).BeginInit();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(736, 29);
+            button1.Location = new Point(506, 215);
             button1.Name = "button1";
             button1.Size = new Size(143, 56);
             button1.TabIndex = 0;
@@ -84,13 +84,15 @@ namespace AppEscala
             // 
             sidebar.BackColor = Color.Black;
             sidebar.Controls.Add(MenuContainer);
-            sidebar.Controls.Add(panel6);
-            sidebar.Controls.Add(panel8);
-            sidebar.Controls.Add(panel7);
+            sidebar.Controls.Add(pnLogout);
+            sidebar.Controls.Add(pnConfig);
+            sidebar.Controls.Add(pnEscala);
+            sidebar.FlowDirection = FlowDirection.TopDown;
             sidebar.ForeColor = Color.Coral;
             sidebar.Location = new Point(0, 42);
             sidebar.Name = "sidebar";
-            sidebar.Size = new Size(187, 400);
+            sidebar.Padding = new Padding(0, 30, 0, 0);
+            sidebar.Size = new Size(176, 467);
             sidebar.TabIndex = 3;
             // 
             // MenuContainer
@@ -99,7 +101,7 @@ namespace AppEscala
             MenuContainer.Controls.Add(panel3);
             MenuContainer.Controls.Add(panel2);
             MenuContainer.Controls.Add(panel4);
-            MenuContainer.Location = new Point(0, 0);
+            MenuContainer.Location = new Point(0, 30);
             MenuContainer.Margin = new Padding(0);
             MenuContainer.Name = "MenuContainer";
             MenuContainer.Padding = new Padding(2, 0, 0, 0);
@@ -181,13 +183,13 @@ namespace AppEscala
             button5.TextAlign = ContentAlignment.MiddleLeft;
             button5.UseVisualStyleBackColor = false;
             // 
-            // panel6
+            // pnEscala
             // 
-            panel6.Controls.Add(button7);
-            panel6.Location = new Point(3, 63);
-            panel6.Name = "panel6";
-            panel6.Size = new Size(183, 55);
-            panel6.TabIndex = 9;
+            pnEscala.Controls.Add(button7);
+            pnEscala.Location = new Point(3, 215);
+            pnEscala.Name = "pnEscala";
+            pnEscala.Size = new Size(183, 55);
+            pnEscala.TabIndex = 9;
             // 
             // button7
             // 
@@ -207,14 +209,14 @@ namespace AppEscala
             button7.UseVisualStyleBackColor = false;
             button7.Click += button7_Click;
             // 
-            // panel8
+            // pnConfig
             // 
-            panel8.Controls.Add(button2);
-            panel8.Controls.Add(button9);
-            panel8.Location = new Point(3, 124);
-            panel8.Name = "panel8";
-            panel8.Size = new Size(183, 55);
-            panel8.TabIndex = 12;
+            pnConfig.Controls.Add(button2);
+            pnConfig.Controls.Add(button9);
+            pnConfig.Location = new Point(3, 154);
+            pnConfig.Name = "pnConfig";
+            pnConfig.Size = new Size(183, 55);
+            pnConfig.TabIndex = 12;
             // 
             // button2
             // 
@@ -250,13 +252,13 @@ namespace AppEscala
             button9.TextAlign = ContentAlignment.MiddleLeft;
             button9.UseVisualStyleBackColor = false;
             // 
-            // panel7
+            // pnLogout
             // 
-            panel7.Controls.Add(button8);
-            panel7.Location = new Point(3, 185);
-            panel7.Name = "panel7";
-            panel7.Size = new Size(183, 55);
-            panel7.TabIndex = 8;
+            pnLogout.Controls.Add(button8);
+            pnLogout.Location = new Point(3, 93);
+            pnLogout.Name = "pnLogout";
+            pnLogout.Size = new Size(183, 55);
+            pnLogout.TabIndex = 8;
             // 
             // button8
             // 
@@ -283,9 +285,9 @@ namespace AppEscala
             // btnHam
             // 
             btnHam.Image = (Image)resources.GetObject("btnHam.Image");
-            btnHam.Location = new Point(5, 7);
+            btnHam.Location = new Point(0, 7);
             btnHam.Name = "btnHam";
-            btnHam.Size = new Size(34, 29);
+            btnHam.Size = new Size(39, 29);
             btnHam.SizeMode = PictureBoxSizeMode.StretchImage;
             btnHam.TabIndex = 3;
             btnHam.TabStop = false;
@@ -353,9 +355,9 @@ namespace AppEscala
             panel3.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel4.ResumeLayout(false);
-            panel6.ResumeLayout(false);
-            panel8.ResumeLayout(false);
-            panel7.ResumeLayout(false);
+            pnEscala.ResumeLayout(false);
+            pnConfig.ResumeLayout(false);
+            pnLogout.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)btnHam).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -374,11 +376,11 @@ namespace AppEscala
         private Button button4;
         private Panel panel4;
         private Button button5;
-        private Panel panel7;
+        private Panel pnLogout;
         private Button button8;
-        private Panel panel6;
+        private Panel pnEscala;
         private Button button7;
-        private Panel panel8;
+        private Panel pnConfig;
         private Button button9;
         private System.Windows.Forms.Timer timerSideBarTransition;
         private PictureBox btnHam;
