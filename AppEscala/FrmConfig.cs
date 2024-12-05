@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace AppEscala.Views
+namespace AppEscala
 {
     public partial class FrmConfig : Form
     {

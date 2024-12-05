@@ -38,18 +38,18 @@ namespace AppEscala
             panel3 = new Panel();
             menu = new Button();
             panel2 = new Panel();
-            button4 = new Button();
+            subMenu1 = new Button();
             panel4 = new Panel();
-            button5 = new Button();
+            subMenu2 = new Button();
             pnEscala = new Panel();
             button7 = new Button();
+            pnInfo = new Panel();
+            button3 = new Button();
             pnConfig = new Panel();
             button2 = new Button();
             button9 = new Button();
             pnLogout = new Panel();
             button8 = new Button();
-            pnInfo = new Panel();
-            button3 = new Button();
             timerSideBarTransition = new System.Windows.Forms.Timer(components);
             btnHam = new PictureBox();
             label1 = new Label();
@@ -61,16 +61,16 @@ namespace AppEscala
             panel2.SuspendLayout();
             panel4.SuspendLayout();
             pnEscala.SuspendLayout();
+            pnInfo.SuspendLayout();
             pnConfig.SuspendLayout();
             pnLogout.SuspendLayout();
-            pnInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)btnHam).BeginInit();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(540, 117);
+            button1.Location = new Point(633, 42);
             button1.Name = "button1";
             button1.Size = new Size(143, 56);
             button1.TabIndex = 0;
@@ -96,7 +96,7 @@ namespace AppEscala
             sidebar.Location = new Point(0, 42);
             sidebar.Name = "sidebar";
             sidebar.Padding = new Padding(0, 30, 0, 0);
-            sidebar.Size = new Size(189, 467);
+            sidebar.Size = new Size(186, 467);
             sidebar.TabIndex = 3;
             // 
             // MenuContainer
@@ -109,7 +109,7 @@ namespace AppEscala
             MenuContainer.Margin = new Padding(0);
             MenuContainer.Name = "MenuContainer";
             MenuContainer.Padding = new Padding(2, 0, 0, 0);
-            MenuContainer.Size = new Size(186, 60);
+            MenuContainer.Size = new Size(186, 173);
             MenuContainer.TabIndex = 11;
             // 
             // panel3
@@ -139,58 +139,59 @@ namespace AppEscala
             // 
             // panel2
             // 
-            panel2.Controls.Add(button4);
+            panel2.Controls.Add(subMenu1);
             panel2.Location = new Point(5, 49);
             panel2.Name = "panel2";
             panel2.Size = new Size(186, 40);
             panel2.TabIndex = 8;
             // 
-            // button4
+            // subMenu1
             // 
-            button4.BackColor = Color.Black;
-            button4.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button4.ForeColor = SystemColors.Control;
-            button4.Image = (Image)resources.GetObject("button4.Image");
-            button4.ImageAlign = ContentAlignment.MiddleLeft;
-            button4.Location = new Point(-10, -12);
-            button4.Margin = new Padding(0);
-            button4.Name = "button4";
-            button4.Padding = new Padding(8, 5, 5, 5);
-            button4.Size = new Size(202, 71);
-            button4.TabIndex = 1;
-            button4.Text = "    Sub Menu 1";
-            button4.TextAlign = ContentAlignment.MiddleLeft;
-            button4.UseVisualStyleBackColor = false;
+            subMenu1.BackColor = Color.Black;
+            subMenu1.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            subMenu1.ForeColor = SystemColors.Control;
+            subMenu1.Image = (Image)resources.GetObject("subMenu1.Image");
+            subMenu1.ImageAlign = ContentAlignment.MiddleLeft;
+            subMenu1.Location = new Point(-10, -12);
+            subMenu1.Margin = new Padding(0);
+            subMenu1.Name = "subMenu1";
+            subMenu1.Padding = new Padding(8, 5, 5, 5);
+            subMenu1.Size = new Size(202, 71);
+            subMenu1.TabIndex = 1;
+            subMenu1.Text = "    Sub Menu 1";
+            subMenu1.TextAlign = ContentAlignment.MiddleLeft;
+            subMenu1.UseVisualStyleBackColor = false;
+            subMenu1.Click += subMenu1_Click;
             // 
             // panel4
             // 
-            panel4.Controls.Add(button5);
+            panel4.Controls.Add(subMenu2);
             panel4.Location = new Point(5, 95);
             panel4.Name = "panel4";
             panel4.Size = new Size(186, 40);
             panel4.TabIndex = 9;
             // 
-            // button5
+            // subMenu2
             // 
-            button5.BackColor = Color.Black;
-            button5.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button5.ForeColor = SystemColors.Control;
-            button5.Image = (Image)resources.GetObject("button5.Image");
-            button5.ImageAlign = ContentAlignment.MiddleLeft;
-            button5.Location = new Point(-10, -12);
-            button5.Margin = new Padding(0);
-            button5.Name = "button5";
-            button5.Padding = new Padding(8, 5, 5, 5);
-            button5.Size = new Size(202, 73);
-            button5.TabIndex = 1;
-            button5.Text = "    Sub Menu 2";
-            button5.TextAlign = ContentAlignment.MiddleLeft;
-            button5.UseVisualStyleBackColor = false;
+            subMenu2.BackColor = Color.Black;
+            subMenu2.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            subMenu2.ForeColor = SystemColors.Control;
+            subMenu2.Image = (Image)resources.GetObject("subMenu2.Image");
+            subMenu2.ImageAlign = ContentAlignment.MiddleLeft;
+            subMenu2.Location = new Point(-10, -12);
+            subMenu2.Margin = new Padding(0);
+            subMenu2.Name = "subMenu2";
+            subMenu2.Padding = new Padding(8, 5, 5, 5);
+            subMenu2.Size = new Size(202, 73);
+            subMenu2.TabIndex = 1;
+            subMenu2.Text = "    Sub Menu 2";
+            subMenu2.TextAlign = ContentAlignment.MiddleLeft;
+            subMenu2.UseVisualStyleBackColor = false;
             // 
             // pnEscala
             // 
             pnEscala.Controls.Add(button7);
-            pnEscala.Location = new Point(3, 93);
+            pnEscala.Location = new Point(3, 206);
             pnEscala.Name = "pnEscala";
             pnEscala.Size = new Size(183, 55);
             pnEscala.TabIndex = 9;
@@ -213,11 +214,36 @@ namespace AppEscala
             button7.UseVisualStyleBackColor = false;
             button7.Click += button7_Click;
             // 
+            // pnInfo
+            // 
+            pnInfo.Controls.Add(button3);
+            pnInfo.Location = new Point(3, 267);
+            pnInfo.Name = "pnInfo";
+            pnInfo.Size = new Size(183, 55);
+            pnInfo.TabIndex = 10;
+            // 
+            // button3
+            // 
+            button3.BackColor = Color.Black;
+            button3.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button3.ForeColor = SystemColors.Control;
+            button3.Image = (Image)resources.GetObject("button3.Image");
+            button3.ImageAlign = ContentAlignment.MiddleLeft;
+            button3.Location = new Point(-10, -11);
+            button3.Margin = new Padding(0);
+            button3.Name = "button3";
+            button3.Padding = new Padding(18, 5, 5, 5);
+            button3.Size = new Size(201, 70);
+            button3.TabIndex = 1;
+            button3.Text = "     Informações";
+            button3.TextAlign = ContentAlignment.MiddleLeft;
+            button3.UseVisualStyleBackColor = false;
+            // 
             // pnConfig
             // 
             pnConfig.Controls.Add(button2);
             pnConfig.Controls.Add(button9);
-            pnConfig.Location = new Point(3, 215);
+            pnConfig.Location = new Point(3, 328);
             pnConfig.Name = "pnConfig";
             pnConfig.Size = new Size(183, 55);
             pnConfig.TabIndex = 12;
@@ -259,7 +285,7 @@ namespace AppEscala
             // pnLogout
             // 
             pnLogout.Controls.Add(button8);
-            pnLogout.Location = new Point(3, 276);
+            pnLogout.Location = new Point(3, 389);
             pnLogout.Name = "pnLogout";
             pnLogout.Size = new Size(183, 55);
             pnLogout.TabIndex = 8;
@@ -281,31 +307,6 @@ namespace AppEscala
             button8.TextAlign = ContentAlignment.MiddleLeft;
             button8.UseVisualStyleBackColor = false;
             // 
-            // pnInfo
-            // 
-            pnInfo.Controls.Add(button3);
-            pnInfo.Location = new Point(3, 154);
-            pnInfo.Name = "pnInfo";
-            pnInfo.Size = new Size(183, 55);
-            pnInfo.TabIndex = 10;
-            // 
-            // button3
-            // 
-            button3.BackColor = Color.Black;
-            button3.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button3.ForeColor = SystemColors.Control;
-            button3.Image = (Image)resources.GetObject("button3.Image");
-            button3.ImageAlign = ContentAlignment.MiddleLeft;
-            button3.Location = new Point(-10, -11);
-            button3.Margin = new Padding(0);
-            button3.Name = "button3";
-            button3.Padding = new Padding(18, 5, 5, 5);
-            button3.Size = new Size(201, 70);
-            button3.TabIndex = 1;
-            button3.Text = "     Informações";
-            button3.TextAlign = ContentAlignment.MiddleLeft;
-            button3.UseVisualStyleBackColor = false;
-            // 
             // timerSideBarTransition
             // 
             timerSideBarTransition.Interval = 10;
@@ -314,7 +315,7 @@ namespace AppEscala
             // btnHam
             // 
             btnHam.Image = (Image)resources.GetObject("btnHam.Image");
-            btnHam.Location = new Point(0, 7);
+            btnHam.Location = new Point(9, 2);
             btnHam.Name = "btnHam";
             btnHam.Size = new Size(39, 29);
             btnHam.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -379,6 +380,7 @@ namespace AppEscala
             IsMdiContainer = true;
             Name = "Form1";
             Text = " ";
+            FormClosed += sub1_FormClosed;
             Load += Form1_Load;
             sidebar.ResumeLayout(false);
             MenuContainer.ResumeLayout(false);
@@ -386,9 +388,9 @@ namespace AppEscala
             panel2.ResumeLayout(false);
             panel4.ResumeLayout(false);
             pnEscala.ResumeLayout(false);
+            pnInfo.ResumeLayout(false);
             pnConfig.ResumeLayout(false);
             pnLogout.ResumeLayout(false);
-            pnInfo.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)btnHam).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -404,9 +406,9 @@ namespace AppEscala
         private Panel panel3;
         private Button menu;
         private Panel panel2;
-        private Button button4;
+        private Button subMenu1;
         private Panel panel4;
-        private Button button5;
+        private Button subMenu2;
         private Panel pnLogout;
         private Button button8;
         private Panel pnEscala;
@@ -421,5 +423,6 @@ namespace AppEscala
         private Button button2;
         private Panel pnInfo;
         private Button button3;
+
     }
 }

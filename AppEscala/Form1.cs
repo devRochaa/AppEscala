@@ -14,7 +14,11 @@ namespace AppEscala
 {
     public partial class Form1 : Form
     {
-
+        FrmConfig conf;
+        FrmEscala Esc;
+        FrmInfo inf;
+        FrmSub1 sub1;
+        FrmSub2 sub2;
 
         public Form1()
         {
@@ -147,7 +151,7 @@ namespace AppEscala
                     menuExpand = true;
                 }
             }
-
+            //kkakaak
             else
             {
                 //velocidade de subida 
@@ -173,7 +177,7 @@ namespace AppEscala
 
         private void btnMenu_Click(object sender, EventArgs e)
         {
-             menuTransition.Start();
+            menuTransition.Start();
         }
 
         private void button7_Click(object sender, EventArgs e)
@@ -228,6 +232,30 @@ namespace AppEscala
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void subMenu1_Click(object sender, EventArgs e)
+        {
+            if (sub1 == null)
+            {
+                sub1 = new FrmSub1();
+                sub1.FormClosed += sub1_FormClosed;
+                sub1.MdiParent = this;
+                sub1.Dock = DockStyle.Fill;
+                sub1.Show();
+
+            }
+            else
+            {
+                sub1.Activate();
+            }
+
+
+        }
+
+        private void sub1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            sub1 = null;
         }
     }
     public class Produtos
