@@ -121,7 +121,7 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="button8.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="button3.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAALGPC/xhBQAAAAd0SU1FB+gM
         BA0NN3maAQgAAADMSURBVChTbY85CoVAEAWbudCc4p/LSxkYi4jRYCJmiguKIK4oiqB/KhQMHjRVb5aW
@@ -152,7 +152,7 @@
         74t1TpI7ujAgba7JiDQAAAAASUVORK5CYII=
 </value>
   </data>
-  <data name="button7.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="button8.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAALGPC/xhBQAAAAd0SU1FB+gM
         BA0NN3maAQgAAADMSURBVChTbY85CoVAEAWbudCc4p/LSxkYi4jRYCJmiguKIK4oiqB/KhQMHjRVb5aW
@@ -181,6 +181,15 @@
 </value>
   </data>
   <data name="button5.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAALGPC/xhBQAAAAd0SU1FB+gM
+        BA0NN3maAQgAAADMSURBVChTbY85CoVAEAWbudCc4p/LSxkYi4jRYCJmiguKIK4oiqB/KhQMHjRVb5aW
+        PM8liiLVNI0ehsGZ59klzDAcHQmCQLVt+1uWxT/Pc7uu6ybMMFwYhkqKotDTNPnHcTxWvgLDlWWpxV7v
+        rOu67fv+fAVHR+zV/Om24LFPvQLD0ZG6rvn4PY7j8xUcHcmyzOm6buv7/vkKjo4kSaLtQmwHfAWGoyOe
+        5yk7/OwpttuqqroJMwxHR4wx4rquiuNYW+ikaeoSZhjOGCN//DdTR/mpMRgAAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="button7.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAALGPC/xhBQAAAAd0SU1FB+gM
         BA0NN3maAQgAAADMSURBVChTbY85CoVAEAWbudCc4p/LSxkYi4jRYCJmiguKIK4oiqB/KhQMHjRVb5aW

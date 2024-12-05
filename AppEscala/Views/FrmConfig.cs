@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace AppEscala
+namespace AppEscala.Views
 {
-    public partial class FrmInicio : Form
+    public partial class FrmConfig : Form
     {
-        public FrmInicio()
+        public FrmConfig()
         {
             InitializeComponent();
         }

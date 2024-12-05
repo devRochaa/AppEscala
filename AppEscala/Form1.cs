@@ -14,6 +14,8 @@ namespace AppEscala
 {
     public partial class Form1 : Form
     {
+
+
         public Form1()
         {
             InitializeComponent();
@@ -135,7 +137,10 @@ namespace AppEscala
         {
             if (menuExpand == false)
             {
+                //velocidade de descidada do menu
                 MenuContainer.Height += 3;
+
+                //Aqui é o quanto que a o menu vai descer
                 if (MenuContainer.Height >= 145)
                 {
                     menuTransition.Stop();
@@ -145,8 +150,10 @@ namespace AppEscala
 
             else
             {
+                //velocidade de subida 
                 MenuContainer.Height -= 3;
-                if (MenuContainer.Height <= 55)
+                //aqui é o qunato que o menu vai subir(quanto maior o valor,menos ele vai subir)
+                if (MenuContainer.Height <= 65)
                 {
                     menuTransition.Stop();
                     menuExpand = false;
@@ -178,21 +185,37 @@ namespace AppEscala
         {
             if (sidebarExpand)
             {
+                //velocidade em que a barra horizontal vai fechar
                 sidebar.Width -= 5;
+                //regula o quanto que o sidebar(barra lateral preta) vai fechar 
                 if (sidebar.Width <= 40)
                 {
 
                     timerSideBarTransition.Stop();
                     sidebarExpand = false;
+                    //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
+                    pnConfig.Width = sidebar.Width;
+                    pnEscala.Width = sidebar.Width;
+                    pnInfo.Width = sidebar.Width;
+                    pnLogout.Width = sidebar.Width;
+                    MenuContainer.Width = sidebar.Width;
                 }
             }
             else
             {
+                //velocidade em que a barra horizontal vai abrir
                 sidebar.Width += 5;
+                //regula o quanto que o sidebar(barra lateral preta) vai abrir 
                 if (sidebar.Width >= 189)
                 {
                     sidebarExpand = true;
                     timerSideBarTransition.Stop();
+                    //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
+                    pnConfig.Width = sidebar.Width;
+                    pnEscala.Width = sidebar.Width;
+                    pnInfo.Width = sidebar.Width;
+                    pnLogout.Width = sidebar.Width;
+                    MenuContainer.Width = sidebar.Width;
                 }
             }
         }
