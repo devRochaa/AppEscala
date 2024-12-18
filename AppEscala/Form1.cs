@@ -151,7 +151,7 @@ namespace AppEscala
                     menuExpand = true;
                 }
             }
-            //kkakaak
+           
             else
             {
                 //velocidade de subida 
