@@ -14,6 +14,12 @@ namespace AppEscala
 {
     public partial class Form1 : Form
     {
+        FrmConfig conf;
+        FrmEscala Esc;
+        FrmInfo inf;
+        FrmSub1 sub1;
+        FrmSub2 sub2;
+
         public Form1()
         {
             InitializeComponent();
@@ -129,12 +135,37 @@ namespace AppEscala
         }
 
         bool menuExpand = false;
-        private void button2_Click(object sender, EventArgs e)
-        {
 
+
+        private void menuTransition_Tick(object sender, EventArgs e)
+        {
+            if (menuExpand == false)
+            {
+                //velocidade de descidada do menu
+                MenuContainer.Height += 3;
+
+                //Aqui é o quanto que a o menu vai descer
+                if (MenuContainer.Height >= 145)
+                {
+                    menuTransition.Stop();
+                    menuExpand = true;
+                }
+            }
+           
+            else
+            {
+                //velocidade de subida 
+                MenuContainer.Height -= 3;
+                //aqui é o qunato que o menu vai subir(quanto maior o valor,menos ele vai subir)
+                if (MenuContainer.Height <= 65)
+                {
+                    menuTransition.Stop();
+                    menuExpand = false;
+                }
+            }
         }
 
-        private void panel1_Paint(object sender, PaintEventArgs e)
+        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
         {
 
         }
@@ -144,18 +175,87 @@ namespace AppEscala
 
         }
 
-        private void menuTransition_Tick(object sender, EventArgs e)
+        private void btnMenu_Click(object sender, EventArgs e)
         {
-            if (menuExpand == false)
-            {
-                menuContainer.Height += 10;
-                if (menuContainer.Height == )
-            }
+            menuTransition.Start();
         }
 
-        private void flowLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        private void button7_Click(object sender, EventArgs e)
         {
 
+        }
+        bool sidebarExpand = true;
+        private void timerSideBarTransition_Tick(object sender, EventArgs e)
+        {
+            if (sidebarExpand)
+            {
+                //velocidade em que a barra horizontal vai fechar
+                sidebar.Width -= 5;
+                //regula o quanto que o sidebar(barra lateral preta) vai fechar 
+                if (sidebar.Width <= 40)
+                {
+
+                    timerSideBarTransition.Stop();
+                    sidebarExpand = false;
+                    //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
+                    pnConfig.Width = sidebar.Width;
+                    pnEscala.Width = sidebar.Width;
+                    pnInfo.Width = sidebar.Width;
+                    pnLogout.Width = sidebar.Width;
+                    MenuContainer.Width = sidebar.Width;
+                }
+            }
+            else
+            {
+                //velocidade em que a barra horizontal vai abrir
+                sidebar.Width += 5;
+                //regula o quanto que o sidebar(barra lateral preta) vai abrir 
+                if (sidebar.Width >= 189)
+                {
+                    sidebarExpand = true;
+                    timerSideBarTransition.Stop();
+                    //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
+                    pnConfig.Width = sidebar.Width;
+                    pnEscala.Width = sidebar.Width;
+                    pnInfo.Width = sidebar.Width;
+                    pnLogout.Width = sidebar.Width;
+                    MenuContainer.Width = sidebar.Width;
+                }
+            }
+        }
+        //
+        private void btnHam_Click(object sender, EventArgs e)
+        {
+            timerSideBarTransition.Start();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void subMenu1_Click(object sender, EventArgs e)
+        {
+            if (sub1 == null)
+            {
+                sub1 = new FrmSub1();
+                sub1.FormClosed += sub1_FormClosed;
+                sub1.MdiParent = this;
+                sub1.Dock = DockStyle.Fill;
+                sub1.Show();
+
+            }
+            else
+            {
+                sub1.Activate();
+            }
+
+
+        }
+
+        private void sub1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            sub1 = null;
         }
     }
     public class Produtos

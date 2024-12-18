@@ -32,41 +32,45 @@ namespace AppEscala
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             button1 = new Button();
-            btn_add = new Button();
-            panel1 = new Panel();
-            nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
-            label1 = new Label();
-            pictureBox1 = new PictureBox();
-            flowLayoutPanel1 = new FlowLayoutPanel();
-            panel2 = new Panel();
-            button2 = new Button();
             menuTransition = new System.Windows.Forms.Timer(components);
+            sidebar = new FlowLayoutPanel();
+            MenuContainer = new FlowLayoutPanel();
             panel3 = new Panel();
-            button3 = new Button();
+            menu = new Button();
+            panel2 = new Panel();
+            subMenu1 = new Button();
             panel4 = new Panel();
-            button4 = new Button();
-            flowLayoutPanel2 = new FlowLayoutPanel();
-            panel5 = new Panel();
-            button5 = new Button();
-            panel6 = new Panel();
-            button6 = new Button();
-            panel7 = new Panel();
+            subMenu2 = new Button();
+            pnEscala = new Panel();
             button7 = new Button();
-            panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            flowLayoutPanel1.SuspendLayout();
-            panel2.SuspendLayout();
+            pnInfo = new Panel();
+            button3 = new Button();
+            pnConfig = new Panel();
+            button2 = new Button();
+            button9 = new Button();
+            pnLogout = new Panel();
+            button8 = new Button();
+            timerSideBarTransition = new System.Windows.Forms.Timer(components);
+            btnHam = new PictureBox();
+            label1 = new Label();
+            nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
+            panel1 = new Panel();
+            sidebar.SuspendLayout();
+            MenuContainer.SuspendLayout();
             panel3.SuspendLayout();
+            panel2.SuspendLayout();
             panel4.SuspendLayout();
-            flowLayoutPanel2.SuspendLayout();
-            panel5.SuspendLayout();
-            panel6.SuspendLayout();
-            panel7.SuspendLayout();
+            pnEscala.SuspendLayout();
+            pnInfo.SuspendLayout();
+            pnConfig.SuspendLayout();
+            pnLogout.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)btnHam).BeginInit();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // button1
             // 
-            button1.Location = new Point(528, 42);
+            button1.Location = new Point(633, 42);
             button1.Name = "button1";
             button1.Size = new Size(143, 56);
             button1.TabIndex = 0;
@@ -74,34 +78,260 @@ namespace AppEscala
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
-            // btn_add
+            // menuTransition
             // 
-            btn_add.BackColor = Color.FromArgb(37, 37, 41);
-            btn_add.ForeColor = SystemColors.Control;
-            btn_add.Image = (Image)resources.GetObject("btn_add.Image");
-            btn_add.ImageAlign = ContentAlignment.MiddleLeft;
-            btn_add.Location = new Point(-10, -11);
-            btn_add.Name = "btn_add";
-            btn_add.Padding = new Padding(10, 0, 0, 0);
-            btn_add.Size = new Size(218, 77);
-            btn_add.TabIndex = 1;
-            btn_add.Text = "Gerar Escalas";
-            btn_add.TextImageRelation = TextImageRelation.ImageBeforeText;
-            btn_add.UseVisualStyleBackColor = false;
-            btn_add.Click += button2_Click;
+            menuTransition.Interval = 10;
+            menuTransition.Tick += menuTransition_Tick;
             // 
-            // panel1
+            // sidebar
             // 
-            panel1.BackColor = Color.White;
-            panel1.Controls.Add(nightControlBox1);
-            panel1.Controls.Add(label1);
-            panel1.Controls.Add(pictureBox1);
-            panel1.Dock = DockStyle.Top;
-            panel1.Location = new Point(0, 0);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(800, 36);
-            panel1.TabIndex = 2;
-            panel1.Paint += panel1_Paint;
+            sidebar.BackColor = Color.Black;
+            sidebar.Controls.Add(MenuContainer);
+            sidebar.Controls.Add(pnEscala);
+            sidebar.Controls.Add(pnInfo);
+            sidebar.Controls.Add(pnConfig);
+            sidebar.Controls.Add(pnLogout);
+            sidebar.FlowDirection = FlowDirection.TopDown;
+            sidebar.ForeColor = Color.Coral;
+            sidebar.Location = new Point(0, 42);
+            sidebar.Name = "sidebar";
+            sidebar.Padding = new Padding(0, 30, 0, 0);
+            sidebar.Size = new Size(186, 467);
+            sidebar.TabIndex = 3;
+            // 
+            // MenuContainer
+            // 
+            MenuContainer.BackColor = SystemColors.ActiveCaptionText;
+            MenuContainer.Controls.Add(panel3);
+            MenuContainer.Controls.Add(panel2);
+            MenuContainer.Controls.Add(panel4);
+            MenuContainer.Location = new Point(0, 30);
+            MenuContainer.Margin = new Padding(0);
+            MenuContainer.Name = "MenuContainer";
+            MenuContainer.Padding = new Padding(2, 0, 0, 0);
+            MenuContainer.Size = new Size(186, 173);
+            MenuContainer.TabIndex = 11;
+            // 
+            // panel3
+            // 
+            panel3.Controls.Add(menu);
+            panel3.Location = new Point(5, 3);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(189, 40);
+            panel3.TabIndex = 9;
+            // 
+            // menu
+            // 
+            menu.BackColor = Color.Black;
+            menu.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            menu.ForeColor = SystemColors.Control;
+            menu.Image = (Image)resources.GetObject("menu.Image");
+            menu.ImageAlign = ContentAlignment.MiddleLeft;
+            menu.Location = new Point(-10, -13);
+            menu.Name = "menu";
+            menu.Padding = new Padding(13, 5, 0, 0);
+            menu.Size = new Size(202, 73);
+            menu.TabIndex = 1;
+            menu.Text = "      Menu";
+            menu.TextAlign = ContentAlignment.MiddleLeft;
+            menu.UseVisualStyleBackColor = false;
+            menu.Click += btnMenu_Click;
+            // 
+            // panel2
+            // 
+            panel2.Controls.Add(subMenu1);
+            panel2.Location = new Point(5, 49);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(186, 40);
+            panel2.TabIndex = 8;
+            // 
+            // subMenu1
+            // 
+            subMenu1.BackColor = Color.Black;
+            subMenu1.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            subMenu1.ForeColor = SystemColors.Control;
+            subMenu1.Image = (Image)resources.GetObject("subMenu1.Image");
+            subMenu1.ImageAlign = ContentAlignment.MiddleLeft;
+            subMenu1.Location = new Point(-10, -12);
+            subMenu1.Margin = new Padding(0);
+            subMenu1.Name = "subMenu1";
+            subMenu1.Padding = new Padding(8, 5, 5, 5);
+            subMenu1.Size = new Size(202, 71);
+            subMenu1.TabIndex = 1;
+            subMenu1.Text = "    Sub Menu 1";
+            subMenu1.TextAlign = ContentAlignment.MiddleLeft;
+            subMenu1.UseVisualStyleBackColor = false;
+            subMenu1.Click += subMenu1_Click;
+            // 
+            // panel4
+            // 
+            panel4.Controls.Add(subMenu2);
+            panel4.Location = new Point(5, 95);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(186, 40);
+            panel4.TabIndex = 9;
+            // 
+            // subMenu2
+            // 
+            subMenu2.BackColor = Color.Black;
+            subMenu2.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            subMenu2.ForeColor = SystemColors.Control;
+            subMenu2.Image = (Image)resources.GetObject("subMenu2.Image");
+            subMenu2.ImageAlign = ContentAlignment.MiddleLeft;
+            subMenu2.Location = new Point(-10, -12);
+            subMenu2.Margin = new Padding(0);
+            subMenu2.Name = "subMenu2";
+            subMenu2.Padding = new Padding(8, 5, 5, 5);
+            subMenu2.Size = new Size(202, 73);
+            subMenu2.TabIndex = 1;
+            subMenu2.Text = "    Sub Menu 2";
+            subMenu2.TextAlign = ContentAlignment.MiddleLeft;
+            subMenu2.UseVisualStyleBackColor = false;
+            // 
+            // pnEscala
+            // 
+            pnEscala.Controls.Add(button7);
+            pnEscala.Location = new Point(3, 206);
+            pnEscala.Name = "pnEscala";
+            pnEscala.Size = new Size(183, 55);
+            pnEscala.TabIndex = 9;
+            // 
+            // button7
+            // 
+            button7.BackColor = Color.Black;
+            button7.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button7.ForeColor = SystemColors.Control;
+            button7.Image = (Image)resources.GetObject("button7.Image");
+            button7.ImageAlign = ContentAlignment.MiddleLeft;
+            button7.Location = new Point(-10, -11);
+            button7.Margin = new Padding(0);
+            button7.Name = "button7";
+            button7.Padding = new Padding(18, 5, 5, 5);
+            button7.Size = new Size(201, 70);
+            button7.TabIndex = 1;
+            button7.Text = "     Escalas";
+            button7.TextAlign = ContentAlignment.MiddleLeft;
+            button7.UseVisualStyleBackColor = false;
+            button7.Click += button7_Click;
+            // 
+            // pnInfo
+            // 
+            pnInfo.Controls.Add(button3);
+            pnInfo.Location = new Point(3, 267);
+            pnInfo.Name = "pnInfo";
+            pnInfo.Size = new Size(183, 55);
+            pnInfo.TabIndex = 10;
+            // 
+            // button3
+            // 
+            button3.BackColor = Color.Black;
+            button3.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button3.ForeColor = SystemColors.Control;
+            button3.Image = (Image)resources.GetObject("button3.Image");
+            button3.ImageAlign = ContentAlignment.MiddleLeft;
+            button3.Location = new Point(-10, -11);
+            button3.Margin = new Padding(0);
+            button3.Name = "button3";
+            button3.Padding = new Padding(18, 5, 5, 5);
+            button3.Size = new Size(201, 70);
+            button3.TabIndex = 1;
+            button3.Text = "     Informações";
+            button3.TextAlign = ContentAlignment.MiddleLeft;
+            button3.UseVisualStyleBackColor = false;
+            // 
+            // pnConfig
+            // 
+            pnConfig.Controls.Add(button2);
+            pnConfig.Controls.Add(button9);
+            pnConfig.Location = new Point(3, 328);
+            pnConfig.Name = "pnConfig";
+            pnConfig.Size = new Size(183, 55);
+            pnConfig.TabIndex = 12;
+            // 
+            // button2
+            // 
+            button2.BackColor = Color.Black;
+            button2.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button2.ForeColor = SystemColors.Control;
+            button2.Image = (Image)resources.GetObject("button2.Image");
+            button2.ImageAlign = ContentAlignment.MiddleLeft;
+            button2.Location = new Point(-10, -8);
+            button2.Margin = new Padding(0);
+            button2.Name = "button2";
+            button2.Padding = new Padding(14, 5, 5, 5);
+            button2.Size = new Size(202, 71);
+            button2.TabIndex = 2;
+            button2.Text = "      Configurações";
+            button2.TextAlign = ContentAlignment.MiddleLeft;
+            button2.UseVisualStyleBackColor = false;
+            // 
+            // button9
+            // 
+            button9.BackColor = Color.Black;
+            button9.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button9.ForeColor = SystemColors.Control;
+            button9.Image = (Image)resources.GetObject("button9.Image");
+            button9.ImageAlign = ContentAlignment.MiddleLeft;
+            button9.Location = new Point(-10, -12);
+            button9.Margin = new Padding(0);
+            button9.Name = "button9";
+            button9.Padding = new Padding(14, 5, 5, 5);
+            button9.Size = new Size(202, 71);
+            button9.TabIndex = 1;
+            button9.Text = "      Configurações";
+            button9.TextAlign = ContentAlignment.MiddleLeft;
+            button9.UseVisualStyleBackColor = false;
+            // 
+            // pnLogout
+            // 
+            pnLogout.Controls.Add(button8);
+            pnLogout.Location = new Point(3, 389);
+            pnLogout.Name = "pnLogout";
+            pnLogout.Size = new Size(183, 55);
+            pnLogout.TabIndex = 8;
+            // 
+            // button8
+            // 
+            button8.BackColor = Color.Black;
+            button8.Font = new Font("Microsoft Sans Serif", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button8.ForeColor = SystemColors.Control;
+            button8.Image = (Image)resources.GetObject("button8.Image");
+            button8.ImageAlign = ContentAlignment.MiddleLeft;
+            button8.Location = new Point(-10, -12);
+            button8.Margin = new Padding(0);
+            button8.Name = "button8";
+            button8.Padding = new Padding(18, 5, 5, 5);
+            button8.Size = new Size(202, 71);
+            button8.TabIndex = 1;
+            button8.Text = "     Sair";
+            button8.TextAlign = ContentAlignment.MiddleLeft;
+            button8.UseVisualStyleBackColor = false;
+            // 
+            // timerSideBarTransition
+            // 
+            timerSideBarTransition.Interval = 10;
+            timerSideBarTransition.Tick += timerSideBarTransition_Tick;
+            // 
+            // btnHam
+            // 
+            btnHam.Image = (Image)resources.GetObject("btnHam.Image");
+            btnHam.Location = new Point(9, 2);
+            btnHam.Name = "btnHam";
+            btnHam.Size = new Size(39, 29);
+            btnHam.SizeMode = PictureBoxSizeMode.StretchImage;
+            btnHam.TabIndex = 3;
+            btnHam.TabStop = false;
+            btnHam.Click += btnHam_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 10F);
+            label1.Location = new Point(54, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(198, 19);
+            label1.TabIndex = 4;
+            label1.Text = "CRIAR ESCALAS | TELA INICIAL";
             // 
             // nightControlBox1
             // 
@@ -117,7 +347,7 @@ namespace AppEscala
             nightControlBox1.EnableMaximizeColor = Color.FromArgb(160, 160, 160);
             nightControlBox1.EnableMinimizeButton = true;
             nightControlBox1.EnableMinimizeColor = Color.FromArgb(160, 160, 160);
-            nightControlBox1.Location = new Point(661, 0);
+            nightControlBox1.Location = new Point(637, 0);
             nightControlBox1.MaximizeHoverColor = Color.FromArgb(15, 255, 255, 255);
             nightControlBox1.MaximizeHoverForeColor = Color.White;
             nightControlBox1.MinimizeHoverColor = Color.FromArgb(15, 255, 255, 255);
@@ -126,242 +356,73 @@ namespace AppEscala
             nightControlBox1.Size = new Size(139, 31);
             nightControlBox1.TabIndex = 3;
             // 
-            // label1
+            // panel1
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 10F);
-            label1.Location = new Point(40, 9);
-            label1.Name = "label1";
-            label1.Size = new Size(198, 19);
-            label1.TabIndex = 4;
-            label1.Text = "CRIAR ESCALAS | TELA INICIAL";
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(3, 3);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(31, 29);
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBox1.TabIndex = 3;
-            pictureBox1.TabStop = false;
-            // 
-            // flowLayoutPanel1
-            // 
-            flowLayoutPanel1.BackColor = Color.FromArgb(37, 37, 41);
-            flowLayoutPanel1.Controls.Add(panel2);
-            flowLayoutPanel1.Dock = DockStyle.Left;
-            flowLayoutPanel1.ForeColor = Color.Coral;
-            flowLayoutPanel1.Location = new Point(0, 36);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(189, 434);
-            flowLayoutPanel1.TabIndex = 3;
-            // 
-            // panel2
-            // 
-            panel2.Controls.Add(btn_add);
-            panel2.Location = new Point(3, 3);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(203, 57);
-            panel2.TabIndex = 4;
-            // 
-            // button2
-            // 
-            button2.Location = new Point(596, 324);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 5;
-            button2.Text = "button2";
-            button2.UseVisualStyleBackColor = true;
-            // 
-            // menuTransition
-            // 
-            menuTransition.Tick += menuTransition_Tick;
-            // 
-            // panel3
-            // 
-            panel3.Controls.Add(button3);
-            panel3.Location = new Point(250, 81);
-            panel3.Name = "panel3";
-            panel3.Size = new Size(203, 57);
-            panel3.TabIndex = 5;
-            // 
-            // button3
-            // 
-            button3.BackColor = Color.FromArgb(44, 45, 52);
-            button3.ForeColor = SystemColors.Control;
-            button3.Image = (Image)resources.GetObject("button3.Image");
-            button3.ImageAlign = ContentAlignment.MiddleLeft;
-            button3.Location = new Point(-10, -11);
-            button3.Name = "button3";
-            button3.Padding = new Padding(10, 0, 0, 0);
-            button3.Size = new Size(218, 77);
-            button3.TabIndex = 1;
-            button3.Text = "Adicionar Acólitos";
-            button3.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button3.UseVisualStyleBackColor = false;
-            // 
-            // panel4
-            // 
-            panel4.Controls.Add(button4);
-            panel4.Location = new Point(250, 144);
-            panel4.Name = "panel4";
-            panel4.Size = new Size(203, 57);
-            panel4.TabIndex = 6;
-            // 
-            // button4
-            // 
-            button4.BackColor = Color.FromArgb(44, 45, 52);
-            button4.ForeColor = SystemColors.Control;
-            button4.Image = (Image)resources.GetObject("button4.Image");
-            button4.ImageAlign = ContentAlignment.MiddleLeft;
-            button4.Location = new Point(-10, -11);
-            button4.Name = "button4";
-            button4.Padding = new Padding(10, 0, 0, 0);
-            button4.Size = new Size(218, 77);
-            button4.TabIndex = 1;
-            button4.Text = "Editar Acólitos";
-            button4.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button4.UseVisualStyleBackColor = false;
-            // 
-            // flowLayoutPanel2
-            // 
-            flowLayoutPanel2.BackColor = Color.FromArgb(37, 37, 41);
-            flowLayoutPanel2.Controls.Add(panel6);
-            flowLayoutPanel2.Controls.Add(panel7);
-            flowLayoutPanel2.Controls.Add(panel5);
-            flowLayoutPanel2.Location = new Point(250, 276);
-            flowLayoutPanel2.Margin = new Padding(0);
-            flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(203, 174);
-            flowLayoutPanel2.TabIndex = 7;
-            flowLayoutPanel2.Paint += flowLayoutPanel2_Paint;
-            // 
-            // panel5
-            // 
-            panel5.Controls.Add(button5);
-            panel5.Location = new Point(0, 114);
-            panel5.Margin = new Padding(0);
-            panel5.Name = "panel5";
-            panel5.Size = new Size(203, 57);
-            panel5.TabIndex = 7;
-            // 
-            // button5
-            // 
-            button5.BackColor = Color.FromArgb(44, 45, 52);
-            button5.ForeColor = SystemColors.Control;
-            button5.Image = (Image)resources.GetObject("button5.Image");
-            button5.ImageAlign = ContentAlignment.MiddleLeft;
-            button5.Location = new Point(-10, -11);
-            button5.Name = "button5";
-            button5.Padding = new Padding(10, 0, 0, 0);
-            button5.Size = new Size(218, 77);
-            button5.TabIndex = 1;
-            button5.Text = "Editar Datas";
-            button5.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button5.UseVisualStyleBackColor = false;
-            // 
-            // panel6
-            // 
-            panel6.Controls.Add(button6);
-            panel6.Location = new Point(0, 0);
-            panel6.Margin = new Padding(0);
-            panel6.Name = "panel6";
-            panel6.Size = new Size(203, 57);
-            panel6.TabIndex = 6;
-            // 
-            // button6
-            // 
-            button6.BackColor = Color.FromArgb(37, 37, 41);
-            button6.ForeColor = SystemColors.Control;
-            button6.Image = (Image)resources.GetObject("button6.Image");
-            button6.ImageAlign = ContentAlignment.MiddleLeft;
-            button6.Location = new Point(-10, -11);
-            button6.Margin = new Padding(0);
-            button6.Name = "button6";
-            button6.Padding = new Padding(10, 0, 0, 0);
-            button6.Size = new Size(218, 77);
-            button6.TabIndex = 1;
-            button6.Text = "Adicionar Acólitos";
-            button6.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button6.UseVisualStyleBackColor = false;
-            // 
-            // panel7
-            // 
-            panel7.Controls.Add(button7);
-            panel7.Location = new Point(0, 57);
-            panel7.Margin = new Padding(0);
-            panel7.Name = "panel7";
-            panel7.Size = new Size(203, 57);
-            panel7.TabIndex = 8;
-            // 
-            // button7
-            // 
-            button7.BackColor = Color.FromArgb(44, 45, 52);
-            button7.ForeColor = SystemColors.Control;
-            button7.Image = (Image)resources.GetObject("button7.Image");
-            button7.ImageAlign = ContentAlignment.MiddleLeft;
-            button7.Location = new Point(-10, -11);
-            button7.Name = "button7";
-            button7.Padding = new Padding(10, 0, 0, 0);
-            button7.Size = new Size(218, 77);
-            button7.TabIndex = 1;
-            button7.Text = "Editar Acólitos";
-            button7.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button7.UseVisualStyleBackColor = false;
+            panel1.BackColor = Color.White;
+            panel1.Controls.Add(nightControlBox1);
+            panel1.Controls.Add(label1);
+            panel1.Controls.Add(btnHam);
+            panel1.Dock = DockStyle.Top;
+            panel1.Location = new Point(0, 0);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(776, 39);
+            panel1.TabIndex = 2;
+            panel1.Paint += panel1_Paint;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 470);
-            Controls.Add(flowLayoutPanel2);
-            Controls.Add(panel4);
-            Controls.Add(panel3);
-            Controls.Add(button2);
-            Controls.Add(flowLayoutPanel1);
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(776, 519);
+            Controls.Add(sidebar);
             Controls.Add(panel1);
             Controls.Add(button1);
             FormBorderStyle = FormBorderStyle.None;
+            IsMdiContainer = true;
             Name = "Form1";
-            Text = "Form1";
+            Text = " ";
+            FormClosed += sub1_FormClosed;
             Load += Form1_Load;
+            sidebar.ResumeLayout(false);
+            MenuContainer.ResumeLayout(false);
+            panel3.ResumeLayout(false);
+            panel2.ResumeLayout(false);
+            panel4.ResumeLayout(false);
+            pnEscala.ResumeLayout(false);
+            pnInfo.ResumeLayout(false);
+            pnConfig.ResumeLayout(false);
+            pnLogout.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)btnHam).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            flowLayoutPanel1.ResumeLayout(false);
-            panel2.ResumeLayout(false);
-            panel3.ResumeLayout(false);
-            panel4.ResumeLayout(false);
-            flowLayoutPanel2.ResumeLayout(false);
-            panel5.ResumeLayout(false);
-            panel6.ResumeLayout(false);
-            panel7.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
 
         private Button button1;
-        private Button btn_add;
-        private Panel panel1;
-        private PictureBox pictureBox1;
+        private System.Windows.Forms.Timer menuTransition;
+        private FlowLayoutPanel sidebar;
+        private FlowLayoutPanel MenuContainer;
+        private Panel panel3;
+        private Button menu;
+        private Panel panel2;
+        private Button subMenu1;
+        private Panel panel4;
+        private Button subMenu2;
+        private Panel pnLogout;
+        private Button button8;
+        private Panel pnEscala;
+        private Button button7;
+        private Panel pnConfig;
+        private Button button9;
+        private System.Windows.Forms.Timer timerSideBarTransition;
+        private PictureBox btnHam;
         private Label label1;
         private ReaLTaiizor.Controls.NightControlBox nightControlBox1;
-        private FlowLayoutPanel flowLayoutPanel1;
-        private Panel panel2;
+        private Panel panel1;
         private Button button2;
-        private System.Windows.Forms.Timer menuTransition;
-        private Panel panel3;
+        private Panel pnInfo;
         private Button button3;
-        private Panel panel4;
-        private Button button4;
-        private FlowLayoutPanel flowLayoutPanel2;
-        private Panel panel6;
-        private Button button6;
-        private Panel panel5;
-        private Button button5;
-        private Panel panel7;
-        private Button button7;
+
     }
 }
