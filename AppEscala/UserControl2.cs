@@ -17,17 +17,65 @@ namespace AppEscala
             InitializeComponent();
         }
 
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+
+
+
+
+
+
+
+
+        private void check_semana_CheckedChanged(object sender, EventArgs e)
+        {
+            if (check_semana.Checked)
+            {
+                
+                form_smn formsmn = new form_smn();
+                if (formsmn.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
+                {
+                    string dadoRecebido = formsmn.Dado; // Obtém o dado da propriedade
+                    MessageBox.Show($"Dado recebido: {dadoRecebido}");
+                }
+            }
+        }
+        private void check_fimDsmn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (check_fimDsmn.Checked)
+            {
+                form_fimDsmn formF = new form_fimDsmn();
+                formF.Show();
+            }
+        }
+
+        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
         {
 
         }
 
-        
-
-        private void radio_finalSmn_CheckedChanged_1(object sender, EventArgs e)
+        List<string> datas = new List<string>();
+        private void button1_Click(object sender, EventArgs e)
         {
-            Form2 form = new Form2();
-            form.Show();
+            foreach (string data in datas)
+            {
+                if (data == dateTimePicker1.Text)
+                {
+                    MessageBox.Show("Você já adicionou essa data!", "Aviso",MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+                listView1.Items.Add(dateTimePicker1.Text);
+                datas.Add(dateTimePicker1.Text);
+        }
+
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            listView1.View = View.List;
+            listView1.Alignment = ListViewAlignment.Top;
+
+            foreach (string data in datas)
+            {
+                listView1.Items.Add(data);
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 namespace AppEscala
 {
-    partial class Form1 
+    partial class form_menu 
     {
         /// <summary>
         ///  Required designer variable.
@@ -30,7 +30,7 @@ namespace AppEscala
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(form_menu));
             menuTransition = new System.Windows.Forms.Timer(components);
             sidebar = new FlowLayoutPanel();
             MenuContainer = new FlowLayoutPanel();
@@ -89,6 +89,7 @@ namespace AppEscala
             sidebar.Padding = new Padding(0, 30, 0, 0);
             sidebar.Size = new Size(186, 472);
             sidebar.TabIndex = 3;
+            sidebar.Paint += sidebar_Paint;
             // 
             // MenuContainer
             // 
@@ -143,7 +144,7 @@ namespace AppEscala
             subMenu1.ForeColor = SystemColors.Control;
             subMenu1.Image = (Image)resources.GetObject("subMenu1.Image");
             subMenu1.ImageAlign = ContentAlignment.MiddleLeft;
-            subMenu1.Location = new Point(-10, -12);
+            subMenu1.Location = new Point(-4, -12);
             subMenu1.Margin = new Padding(0);
             subMenu1.Name = "subMenu1";
             subMenu1.Padding = new Padding(8, 5, 5, 5);
@@ -169,13 +170,13 @@ namespace AppEscala
             subMenu2.ForeColor = SystemColors.Control;
             subMenu2.Image = (Image)resources.GetObject("subMenu2.Image");
             subMenu2.ImageAlign = ContentAlignment.MiddleLeft;
-            subMenu2.Location = new Point(-10, -12);
+            subMenu2.Location = new Point(-4, -12);
             subMenu2.Margin = new Padding(0);
             subMenu2.Name = "subMenu2";
             subMenu2.Padding = new Padding(8, 5, 5, 5);
             subMenu2.Size = new Size(202, 73);
             subMenu2.TabIndex = 1;
-            subMenu2.Text = "    Sub Menu 2";
+            subMenu2.Text = "    Adicionar Acólitos";
             subMenu2.TextAlign = ContentAlignment.MiddleLeft;
             subMenu2.UseVisualStyleBackColor = false;
             subMenu2.Click += subMenu2_Click;
@@ -195,7 +196,7 @@ namespace AppEscala
             button7.ForeColor = SystemColors.Control;
             button7.Image = (Image)resources.GetObject("button7.Image");
             button7.ImageAlign = ContentAlignment.MiddleLeft;
-            button7.Location = new Point(-10, -11);
+            button7.Location = new Point(-12, -11);
             button7.Margin = new Padding(0);
             button7.Name = "button7";
             button7.Padding = new Padding(18, 5, 5, 5);
@@ -221,7 +222,7 @@ namespace AppEscala
             button3.ForeColor = SystemColors.Control;
             button3.Image = (Image)resources.GetObject("button3.Image");
             button3.ImageAlign = ContentAlignment.MiddleLeft;
-            button3.Location = new Point(-10, -11);
+            button3.Location = new Point(-12, -11);
             button3.Margin = new Padding(0);
             button3.Name = "button3";
             button3.Padding = new Padding(18, 5, 5, 5);
@@ -308,7 +309,7 @@ namespace AppEscala
             // btnHam
             // 
             btnHam.Image = (Image)resources.GetObject("btnHam.Image");
-            btnHam.Location = new Point(9, 2);
+            btnHam.Location = new Point(9, 4);
             btnHam.Name = "btnHam";
             btnHam.Size = new Size(39, 29);
             btnHam.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -364,30 +365,31 @@ namespace AppEscala
             // 
             // userControl11
             // 
-            userControl11.Location = new Point(182, 37);
+            userControl11.Location = new Point(30, 37);
             userControl11.Name = "userControl11";
-            userControl11.Size = new Size(591, 472);
+            userControl11.Size = new Size(746, 472);
             userControl11.TabIndex = 5;
             // 
             // userControl21
             // 
-            userControl21.Location = new Point(182, 37);
+            userControl21.Location = new Point(30, 37);
             userControl21.Name = "userControl21";
-            userControl21.Size = new Size(591, 472);
+            userControl21.Size = new Size(743, 472);
             userControl21.TabIndex = 6;
             userControl21.Load += userControl21_Load;
             // 
-            // Form1
+            // form_menu
             // 
             AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(776, 505);
-            Controls.Add(userControl21);
-            Controls.Add(userControl11);
             Controls.Add(sidebar);
             Controls.Add(panel1);
+            Controls.Add(userControl11);
+            Controls.Add(userControl21);
             FormBorderStyle = FormBorderStyle.None;
             IsMdiContainer = true;
-            Name = "Form1";
+            Name = "form_menu";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = " ";
             FormClosed += sub1_FormClosed;
             Load += Form1_Load;

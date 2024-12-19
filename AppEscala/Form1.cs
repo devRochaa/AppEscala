@@ -12,7 +12,7 @@ using Image = iText.Layout.Element.Image;
 
 namespace AppEscala
 {
-    public partial class Form1 : Form
+    public partial class form_menu : Form
     {
         FrmConfig conf;
         FrmEscala Esc;
@@ -20,7 +20,7 @@ namespace AppEscala
         FrmSub1 sub1;
         FrmSub2 sub2;
 
-        public Form1()
+        public form_menu()
         {
             InitializeComponent();
         }
@@ -256,7 +256,7 @@ namespace AppEscala
             userControl21.Hide();
             //mostrar a que quer
             userControl11.Show();
-            userControl11.BringToFront();
+            
 
 
         }
@@ -272,7 +272,7 @@ namespace AppEscala
             userControl11.Hide();
             //mostrar a que quer
             userControl21.Show();
-            userControl21.BringToFront();
+            
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -281,6 +281,11 @@ namespace AppEscala
         }
 
         private void userControl21_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void sidebar_Paint(object sender, PaintEventArgs e)
         {
 
         }

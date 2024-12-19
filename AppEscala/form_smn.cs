@@ -10,20 +10,25 @@ using System.Windows.Forms;
 
 namespace AppEscala
 {
-    public partial class form_fimDsmn : Form
+    public partial class form_smn : Form
     {
         public string Dado { get; set; }
-        public form_fimDsmn()
+        public form_smn()
         {
             InitializeComponent();
         }
 
-        private void Form2_Load(object sender, EventArgs e)
+        private void form_smn_Load(object sender, EventArgs e)
         {
 
         }
 
         private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel6_Paint(object sender, PaintEventArgs e)
         {
 
         }

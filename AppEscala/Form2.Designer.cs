@@ -1,6 +1,6 @@
 ﻿namespace AppEscala
 {
-    partial class Form2
+    partial class form_fimDsmn
     {
         /// <summary>
         /// Required designer variable.
@@ -30,15 +30,15 @@
         {
             airButton1 = new ReaLTaiizor.Controls.AirButton();
             panel1 = new Panel();
+            checkBox4 = new CheckBox();
             label2 = new Label();
-            radioButton2 = new RadioButton();
-            radioButton3 = new RadioButton();
-            radioButton5 = new RadioButton();
+            checkBox5 = new CheckBox();
+            checkBox6 = new CheckBox();
             panel2 = new Panel();
+            checkBox3 = new CheckBox();
+            checkBox2 = new CheckBox();
+            checkBox1 = new CheckBox();
             label1 = new Label();
-            radioButton1 = new RadioButton();
-            radioButton4 = new RadioButton();
-            radioButton6 = new RadioButton();
             ou = new Label();
             radioButton7 = new RadioButton();
             label3 = new Label();
@@ -62,18 +62,29 @@
             airButton1.TabIndex = 11;
             airButton1.Text = "Enviar";
             airButton1.Transparent = false;
+            airButton1.Click += airButton1_Click;
             // 
             // panel1
             // 
             panel1.BorderStyle = BorderStyle.FixedSingle;
+            panel1.Controls.Add(checkBox4);
             panel1.Controls.Add(label2);
-            panel1.Controls.Add(radioButton2);
-            panel1.Controls.Add(radioButton3);
-            panel1.Controls.Add(radioButton5);
+            panel1.Controls.Add(checkBox5);
+            panel1.Controls.Add(checkBox6);
             panel1.Location = new Point(153, 22);
             panel1.Name = "panel1";
             panel1.Size = new Size(124, 157);
             panel1.TabIndex = 12;
+            // 
+            // checkBox4
+            // 
+            checkBox4.AutoSize = true;
+            checkBox4.Location = new Point(32, 99);
+            checkBox4.Name = "checkBox4";
+            checkBox4.Size = new Size(55, 19);
+            checkBox4.TabIndex = 19;
+            checkBox4.Text = "Noite";
+            checkBox4.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -86,52 +97,67 @@
             label2.Text = "Domingo";
             label2.Click += label2_Click;
             // 
-            // radioButton2
+            // checkBox5
             // 
-            radioButton2.AutoSize = true;
-            radioButton2.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton2.Location = new Point(35, 75);
-            radioButton2.Name = "radioButton2";
-            radioButton2.Size = new Size(66, 21);
-            radioButton2.TabIndex = 11;
-            radioButton2.TabStop = true;
-            radioButton2.Text = "Manhã";
-            radioButton2.UseVisualStyleBackColor = true;
+            checkBox5.AutoSize = true;
+            checkBox5.Location = new Point(32, 82);
+            checkBox5.Name = "checkBox5";
+            checkBox5.Size = new Size(54, 19);
+            checkBox5.TabIndex = 18;
+            checkBox5.Text = "Tarde";
+            checkBox5.UseVisualStyleBackColor = true;
             // 
-            // radioButton3
+            // checkBox6
             // 
-            radioButton3.AutoSize = true;
-            radioButton3.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton3.Location = new Point(35, 112);
-            radioButton3.Name = "radioButton3";
-            radioButton3.Size = new Size(58, 21);
-            radioButton3.TabIndex = 10;
-            radioButton3.Text = "Noite";
-            radioButton3.UseVisualStyleBackColor = true;
-            // 
-            // radioButton5
-            // 
-            radioButton5.AutoSize = true;
-            radioButton5.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton5.Location = new Point(35, 93);
-            radioButton5.Name = "radioButton5";
-            radioButton5.Size = new Size(59, 21);
-            radioButton5.TabIndex = 9;
-            radioButton5.TabStop = true;
-            radioButton5.Text = "Tarde";
-            radioButton5.UseVisualStyleBackColor = true;
+            checkBox6.AutoSize = true;
+            checkBox6.Location = new Point(32, 65);
+            checkBox6.Name = "checkBox6";
+            checkBox6.Size = new Size(63, 19);
+            checkBox6.TabIndex = 17;
+            checkBox6.Text = "Manhã";
+            checkBox6.UseVisualStyleBackColor = true;
             // 
             // panel2
             // 
             panel2.BorderStyle = BorderStyle.FixedSingle;
+            panel2.Controls.Add(checkBox3);
+            panel2.Controls.Add(checkBox2);
+            panel2.Controls.Add(checkBox1);
             panel2.Controls.Add(label1);
-            panel2.Controls.Add(radioButton1);
-            panel2.Controls.Add(radioButton4);
-            panel2.Controls.Add(radioButton6);
             panel2.Location = new Point(11, 22);
             panel2.Name = "panel2";
             panel2.Size = new Size(124, 157);
             panel2.TabIndex = 14;
+            // 
+            // checkBox3
+            // 
+            checkBox3.AutoSize = true;
+            checkBox3.Location = new Point(34, 99);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(55, 19);
+            checkBox3.TabIndex = 16;
+            checkBox3.Text = "Noite";
+            checkBox3.UseVisualStyleBackColor = true;
+            // 
+            // checkBox2
+            // 
+            checkBox2.AutoSize = true;
+            checkBox2.Location = new Point(34, 82);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(54, 19);
+            checkBox2.TabIndex = 15;
+            checkBox2.Text = "Tarde";
+            checkBox2.UseVisualStyleBackColor = true;
+            // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Location = new Point(34, 65);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(63, 19);
+            checkBox1.TabIndex = 14;
+            checkBox1.Text = "Manhã";
+            checkBox1.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
@@ -142,41 +168,6 @@
             label1.Size = new Size(67, 21);
             label1.TabIndex = 13;
             label1.Text = "Sábado";
-            // 
-            // radioButton1
-            // 
-            radioButton1.AutoSize = true;
-            radioButton1.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton1.Location = new Point(35, 75);
-            radioButton1.Name = "radioButton1";
-            radioButton1.Size = new Size(66, 21);
-            radioButton1.TabIndex = 11;
-            radioButton1.TabStop = true;
-            radioButton1.Text = "Manhã";
-            radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // radioButton4
-            // 
-            radioButton4.AutoSize = true;
-            radioButton4.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton4.Location = new Point(35, 112);
-            radioButton4.Name = "radioButton4";
-            radioButton4.Size = new Size(58, 21);
-            radioButton4.TabIndex = 10;
-            radioButton4.Text = "Noite";
-            radioButton4.UseVisualStyleBackColor = true;
-            // 
-            // radioButton6
-            // 
-            radioButton6.AutoSize = true;
-            radioButton6.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton6.Location = new Point(35, 93);
-            radioButton6.Name = "radioButton6";
-            radioButton6.Size = new Size(59, 21);
-            radioButton6.TabIndex = 9;
-            radioButton6.TabStop = true;
-            radioButton6.Text = "Tarde";
-            radioButton6.UseVisualStyleBackColor = true;
             // 
             // ou
             // 
@@ -240,17 +231,18 @@
             panel3.Size = new Size(245, 157);
             panel3.TabIndex = 19;
             // 
-            // Form2
+            // form_fimDsmn
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(601, 340);
+            ClientSize = new Size(611, 290);
             Controls.Add(panel3);
             Controls.Add(ou);
             Controls.Add(panel2);
             Controls.Add(panel1);
             Controls.Add(airButton1);
-            Name = "Form2";
+            Name = "form_fimDsmn";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Form2";
             Load += Form2_Load;
             panel1.ResumeLayout(false);
@@ -266,20 +258,20 @@
         #endregion
         private ReaLTaiizor.Controls.AirButton airButton1;
         private Panel panel1;
-        private RadioButton radioButton2;
-        private RadioButton radioButton3;
-        private RadioButton radioButton5;
         private Label label2;
         private Panel panel2;
         private Label label1;
-        private RadioButton radioButton1;
-        private RadioButton radioButton4;
-        private RadioButton radioButton6;
         private Label ou;
         private RadioButton radioButton7;
         private Label label3;
         private Label label4;
         private Label label5;
         private Panel panel3;
+        private CheckBox checkBox3;
+        private CheckBox checkBox2;
+        private CheckBox checkBox1;
+        private CheckBox checkBox4;
+        private CheckBox checkBox5;
+        private CheckBox checkBox6;
     }
 }
