@@ -31,7 +31,6 @@ namespace AppEscala
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            button1 = new Button();
             menuTransition = new System.Windows.Forms.Timer(components);
             sidebar = new FlowLayoutPanel();
             MenuContainer = new FlowLayoutPanel();
@@ -55,6 +54,8 @@ namespace AppEscala
             label1 = new Label();
             nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
             panel1 = new Panel();
+            userControl11 = new UserControl1();
+            userControl21 = new UserControl2();
             sidebar.SuspendLayout();
             MenuContainer.SuspendLayout();
             panel3.SuspendLayout();
@@ -68,19 +69,9 @@ namespace AppEscala
             panel1.SuspendLayout();
             SuspendLayout();
             // 
-            // button1
-            // 
-            button1.Location = new Point(633, 42);
-            button1.Name = "button1";
-            button1.Size = new Size(143, 56);
-            button1.TabIndex = 0;
-            button1.Text = "OK";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
-            // 
             // menuTransition
             // 
-            menuTransition.Interval = 10;
+            menuTransition.Interval = 7;
             menuTransition.Tick += menuTransition_Tick;
             // 
             // sidebar
@@ -93,10 +84,10 @@ namespace AppEscala
             sidebar.Controls.Add(pnLogout);
             sidebar.FlowDirection = FlowDirection.TopDown;
             sidebar.ForeColor = Color.Coral;
-            sidebar.Location = new Point(0, 42);
+            sidebar.Location = new Point(0, 37);
             sidebar.Name = "sidebar";
             sidebar.Padding = new Padding(0, 30, 0, 0);
-            sidebar.Size = new Size(186, 467);
+            sidebar.Size = new Size(186, 472);
             sidebar.TabIndex = 3;
             // 
             // MenuContainer
@@ -158,7 +149,7 @@ namespace AppEscala
             subMenu1.Padding = new Padding(8, 5, 5, 5);
             subMenu1.Size = new Size(202, 71);
             subMenu1.TabIndex = 1;
-            subMenu1.Text = "    Sub Menu 1";
+            subMenu1.Text = "    Gerar Escalas";
             subMenu1.TextAlign = ContentAlignment.MiddleLeft;
             subMenu1.UseVisualStyleBackColor = false;
             subMenu1.Click += subMenu1_Click;
@@ -187,6 +178,7 @@ namespace AppEscala
             subMenu2.Text = "    Sub Menu 2";
             subMenu2.TextAlign = ContentAlignment.MiddleLeft;
             subMenu2.UseVisualStyleBackColor = false;
+            subMenu2.Click += subMenu2_Click;
             // 
             // pnEscala
             // 
@@ -306,10 +298,11 @@ namespace AppEscala
             button8.Text = "     Sair";
             button8.TextAlign = ContentAlignment.MiddleLeft;
             button8.UseVisualStyleBackColor = false;
+            button8.Click += button8_Click;
             // 
             // timerSideBarTransition
             // 
-            timerSideBarTransition.Interval = 10;
+            timerSideBarTransition.Interval = 7;
             timerSideBarTransition.Tick += timerSideBarTransition_Tick;
             // 
             // btnHam
@@ -369,13 +362,29 @@ namespace AppEscala
             panel1.TabIndex = 2;
             panel1.Paint += panel1_Paint;
             // 
+            // userControl11
+            // 
+            userControl11.Location = new Point(182, 37);
+            userControl11.Name = "userControl11";
+            userControl11.Size = new Size(591, 472);
+            userControl11.TabIndex = 5;
+            // 
+            // userControl21
+            // 
+            userControl21.Location = new Point(182, 37);
+            userControl21.Name = "userControl21";
+            userControl21.Size = new Size(591, 472);
+            userControl21.TabIndex = 6;
+            userControl21.Load += userControl21_Load;
+            // 
             // Form1
             // 
             AutoScaleMode = AutoScaleMode.None;
-            ClientSize = new Size(776, 519);
+            ClientSize = new Size(776, 505);
+            Controls.Add(userControl21);
+            Controls.Add(userControl11);
             Controls.Add(sidebar);
             Controls.Add(panel1);
-            Controls.Add(button1);
             FormBorderStyle = FormBorderStyle.None;
             IsMdiContainer = true;
             Name = "Form1";
@@ -398,8 +407,6 @@ namespace AppEscala
         }
 
         #endregion
-
-        private Button button1;
         private System.Windows.Forms.Timer menuTransition;
         private FlowLayoutPanel sidebar;
         private FlowLayoutPanel MenuContainer;
@@ -423,6 +430,7 @@ namespace AppEscala
         private Button button2;
         private Panel pnInfo;
         private Button button3;
-
+        private UserControl1 userControl11;
+        private UserControl2 userControl21;
     }
 }

@@ -151,7 +151,7 @@ namespace AppEscala
                     menuExpand = true;
                 }
             }
-           
+            //kkakaak
             else
             {
                 //velocidade de subida 
@@ -172,7 +172,9 @@ namespace AppEscala
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            userControl11.Hide();
+            userControl21.Hide();
+            panel1.BringToFront();
         }
 
         private void btnMenu_Click(object sender, EventArgs e)
@@ -236,19 +238,25 @@ namespace AppEscala
 
         private void subMenu1_Click(object sender, EventArgs e)
         {
-            if (sub1 == null)
-            {
-                sub1 = new FrmSub1();
-                sub1.FormClosed += sub1_FormClosed;
-                sub1.MdiParent = this;
-                sub1.Dock = DockStyle.Fill;
-                sub1.Show();
+            //if (sub1 == null)
+            //{
+            //    sub1 = new FrmSub1();
+            //    sub1.FormClosed += sub1_FormClosed;
+            //    sub1.MdiParent = this;
+            //    sub1.Dock = DockStyle.Fill;
+            //    sub1.Show();
 
-            }
-            else
-            {
-                sub1.Activate();
-            }
+            //}
+            //else
+            //{
+            //    sub1.Activate();
+            //}
+
+            // esconder as outras telas
+            userControl21.Hide();
+            //mostrar a que quer
+            userControl11.Show();
+            userControl11.BringToFront();
 
 
         }
@@ -256,6 +264,25 @@ namespace AppEscala
         private void sub1_FormClosed(object sender, FormClosedEventArgs e)
         {
             sub1 = null;
+        }
+
+        private void subMenu2_Click(object sender, EventArgs e)
+        {
+            // esconder as outras telas
+            userControl11.Hide();
+            //mostrar a que quer
+            userControl21.Show();
+            userControl21.BringToFront();
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void userControl21_Load(object sender, EventArgs e)
+        {
+
         }
     }
     public class Produtos
