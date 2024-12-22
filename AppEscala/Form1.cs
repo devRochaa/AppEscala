@@ -254,8 +254,9 @@ namespace AppEscala
 
             // esconder as outras telas
             userControl21.Hide();
+            userControl11.Hide();
             //mostrar a que quer
-            userControl11.Show();
+            userAcolitos.Show();
             
 
 

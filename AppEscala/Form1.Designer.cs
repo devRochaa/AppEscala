@@ -56,6 +56,7 @@ namespace AppEscala
             panel1 = new Panel();
             userControl11 = new UserControl1();
             userControl21 = new UserControl2();
+            userAcolitos = new userAcolitos();
             sidebar.SuspendLayout();
             MenuContainer.SuspendLayout();
             panel3.SuspendLayout();
@@ -124,7 +125,7 @@ namespace AppEscala
             menu.Padding = new Padding(13, 5, 0, 0);
             menu.Size = new Size(202, 73);
             menu.TabIndex = 1;
-            menu.Text = "      Menu";
+            menu.Text = "      Acólitos";
             menu.TextAlign = ContentAlignment.MiddleLeft;
             menu.UseVisualStyleBackColor = false;
             menu.Click += btnMenu_Click;
@@ -150,7 +151,7 @@ namespace AppEscala
             subMenu1.Padding = new Padding(8, 5, 5, 5);
             subMenu1.Size = new Size(202, 71);
             subMenu1.TabIndex = 1;
-            subMenu1.Text = "    Gerar Escalas";
+            subMenu1.Text = "    Acólitos";
             subMenu1.TextAlign = ContentAlignment.MiddleLeft;
             subMenu1.UseVisualStyleBackColor = false;
             subMenu1.Click += subMenu1_Click;
@@ -378,12 +379,20 @@ namespace AppEscala
             userControl21.TabIndex = 6;
             userControl21.Load += userControl21_Load;
             // 
+            // userAcolitos
+            // 
+            userAcolitos.Location = new Point(30, 37);
+            userAcolitos.Name = "userAcolitos";
+            userAcolitos.Size = new Size(746, 472);
+            userAcolitos.TabIndex = 8;
+            // 
             // form_menu
             // 
             AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(776, 505);
             Controls.Add(sidebar);
             Controls.Add(panel1);
+            Controls.Add(userAcolitos);
             Controls.Add(userControl11);
             Controls.Add(userControl21);
             FormBorderStyle = FormBorderStyle.None;
@@ -434,5 +443,6 @@ namespace AppEscala
         private Button button3;
         private UserControl1 userControl11;
         private UserControl2 userControl21;
+        private userAcolitos userAcolitos;
     }
 }

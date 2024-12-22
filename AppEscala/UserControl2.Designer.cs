@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             label1 = new Label();
-            textBox1 = new TextBox();
+            txtNome = new TextBox();
             label2 = new Label();
             dateTimePicker1 = new DateTimePicker();
             check_semana = new CheckBox();
@@ -50,12 +50,12 @@
             label1.TabIndex = 0;
             label1.Text = "Adicionar Acólitos:";
             // 
-            // textBox1
+            // txtNome
             // 
-            textBox1.Location = new Point(208, 53);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(345, 23);
-            textBox1.TabIndex = 1;
+            txtNome.Location = new Point(208, 53);
+            txtNome.Name = "txtNome";
+            txtNome.Size = new Size(345, 23);
+            txtNome.TabIndex = 1;
             // 
             // label2
             // 
@@ -68,10 +68,13 @@
             // 
             // dateTimePicker1
             // 
+            dateTimePicker1.CustomFormat = "dd/MM/yyyy";
+            dateTimePicker1.Format = DateTimePickerFormat.Custom;
             dateTimePicker1.Location = new Point(353, 104);
             dateTimePicker1.Name = "dateTimePicker1";
             dateTimePicker1.Size = new Size(200, 23);
             dateTimePicker1.TabIndex = 5;
+            dateTimePicker1.Value = new DateTime(2024, 12, 21, 19, 29, 52, 0);
             dateTimePicker1.ValueChanged += dateTimePicker1_ValueChanged;
             // 
             // check_semana
@@ -133,6 +136,7 @@
             button2.TabIndex = 13;
             button2.Text = "Adicionar Acólito";
             button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
             // 
             // UserControl2
             // 
@@ -146,7 +150,7 @@
             Controls.Add(check_semana);
             Controls.Add(dateTimePicker1);
             Controls.Add(label2);
-            Controls.Add(textBox1);
+            Controls.Add(txtNome);
             Controls.Add(label1);
             Name = "UserControl2";
             Size = new Size(746, 472);
@@ -157,7 +161,7 @@
         #endregion
 
         private Label label1;
-        private TextBox textBox1;
+        private TextBox txtNome;
         private Label label2;
         private DateTimePicker dateTimePicker1;
         private CheckBox check_semana;
