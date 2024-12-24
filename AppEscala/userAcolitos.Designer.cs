@@ -42,7 +42,7 @@
             lst_acolitos.Size = new Size(646, 197);
             lst_acolitos.TabIndex = 0;
             lst_acolitos.UseCompatibleStateImageBehavior = false;
-            lst_acolitos.SelectedIndexChanged += listView1_SelectedIndexChanged;
+            
             // 
             // label1
             // 
