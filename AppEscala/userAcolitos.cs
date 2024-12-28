@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using iText.StyledXmlParser.Jsoup.Nodes;
 using MySql.Data.MySqlClient;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace AppEscala
 {
+
     public partial class userAcolitos : UserControl
     {
         private MySqlConnection Conexao;
@@ -20,22 +22,8 @@ namespace AppEscala
         public userAcolitos()
         {
             InitializeComponent();
-
-            lst_acolitos.View = View.Details;
-            lst_acolitos.LabelEdit = true;
-            lst_acolitos.AllowColumnReorder = true;
-            lst_acolitos.FullRowSelect = true;
-            lst_acolitos.GridLines = true;
-
-            lst_acolitos.Columns.Add("Nome", 155, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Segunda", 70, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Terça", 70, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Quarta", 70, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Quinta", 70, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Sexta", 70, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Sábado", 70, HorizontalAlignment.Left);
-            lst_acolitos.Columns.Add("Domingo", 70, HorizontalAlignment.Left);
-
+          
+            dgv_acolitos.DefaultCellStyle.WrapMode = DataGridViewTriState.True;            
         }
 
         
@@ -43,9 +31,11 @@ namespace AppEscala
         {
 
         }
-
+       
+        
         private void btn_buscar_Click(object sender, EventArgs e)
         {
+
             try
             {
                 string q = "'%" + txtPesquisa.Text + "%'";
@@ -60,32 +50,32 @@ namespace AppEscala
                 Conexao.Open();
                 MySqlCommand comando = new MySqlCommand( sql, Conexao);
                 
-                MySqlDataReader reader = comando.ExecuteReader();
-                lst_acolitos.Items.Clear();
-
+                MySqlDataReader reader = comando.ExecuteReader();               
+                dgv_acolitos.Rows.Clear();
+                string[] row = new string[8];
                 while (reader.Read()) 
                 {
                     string nome = reader.GetString(0);
                     string turno = reader.GetString(2);
                     int id_dia = reader.GetInt32(3);
                     
-                    string[] row =
-                    {
-                        reader.GetString(0),
-                        
-                    };
+                    row[0] = reader.GetString(0);
 
-                    for (int i = 2; i < 7; i++)
+
+                    for (int i = 0; i < 8; i++)
                     {
+                        
                         if (id_dia == i)
                         {
-                            row[i] = turno;
+                            row[i] = string.IsNullOrEmpty(row[i]) ? turno : $"{row[i]}\n{turno}";
                         }
                     }
+                    string mensagem = string.Join(", ", row);
 
-                    var linha_listview = new ListViewItem(row); 
-                    lst_acolitos.Items.Add(linha_listview);
+                    
                 }
+                    var linha_listview = new ListViewItem(row);
+                dgv_acolitos.Rows.Add(row);              
 
                 MessageBox.Show("Deu tudo certo!");
             }
