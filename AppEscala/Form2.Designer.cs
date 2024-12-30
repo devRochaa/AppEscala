@@ -30,21 +30,21 @@
         {
             airButton1 = new ReaLTaiizor.Controls.AirButton();
             panel1 = new Panel();
-            checkBox4 = new CheckBox();
+            check_domN = new CheckBox();
             label2 = new Label();
-            checkBox5 = new CheckBox();
-            checkBox6 = new CheckBox();
+            check_domT = new CheckBox();
+            check_domM = new CheckBox();
             panel2 = new Panel();
-            checkBox3 = new CheckBox();
-            checkBox2 = new CheckBox();
-            checkBox1 = new CheckBox();
+            check_sabN = new CheckBox();
+            check_sabT = new CheckBox();
+            check_sabM = new CheckBox();
             label1 = new Label();
             ou = new Label();
-            radioButton7 = new RadioButton();
             label3 = new Label();
             label4 = new Label();
             label5 = new Label();
             panel3 = new Panel();
+            check_tds = new CheckBox();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
@@ -67,24 +67,25 @@
             // panel1
             // 
             panel1.BorderStyle = BorderStyle.FixedSingle;
-            panel1.Controls.Add(checkBox4);
+            panel1.Controls.Add(check_domN);
             panel1.Controls.Add(label2);
-            panel1.Controls.Add(checkBox5);
-            panel1.Controls.Add(checkBox6);
+            panel1.Controls.Add(check_domT);
+            panel1.Controls.Add(check_domM);
             panel1.Location = new Point(153, 22);
             panel1.Name = "panel1";
             panel1.Size = new Size(124, 157);
             panel1.TabIndex = 12;
             // 
-            // checkBox4
+            // check_domN
             // 
-            checkBox4.AutoSize = true;
-            checkBox4.Location = new Point(32, 99);
-            checkBox4.Name = "checkBox4";
-            checkBox4.Size = new Size(55, 19);
-            checkBox4.TabIndex = 19;
-            checkBox4.Text = "Noite";
-            checkBox4.UseVisualStyleBackColor = true;
+            check_domN.AutoSize = true;
+            check_domN.Location = new Point(32, 99);
+            check_domN.Name = "check_domN";
+            check_domN.Size = new Size(55, 19);
+            check_domN.TabIndex = 19;
+            check_domN.Text = "Noite";
+            check_domN.UseVisualStyleBackColor = true;
+            check_domN.CheckedChanged += check_domN_CheckedChanged;
             // 
             // label2
             // 
@@ -97,67 +98,72 @@
             label2.Text = "Domingo";
             label2.Click += label2_Click;
             // 
-            // checkBox5
+            // check_domT
             // 
-            checkBox5.AutoSize = true;
-            checkBox5.Location = new Point(32, 82);
-            checkBox5.Name = "checkBox5";
-            checkBox5.Size = new Size(54, 19);
-            checkBox5.TabIndex = 18;
-            checkBox5.Text = "Tarde";
-            checkBox5.UseVisualStyleBackColor = true;
+            check_domT.AutoSize = true;
+            check_domT.Location = new Point(32, 82);
+            check_domT.Name = "check_domT";
+            check_domT.Size = new Size(54, 19);
+            check_domT.TabIndex = 18;
+            check_domT.Text = "Tarde";
+            check_domT.UseVisualStyleBackColor = true;
+            check_domT.CheckedChanged += check_domT_CheckedChanged;
             // 
-            // checkBox6
+            // check_domM
             // 
-            checkBox6.AutoSize = true;
-            checkBox6.Location = new Point(32, 65);
-            checkBox6.Name = "checkBox6";
-            checkBox6.Size = new Size(63, 19);
-            checkBox6.TabIndex = 17;
-            checkBox6.Text = "Manhã";
-            checkBox6.UseVisualStyleBackColor = true;
+            check_domM.AutoSize = true;
+            check_domM.Location = new Point(32, 65);
+            check_domM.Name = "check_domM";
+            check_domM.Size = new Size(63, 19);
+            check_domM.TabIndex = 17;
+            check_domM.Text = "Manhã";
+            check_domM.UseVisualStyleBackColor = true;
+            check_domM.CheckedChanged += check_domM_CheckedChanged;
             // 
             // panel2
             // 
             panel2.BorderStyle = BorderStyle.FixedSingle;
-            panel2.Controls.Add(checkBox3);
-            panel2.Controls.Add(checkBox2);
-            panel2.Controls.Add(checkBox1);
+            panel2.Controls.Add(check_sabN);
+            panel2.Controls.Add(check_sabT);
+            panel2.Controls.Add(check_sabM);
             panel2.Controls.Add(label1);
             panel2.Location = new Point(11, 22);
             panel2.Name = "panel2";
             panel2.Size = new Size(124, 157);
             panel2.TabIndex = 14;
             // 
-            // checkBox3
+            // check_sabN
             // 
-            checkBox3.AutoSize = true;
-            checkBox3.Location = new Point(34, 99);
-            checkBox3.Name = "checkBox3";
-            checkBox3.Size = new Size(55, 19);
-            checkBox3.TabIndex = 16;
-            checkBox3.Text = "Noite";
-            checkBox3.UseVisualStyleBackColor = true;
+            check_sabN.AutoSize = true;
+            check_sabN.Location = new Point(34, 99);
+            check_sabN.Name = "check_sabN";
+            check_sabN.Size = new Size(55, 19);
+            check_sabN.TabIndex = 16;
+            check_sabN.Text = "Noite";
+            check_sabN.UseVisualStyleBackColor = true;
+            check_sabN.CheckedChanged += check_sabN_CheckedChanged;
             // 
-            // checkBox2
+            // check_sabT
             // 
-            checkBox2.AutoSize = true;
-            checkBox2.Location = new Point(34, 82);
-            checkBox2.Name = "checkBox2";
-            checkBox2.Size = new Size(54, 19);
-            checkBox2.TabIndex = 15;
-            checkBox2.Text = "Tarde";
-            checkBox2.UseVisualStyleBackColor = true;
+            check_sabT.AutoSize = true;
+            check_sabT.Location = new Point(34, 82);
+            check_sabT.Name = "check_sabT";
+            check_sabT.Size = new Size(54, 19);
+            check_sabT.TabIndex = 15;
+            check_sabT.Text = "Tarde";
+            check_sabT.UseVisualStyleBackColor = true;
+            check_sabT.CheckedChanged += check_sabT_CheckedChanged;
             // 
-            // checkBox1
+            // check_sabM
             // 
-            checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(34, 65);
-            checkBox1.Name = "checkBox1";
-            checkBox1.Size = new Size(63, 19);
-            checkBox1.TabIndex = 14;
-            checkBox1.Text = "Manhã";
-            checkBox1.UseVisualStyleBackColor = true;
+            check_sabM.AutoSize = true;
+            check_sabM.Location = new Point(34, 65);
+            check_sabM.Name = "check_sabM";
+            check_sabM.Size = new Size(63, 19);
+            check_sabM.TabIndex = 14;
+            check_sabM.Text = "Manhã";
+            check_sabM.UseVisualStyleBackColor = true;
+            check_sabM.CheckedChanged += check_sabM_CheckedChanged;
             // 
             // label1
             // 
@@ -177,18 +183,6 @@
             ou.Size = new Size(21, 15);
             ou.TabIndex = 15;
             ou.Text = "ou";
-            // 
-            // radioButton7
-            // 
-            radioButton7.AutoSize = true;
-            radioButton7.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            radioButton7.Location = new Point(89, 83);
-            radioButton7.Name = "radioButton7";
-            radioButton7.Size = new Size(56, 21);
-            radioButton7.TabIndex = 14;
-            radioButton7.TabStop = true;
-            radioButton7.Text = "Pode";
-            radioButton7.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -222,14 +216,25 @@
             // 
             // panel3
             // 
+            panel3.Controls.Add(check_tds);
             panel3.Controls.Add(label4);
             panel3.Controls.Add(label5);
-            panel3.Controls.Add(radioButton7);
             panel3.Controls.Add(label3);
             panel3.Location = new Point(343, 22);
             panel3.Name = "panel3";
             panel3.Size = new Size(245, 157);
             panel3.TabIndex = 19;
+            // 
+            // check_tds
+            // 
+            check_tds.AutoSize = true;
+            check_tds.Location = new Point(95, 83);
+            check_tds.Name = "check_tds";
+            check_tds.Size = new Size(55, 19);
+            check_tds.TabIndex = 20;
+            check_tds.Text = "Noite";
+            check_tds.UseVisualStyleBackColor = true;
+            check_tds.CheckedChanged += check_tds_CheckedChanged;
             // 
             // form_fimDsmn
             // 
@@ -262,16 +267,16 @@
         private Panel panel2;
         private Label label1;
         private Label ou;
-        private RadioButton radioButton7;
         private Label label3;
         private Label label4;
         private Label label5;
         private Panel panel3;
-        private CheckBox checkBox3;
-        private CheckBox checkBox2;
-        private CheckBox checkBox1;
-        private CheckBox checkBox4;
-        private CheckBox checkBox5;
-        private CheckBox checkBox6;
+        private CheckBox check_sabN;
+        private CheckBox check_sabT;
+        private CheckBox check_sabM;
+        private CheckBox check_domN;
+        private CheckBox check_domT;
+        private CheckBox check_domM;
+        private CheckBox check_tds;
     }
 }

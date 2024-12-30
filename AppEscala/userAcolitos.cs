@@ -70,14 +70,17 @@ namespace AppEscala
                             row[i] = string.IsNullOrEmpty(row[i]) ? turno : $"{row[i]}\n{turno}";
                         }
                     }
-                    string mensagem = string.Join(", ", row);
+                    
 
                     
                 }
                     var linha_listview = new ListViewItem(row);
-                dgv_acolitos.Rows.Add(row);              
-
-                MessageBox.Show("Deu tudo certo!");
+                dgv_acolitos.Rows.Add(row);
+                if (string.IsNullOrEmpty(row[0]))
+                {
+                    MessageBox.Show("Não foi encontrado nenhum nome relacionado.");
+                }
+                
             }
             catch(Exception ex) 
             {

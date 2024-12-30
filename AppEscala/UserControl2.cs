@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -31,10 +32,35 @@ namespace AppEscala
                 form_smn formsmn = new form_smn();
                 if (formsmn.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
                 {
-                    string dadoRecebido = formsmn.Dado; // Obtém o dado da propriedade
-                    MessageBox.Show($"Dado recebido: {dadoRecebido}");
+                    // Obtém o dado da propriedade
+                    int[] seg = formsmn.seg;
+                    int[] ter = formsmn.ter;
+                    int[] qua = formsmn.qua;
+                    int[] qui = formsmn.qui;
+                    int[] sex = formsmn.sex;
+                    int tds = formsmn.tds;
+                    
+                    //string mensagem = string.Join(", ", seg);
+                    //MessageBox.Show($"Dado recebido: {mensagem}");
                 }
             }
+        }
+
+        public static string Semana(int[] a, int[] b)
+        {
+            if (a[0] == 1)
+            {
+                int m = 1;
+            }
+            if(a[1] == 1)
+            {
+                int t = 2;
+            }
+            if (a[2] == 1)
+            {
+                int n = 3;
+            }
+            return m + t + n;
         }
         private void check_fimDsmn_CheckedChanged(object sender, EventArgs e)
         {
@@ -43,16 +69,17 @@ namespace AppEscala
                 form_fimDsmn formF = new form_fimDsmn();
                 if (formF.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
                 {
-                    string dadoRecebido = formF.Dado; // Obtém o dado da propriedade
-                    MessageBox.Show($"Dado recebido: {dadoRecebido}");
+                    int[] sab = formF.sab;
+                    int[] dom = formF.dom;
+                    int tds_fds = formF.tds;
+
+                    //string dadoRecebido = formF.Dado; // Obtém o dado da propriedade
+                   // MessageBox.Show($"Dado recebido: {dadoRecebido}");
                 }
             }
         }
 
-        private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
+        
 
         List<string> datas = new List<string>();
         private void button1_Click(object sender, EventArgs e)
@@ -80,15 +107,15 @@ namespace AppEscala
 
         private void button2_Click(object sender, EventArgs e)
         {
+            
             try
             {
                 
                 //Criar conexão com mysql
                 Conexao = new MySqlConnection(data_source);
 
-                string sql = "INSERT INTO acolitos (nome) VALUES ('" + txtNome.Text + "')";
-                //string sql2 = "INSERT INTO disponibilidade (id_acolito, seg, ter, qua, qui, sex, sab, dom) VALUES" +
-                //    " ( '"+ +"', '"+ +"', '"+ +"', '"+ +"', '"+ +"', '"+ +"', '"+ +"', '"+ +"')";
+                string sql = "INSERT INTO acolitos (nome) VALUES ('" + txtNome.Text + "') SELECT SCOPE_IDENTITY()";
+                
                 //foreach (string data in datas)
                 //{ 
                 //string sql3 = "INSERT INTO dia (id_acolito,dia) VALUES (,)";  
@@ -96,11 +123,12 @@ namespace AppEscala
 
 
                 //executar comando insert
-
                 MySqlCommand comando = new MySqlCommand(sql, Conexao);
                 Conexao.Open();
-
                 comando.ExecuteReader();
+                Int32 idRetorno = Convert.ToInt32(comando.ExecuteScalar());
+                //string sql2 = "INSERT INTO disponibilidade (id_acolito, dias_semana, turno) VALUES" +
+                //      " ( '" + idRetorno +"' , '" + +"' , '" + +"')";
                 MessageBox.Show("Deu tudo certo!");
             }
             catch (Exception ex)

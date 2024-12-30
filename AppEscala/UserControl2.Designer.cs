@@ -75,7 +75,6 @@
             dateTimePicker1.Size = new Size(200, 23);
             dateTimePicker1.TabIndex = 5;
             dateTimePicker1.Value = new DateTime(2024, 12, 21, 19, 29, 52, 0);
-            dateTimePicker1.ValueChanged += dateTimePicker1_ValueChanged;
             // 
             // check_semana
             // 
