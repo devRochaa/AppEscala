@@ -38,6 +38,7 @@
             button1 = new Button();
             label3 = new Label();
             button2 = new Button();
+            ribbonButtonCenter1 = new ReaLTaiizor.Controls.RibbonButtonCenter();
             SuspendLayout();
             // 
             // label1
@@ -137,10 +138,36 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
+            // ribbonButtonCenter1
+            // 
+            ribbonButtonCenter1.BackColor = Color.Transparent;
+            ribbonButtonCenter1.BaseColorA = Color.FromArgb(214, 162, 68);
+            ribbonButtonCenter1.BaseColorB = Color.FromArgb(199, 147, 53);
+            ribbonButtonCenter1.BorderColorA = Color.FromArgb(142, 107, 46);
+            ribbonButtonCenter1.BorderColorB = Color.FromArgb(75, 255, 255, 255);
+            ribbonButtonCenter1.DownBaseColorA = Color.FromArgb(214, 162, 68);
+            ribbonButtonCenter1.DownBaseColorB = Color.FromArgb(199, 147, 53);
+            ribbonButtonCenter1.DownBorderColorA = Color.FromArgb(142, 107, 46);
+            ribbonButtonCenter1.DownBorderColorB = Color.FromArgb(75, 255, 255, 255);
+            ribbonButtonCenter1.Font = new Font("Tahoma", 8F, FontStyle.Bold);
+            ribbonButtonCenter1.ForeColor = Color.Black;
+            ribbonButtonCenter1.HoverBaseColorA = Color.FromArgb(204, 152, 58);
+            ribbonButtonCenter1.HoverBaseColorB = Color.FromArgb(205, 153, 59);
+            ribbonButtonCenter1.HoverBorderColorA = Color.FromArgb(142, 107, 46);
+            ribbonButtonCenter1.HoverBorderColorB = Color.FromArgb(75, 255, 255, 255);
+            ribbonButtonCenter1.Location = new Point(531, 321);
+            ribbonButtonCenter1.Name = "ribbonButtonCenter1";
+            ribbonButtonCenter1.Size = new Size(140, 40);
+            ribbonButtonCenter1.SmoothingType = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            ribbonButtonCenter1.TabIndex = 14;
+            ribbonButtonCenter1.Text = "ribbonButtonCenter1";
+            ribbonButtonCenter1.Click += ribbonButtonCenter1_Click;
+            // 
             // UserControl2
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(ribbonButtonCenter1);
             Controls.Add(button2);
             Controls.Add(label3);
             Controls.Add(button1);
@@ -169,5 +196,6 @@
         private Button button1;
         private Label label3;
         private Button button2;
+        private ReaLTaiizor.Controls.RibbonButtonCenter ribbonButtonCenter1;
     }
 }

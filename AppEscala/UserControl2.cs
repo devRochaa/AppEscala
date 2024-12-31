@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Drawing;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using MySql.Data.MySqlClient;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 namespace AppEscala
 {
     public partial class UserControl2 : UserControl
@@ -24,6 +26,15 @@ namespace AppEscala
         }
 
 
+        private int[] seg;
+        private int[] ter;
+        private int[] qua;
+        private int[] qui;
+        private int[] sex;
+        private int tds_smn;
+        private int[] sab;
+        private int[] dom;
+        private int tds_fds;
         private void check_semana_CheckedChanged(object sender, EventArgs e)
         {
             if (check_semana.Checked)
@@ -33,35 +44,19 @@ namespace AppEscala
                 if (formsmn.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
                 {
                     // Obtém o dado da propriedade
-                    int[] seg = formsmn.seg;
-                    int[] ter = formsmn.ter;
-                    int[] qua = formsmn.qua;
-                    int[] qui = formsmn.qui;
-                    int[] sex = formsmn.sex;
-                    int tds = formsmn.tds;
-                    
+                    seg = formsmn.seg;
+                    ter = formsmn.ter;
+                    qua = formsmn.qua;
+                    qui = formsmn.qui;
+                    sex = formsmn.sex;
+                    tds_smn = formsmn.tds;
+
                     //string mensagem = string.Join(", ", seg);
                     //MessageBox.Show($"Dado recebido: {mensagem}");
                 }
             }
         }
 
-        public static string Semana(int[] a, int[] b)
-        {
-            if (a[0] == 1)
-            {
-                int m = 1;
-            }
-            if(a[1] == 1)
-            {
-                int t = 2;
-            }
-            if (a[2] == 1)
-            {
-                int n = 3;
-            }
-            return m + t + n;
-        }
         private void check_fimDsmn_CheckedChanged(object sender, EventArgs e)
         {
             if (check_fimDsmn.Checked)
@@ -69,17 +64,17 @@ namespace AppEscala
                 form_fimDsmn formF = new form_fimDsmn();
                 if (formF.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
                 {
-                    int[] sab = formF.sab;
-                    int[] dom = formF.dom;
-                    int tds_fds = formF.tds;
+                    sab = formF.sab;
+                    dom = formF.dom;
+                    tds_fds = formF.tds;
 
                     //string dadoRecebido = formF.Dado; // Obtém o dado da propriedade
-                   // MessageBox.Show($"Dado recebido: {dadoRecebido}");
+                    // MessageBox.Show($"Dado recebido: {dadoRecebido}");
                 }
             }
         }
 
-        
+
 
         List<string> datas = new List<string>();
         private void button1_Click(object sender, EventArgs e)
@@ -104,18 +99,78 @@ namespace AppEscala
 
 
         }
-
-        private void button2_Click(object sender, EventArgs e)
+        private int[] ProcessarSemana(int[] array, Int32 Id, int dia)
         {
-            
+            if (array != null)
+            {
+
+                // Processar os dados conforme a lógica necessária
+                int i = 1;
+                int index = 0;
+                foreach (int valor in array)
+                {
+                    MessageBox.Show($"Valores antes sab: {valor}");
+                    if (valor == 1)
+                    {
+                        array[index] = i;
+                    }
+                    else
+                    {
+                        array[index] = 4;
+                    }
+                    index++;
+                    i++;
+                }
+                string mensagem = string.Join(", ", array);
+                MessageBox.Show($"Valores sab: {mensagem}");
+                
+            }
+            AdicionarSemana(array, Id, dia);    
+            return array;
+
+        }
+        private int[] AdicionarSemana(int[] array, Int32 Id, int dia)
+        {
+            if (array == null || array.Length == 0) return array;
+            Conexao = new MySqlConnection(data_source);
             try
             {
-                
+                Conexao.Open();
+
+                foreach (int valor in array)
+                {
+                    string sql = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES" +
+                      " ( '" + Id + "' , '" + dia + "' , '" + valor + "')";
+                    MySqlCommand comando = new MySqlCommand(sql, Conexao);
+
+                    comando.ExecuteNonQuery();
+
+                }
+            }
+            catch (Exception ex) { MessageBox.Show($"Erro ao adicionar semana: {ex.Message}");}
+            finally
+            {
+                if (Conexao != null && Conexao.State == ConnectionState.Open)
+                {
+                    Conexao.Close();
+                }
+            }
+
+            return array;
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+
                 //Criar conexão com mysql
                 Conexao = new MySqlConnection(data_source);
+                Conexao.Open();
+                string sql = "INSERT INTO acolitos (nome) VALUES (@nome); SELECT LAST_INSERT_ID()";
+                MySqlCommand comando = new MySqlCommand(sql, Conexao);
+                comando.Parameters.AddWithValue("@nome", txtNome.Text);
 
-                string sql = "INSERT INTO acolitos (nome) VALUES ('" + txtNome.Text + "') SELECT SCOPE_IDENTITY()";
-                
                 //foreach (string data in datas)
                 //{ 
                 //string sql3 = "INSERT INTO dia (id_acolito,dia) VALUES (,)";  
@@ -123,21 +178,84 @@ namespace AppEscala
 
 
                 //executar comando insert
-                MySqlCommand comando = new MySqlCommand(sql, Conexao);
-                Conexao.Open();
-                comando.ExecuteReader();
-                Int32 idRetorno = Convert.ToInt32(comando.ExecuteScalar());
-                //string sql2 = "INSERT INTO disponibilidade (id_acolito, dias_semana, turno) VALUES" +
-                //      " ( '" + idRetorno +"' , '" + +"' , '" + +"')";
+                
+                
+                object result = comando.ExecuteScalar();
+                int idRetorno = Convert.ToInt32(result);   
+                
+                
+                if(tds_smn == 0) { 
+                ProcessarSemana(seg, idRetorno, 1); ProcessarSemana(ter, idRetorno, 2); ProcessarSemana(qua, idRetorno, 3);
+                ProcessarSemana(qui, idRetorno, 4); ProcessarSemana(sex, idRetorno, 5);
+                }
+                if(tds_smn == 1) 
+                {
+                        int valor = 1;
+                    for (int dia = 1; dia < 8; dia++)
+                    {
+                        string sql3 = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@idAcolito, @dia, @turno)";
+                        MySqlCommand cmd = new MySqlCommand(sql3, Conexao);
+                        cmd.Parameters.AddWithValue("@idAcolito", idRetorno);
+                        cmd.Parameters.AddWithValue("@id_dia_semana", dia);
+                        cmd.Parameters.AddWithValue("@id_turno", valor);
+                        cmd.ExecuteNonQuery();
+
+                        if (valor <= 3)
+                        {
+                        valor++;
+                        }
+                        else
+                        {
+                            valor = 1;
+                        }
+                    }
+                }
+                if (tds_fds == 0)
+                {
+                    ProcessarSemana(sab, idRetorno, 6);
+                    ProcessarSemana(dom, idRetorno, 7);
+                }
+                if(tds_fds == 1)
+                {
+                    int valor = 1;
+                    for (int dia = 6; dia < 8; dia++)
+                    {
+                        string sql3 = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@idAcolito, @dia, @turno)";
+                        MySqlCommand cmd = new MySqlCommand(sql3, Conexao);
+                        cmd.Parameters.AddWithValue("@idAcolito", idRetorno);
+                        cmd.Parameters.AddWithValue("@id_dia_semana", dia);
+                        cmd.Parameters.AddWithValue("@id_turno", valor);
+                        cmd.ExecuteNonQuery();
+                        if (valor <= 3)
+                        {
+                            valor++;
+                        }
+                        else
+                        {
+                            valor = 1;
+                        }
+                    }
+                }
+                
+                
                 MessageBox.Show("Deu tudo certo!");
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-            finally { 
-                Conexao.Close();
+            finally
+            {
+                if (Conexao != null && Conexao.State == ConnectionState.Open)
+                {
+                    Conexao.Close();
+                }
             }
+        }
+
+        private void ribbonButtonCenter1_Click(object sender, EventArgs e)
+        {
+            
         }
     }
 }
