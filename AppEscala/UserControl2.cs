@@ -99,7 +99,42 @@ namespace AppEscala
 
 
         }
-        private int[] ProcessarSemana(int[] array, Int32 Id, int dia)
+        private void AddDias(int Id)             
+        {
+            try
+            {
+                Conexao = new MySqlConnection(data_source);
+
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                Conexao.Open();
+                cmd.CommandText = "INSERT INTO dia (id_acolito,dia) VALUES (@Id, @dia)";
+                foreach (string data in datas)
+                {
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@Id", Id);
+                    cmd.Parameters.AddWithValue("@dia", data);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show($"Erro MySQL: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro geral: {ex.Message}");
+            }
+            finally
+            {
+                if (Conexao != null && Conexao.State == ConnectionState.Open)
+                {
+                    Conexao.Close();
+                }
+            }
+
+        }
+        private void ProcessarSemana(int[] array, Int32 Id, int dia)
         {
             if (array != null)
             {
@@ -126,12 +161,12 @@ namespace AppEscala
                 
             }
             AdicionarSemana(array, Id, dia);    
-            return array;
+            
 
         }
-        private int[] AdicionarSemana(int[] array, Int32 Id, int dia)
+        private void AdicionarSemana(int[] array, Int32 Id, int dia)
         {
-            if (array == null || array.Length == 0) return array;
+            if (array == null || array.Length == 0) return;
             Conexao = new MySqlConnection(data_source);
             try
             {
@@ -168,12 +203,16 @@ namespace AppEscala
                 }
             }
 
-            return array;
         }
         
         private void button2_Click(object sender, EventArgs e)
         {
-
+            if (string.IsNullOrEmpty(txtNome.Text)) 
+            {
+                MessageBox.Show("O nome do acólito não pode estar vazio!",
+                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             try
             {
 
@@ -197,15 +236,20 @@ namespace AppEscala
 
                 object result = cmd.ExecuteScalar();
                 int idRetorno = Convert.ToInt32(result);
-                MessageBox.Show($"isso: {idRetorno}");
-
+                
+                //adiciona dias da semana:
                 ProcessarSemana(seg, idRetorno, 1); ProcessarSemana(ter, idRetorno, 2); ProcessarSemana(qua, idRetorno, 3);
                 ProcessarSemana(qui, idRetorno, 4); ProcessarSemana(sex, idRetorno, 5);
                 ProcessarSemana(sab, idRetorno, 6); ProcessarSemana(dom, idRetorno, 7);
 
+                //adiciona dias:
+                if(datas.Count != 0)
+                {
+                    AddDias(idRetorno);
+                }
+                
 
-
-                MessageBox.Show($"Deu tudo certo!{tds_fds}");
+                MessageBox.Show("O Acólito foi adicionado");
             }
             catch (MySqlException ex)
             {
@@ -221,9 +265,6 @@ namespace AppEscala
             }
         }
 
-        private void ribbonButtonCenter1_Click(object sender, EventArgs e)
-        {
-            
-        }
+        
     }
 }

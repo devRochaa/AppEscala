@@ -82,7 +82,7 @@ namespace AppEscala
                         row[id_dia] = string.IsNullOrEmpty(row[id_dia]) ? turno : $"{row[id_dia]}\n{turno}";
                     }
                 }
-                dgv_acolitos.Rows.Add(row);
+                
                 if (!string.IsNullOrEmpty(row[0]))
                 {
                     dgv_acolitos.Rows.Add(row);
