@@ -58,7 +58,7 @@
         private void check_domM_CheckedChanged(object sender, EventArgs e)
         {
             dom[0] = 0;
-            if (check_sabM.Checked)
+            if (check_domM.Checked)
             {
                 dom[0] = 1;
             }
@@ -84,10 +84,20 @@
 
         private void check_tds_CheckedChanged(object sender, EventArgs e)
         {
-            tds = 0;
-            if (check_tds.Checked)
+            bool isChecked = check_tds.Checked;
+            foreach (Control ctrl in panel_sab.Controls)
             {
-                tds = 1;
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
+            }
+            foreach (Control ctrl in panel_dom.Controls)
+            {
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
             }
         }
     }

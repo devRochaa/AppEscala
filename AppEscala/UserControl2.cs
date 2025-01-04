@@ -109,7 +109,7 @@ namespace AppEscala
                 int index = 0;
                 foreach (int valor in array)
                 {
-                    MessageBox.Show($"Valores antes sab: {valor}");
+                    
                     if (valor == 1)
                     {
                         array[index] = i;
@@ -121,8 +121,8 @@ namespace AppEscala
                     index++;
                     i++;
                 }
-                string mensagem = string.Join(", ", array);
-                MessageBox.Show($"Valores sab: {mensagem}");
+                //string mensagem = string.Join(", ", array);
+                //MessageBox.Show($"Valores sab: {mensagem}");
                 
             }
             AdicionarSemana(array, Id, dia);    
@@ -135,19 +135,31 @@ namespace AppEscala
             Conexao = new MySqlConnection(data_source);
             try
             {
-                Conexao.Open();
 
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = Conexao;
+                    Conexao.Open();
+                    cmd.CommandText = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@Id, @Dia, @Turno)";
+                    
                 foreach (int valor in array)
                 {
-                    string sql = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES" +
-                      " ( '" + Id + "' , '" + dia + "' , '" + valor + "')";
-                    MySqlCommand comando = new MySqlCommand(sql, Conexao);
+                    cmd.Parameters.Clear();
 
-                    comando.ExecuteNonQuery();
+                    cmd.Parameters.AddWithValue("@Id", Id);
+                    cmd.Parameters.AddWithValue("@Dia", dia);
+                    cmd.Parameters.AddWithValue("@Turno", valor);
 
+                    cmd.ExecuteNonQuery();                    
                 }
             }
-            catch (Exception ex) { MessageBox.Show($"Erro ao adicionar semana: {ex.Message}");}
+            catch (MySqlException ex)
+            {
+                MessageBox.Show($"Erro MySQL: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro geral: {ex.Message}");
+            }
             finally
             {
                 if (Conexao != null && Conexao.State == ConnectionState.Open)
@@ -158,6 +170,7 @@ namespace AppEscala
 
             return array;
         }
+        
         private void button2_Click(object sender, EventArgs e)
         {
 
@@ -167,9 +180,11 @@ namespace AppEscala
                 //Criar conexão com mysql
                 Conexao = new MySqlConnection(data_source);
                 Conexao.Open();
-                string sql = "INSERT INTO acolitos (nome) VALUES (@nome); SELECT LAST_INSERT_ID()";
-                MySqlCommand comando = new MySqlCommand(sql, Conexao);
-                comando.Parameters.AddWithValue("@nome", txtNome.Text);
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                cmd.CommandText = "INSERT INTO acolitos (nome) VALUES (@nome); SELECT LAST_INSERT_ID();";
+                
+                cmd.Parameters.AddWithValue("@nome", txtNome.Text);
 
                 //foreach (string data in datas)
                 //{ 
@@ -178,71 +193,24 @@ namespace AppEscala
 
 
                 //executar comando insert
-                
-                
-                object result = comando.ExecuteScalar();
-                int idRetorno = Convert.ToInt32(result);   
-                
-                
-                if(tds_smn == 0) { 
+
+
+                object result = cmd.ExecuteScalar();
+                int idRetorno = Convert.ToInt32(result);
+                MessageBox.Show($"isso: {idRetorno}");
+
                 ProcessarSemana(seg, idRetorno, 1); ProcessarSemana(ter, idRetorno, 2); ProcessarSemana(qua, idRetorno, 3);
                 ProcessarSemana(qui, idRetorno, 4); ProcessarSemana(sex, idRetorno, 5);
-                }
-                if(tds_smn == 1) 
-                {
-                        int valor = 1;
-                    for (int dia = 1; dia < 8; dia++)
-                    {
-                        string sql3 = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@idAcolito, @dia, @turno)";
-                        MySqlCommand cmd = new MySqlCommand(sql3, Conexao);
-                        cmd.Parameters.AddWithValue("@idAcolito", idRetorno);
-                        cmd.Parameters.AddWithValue("@id_dia_semana", dia);
-                        cmd.Parameters.AddWithValue("@id_turno", valor);
-                        cmd.ExecuteNonQuery();
+                ProcessarSemana(sab, idRetorno, 6); ProcessarSemana(dom, idRetorno, 7);
 
-                        if (valor <= 3)
-                        {
-                        valor++;
-                        }
-                        else
-                        {
-                            valor = 1;
-                        }
-                    }
-                }
-                if (tds_fds == 0)
-                {
-                    ProcessarSemana(sab, idRetorno, 6);
-                    ProcessarSemana(dom, idRetorno, 7);
-                }
-                if(tds_fds == 1)
-                {
-                    int valor = 1;
-                    for (int dia = 6; dia < 8; dia++)
-                    {
-                        string sql3 = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@idAcolito, @dia, @turno)";
-                        MySqlCommand cmd = new MySqlCommand(sql3, Conexao);
-                        cmd.Parameters.AddWithValue("@idAcolito", idRetorno);
-                        cmd.Parameters.AddWithValue("@id_dia_semana", dia);
-                        cmd.Parameters.AddWithValue("@id_turno", valor);
-                        cmd.ExecuteNonQuery();
-                        if (valor <= 3)
-                        {
-                            valor++;
-                        }
-                        else
-                        {
-                            valor = 1;
-                        }
-                    }
-                }
-                
-                
-                MessageBox.Show("Deu tudo certo!");
+
+
+                MessageBox.Show($"Deu tudo certo!{tds_fds}");
             }
-            catch (Exception ex)
+            catch (MySqlException ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Erro " + ex.Number + " ocorreu: " + ex.Message,
+                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {

@@ -94,6 +94,7 @@
             dgv_acolitos.ReadOnly = true;
             dgv_acolitos.Size = new Size(646, 203);
             dgv_acolitos.TabIndex = 5;
+            dgv_acolitos.CellContentClick += dgv_acolitos_CellContentClick;
             // 
             // nome
             // 

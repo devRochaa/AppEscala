@@ -183,11 +183,46 @@ namespace AppEscala
 
         private void check_tds_CheckedChanged(object sender, EventArgs e)
         {
-            tds = 0;
-            if (check_tds.Checked)
+            bool isChecked = check_tds.Checked;
+
+            foreach (Control ctrl in panel_seg.Controls)
             {
-                tds = 1;
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
             }
-        }
+            foreach (Control ctrl in panel_ter.Controls)
+            {
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
+            }
+            foreach (Control ctrl in panel_qua.Controls)
+            {
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
+            }
+            foreach (Control ctrl in panel_qui.Controls)
+            {
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
+            }
+            foreach (Control ctrl in panel_sex.Controls)
+            {
+                if (ctrl is CheckBox checkBox)
+                {
+                    checkBox.Checked = isChecked;
+                }
+            }
+
+        
+       
+    }
     }
 }

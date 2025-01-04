@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             airButton1 = new ReaLTaiizor.Controls.AirButton();
-            panel1 = new Panel();
+            panel_dom = new Panel();
             check_domN = new CheckBox();
             label2 = new Label();
             check_domT = new CheckBox();
             check_domM = new CheckBox();
-            panel2 = new Panel();
+            panel_sab = new Panel();
             check_sabN = new CheckBox();
             check_sabT = new CheckBox();
             check_sabM = new CheckBox();
@@ -45,8 +45,8 @@
             label5 = new Label();
             panel3 = new Panel();
             check_tds = new CheckBox();
-            panel1.SuspendLayout();
-            panel2.SuspendLayout();
+            panel_dom.SuspendLayout();
+            panel_sab.SuspendLayout();
             panel3.SuspendLayout();
             SuspendLayout();
             // 
@@ -64,17 +64,17 @@
             airButton1.Transparent = false;
             airButton1.Click += airButton1_Click;
             // 
-            // panel1
+            // panel_dom
             // 
-            panel1.BorderStyle = BorderStyle.FixedSingle;
-            panel1.Controls.Add(check_domN);
-            panel1.Controls.Add(label2);
-            panel1.Controls.Add(check_domT);
-            panel1.Controls.Add(check_domM);
-            panel1.Location = new Point(153, 22);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(124, 157);
-            panel1.TabIndex = 12;
+            panel_dom.BorderStyle = BorderStyle.FixedSingle;
+            panel_dom.Controls.Add(check_domN);
+            panel_dom.Controls.Add(label2);
+            panel_dom.Controls.Add(check_domT);
+            panel_dom.Controls.Add(check_domM);
+            panel_dom.Location = new Point(153, 22);
+            panel_dom.Name = "panel_dom";
+            panel_dom.Size = new Size(124, 157);
+            panel_dom.TabIndex = 12;
             // 
             // check_domN
             // 
@@ -120,17 +120,17 @@
             check_domM.UseVisualStyleBackColor = true;
             check_domM.CheckedChanged += check_domM_CheckedChanged;
             // 
-            // panel2
+            // panel_sab
             // 
-            panel2.BorderStyle = BorderStyle.FixedSingle;
-            panel2.Controls.Add(check_sabN);
-            panel2.Controls.Add(check_sabT);
-            panel2.Controls.Add(check_sabM);
-            panel2.Controls.Add(label1);
-            panel2.Location = new Point(11, 22);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(124, 157);
-            panel2.TabIndex = 14;
+            panel_sab.BorderStyle = BorderStyle.FixedSingle;
+            panel_sab.Controls.Add(check_sabN);
+            panel_sab.Controls.Add(check_sabT);
+            panel_sab.Controls.Add(check_sabM);
+            panel_sab.Controls.Add(label1);
+            panel_sab.Location = new Point(11, 22);
+            panel_sab.Name = "panel_sab";
+            panel_sab.Size = new Size(124, 157);
+            panel_sab.TabIndex = 14;
             // 
             // check_sabN
             // 
@@ -230,9 +230,9 @@
             check_tds.AutoSize = true;
             check_tds.Location = new Point(95, 83);
             check_tds.Name = "check_tds";
-            check_tds.Size = new Size(55, 19);
+            check_tds.Size = new Size(53, 19);
             check_tds.TabIndex = 20;
-            check_tds.Text = "Noite";
+            check_tds.Text = "Pode";
             check_tds.UseVisualStyleBackColor = true;
             check_tds.CheckedChanged += check_tds_CheckedChanged;
             // 
@@ -243,17 +243,17 @@
             ClientSize = new Size(611, 290);
             Controls.Add(panel3);
             Controls.Add(ou);
-            Controls.Add(panel2);
-            Controls.Add(panel1);
+            Controls.Add(panel_sab);
+            Controls.Add(panel_dom);
             Controls.Add(airButton1);
             Name = "form_fimDsmn";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Form2";
             Load += Form2_Load;
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
-            panel2.ResumeLayout(false);
-            panel2.PerformLayout();
+            panel_dom.ResumeLayout(false);
+            panel_dom.PerformLayout();
+            panel_sab.ResumeLayout(false);
+            panel_sab.PerformLayout();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
             ResumeLayout(false);
@@ -262,9 +262,9 @@
 
         #endregion
         private ReaLTaiizor.Controls.AirButton airButton1;
-        private Panel panel1;
+        private Panel panel_dom;
         private Label label2;
-        private Panel panel2;
+        private Panel panel_sab;
         private Label label1;
         private Label ou;
         private Label label3;

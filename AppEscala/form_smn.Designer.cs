@@ -34,38 +34,38 @@
             label5 = new Label();
             label3 = new Label();
             ou = new Label();
-            panel2 = new Panel();
+            panel_ter = new Panel();
             check_terN = new CheckBox();
             label1 = new Label();
             check_terT = new CheckBox();
             check_terM = new CheckBox();
-            panel1 = new Panel();
+            panel_qua = new Panel();
             check_quaN = new CheckBox();
             label2 = new Label();
             check_quaT = new CheckBox();
             check_quaM = new CheckBox();
             airButton1 = new ReaLTaiizor.Controls.AirButton();
-            panel4 = new Panel();
+            panel_qui = new Panel();
             check_quiN = new CheckBox();
             label6 = new Label();
             check_quiT = new CheckBox();
             check_quiM = new CheckBox();
-            panel5 = new Panel();
+            panel_sex = new Panel();
             check_sexN = new CheckBox();
             check_sexT = new CheckBox();
             label7 = new Label();
             check_sexM = new CheckBox();
-            panel6 = new Panel();
+            panel_seg = new Panel();
             check_segN = new CheckBox();
             label8 = new Label();
             check_segT = new CheckBox();
             check_segM = new CheckBox();
             panel3.SuspendLayout();
-            panel2.SuspendLayout();
-            panel1.SuspendLayout();
-            panel4.SuspendLayout();
-            panel5.SuspendLayout();
-            panel6.SuspendLayout();
+            panel_ter.SuspendLayout();
+            panel_qua.SuspendLayout();
+            panel_qui.SuspendLayout();
+            panel_sex.SuspendLayout();
+            panel_seg.SuspendLayout();
             SuspendLayout();
             // 
             // panel3
@@ -129,17 +129,17 @@
             ou.TabIndex = 23;
             ou.Text = "ou";
             // 
-            // panel2
+            // panel_ter
             // 
-            panel2.BorderStyle = BorderStyle.FixedSingle;
-            panel2.Controls.Add(check_terN);
-            panel2.Controls.Add(label1);
-            panel2.Controls.Add(check_terT);
-            panel2.Controls.Add(check_terM);
-            panel2.Location = new Point(152, 12);
-            panel2.Name = "panel2";
-            panel2.Size = new Size(124, 157);
-            panel2.TabIndex = 22;
+            panel_ter.BorderStyle = BorderStyle.FixedSingle;
+            panel_ter.Controls.Add(check_terN);
+            panel_ter.Controls.Add(label1);
+            panel_ter.Controls.Add(check_terT);
+            panel_ter.Controls.Add(check_terM);
+            panel_ter.Location = new Point(152, 12);
+            panel_ter.Name = "panel_ter";
+            panel_ter.Size = new Size(124, 157);
+            panel_ter.TabIndex = 22;
             // 
             // check_terN
             // 
@@ -184,17 +184,17 @@
             check_terM.UseVisualStyleBackColor = true;
             check_terM.CheckedChanged += check_terM_CheckedChanged;
             // 
-            // panel1
+            // panel_qua
             // 
-            panel1.BorderStyle = BorderStyle.FixedSingle;
-            panel1.Controls.Add(check_quaN);
-            panel1.Controls.Add(label2);
-            panel1.Controls.Add(check_quaT);
-            panel1.Controls.Add(check_quaM);
-            panel1.Location = new Point(294, 12);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(124, 157);
-            panel1.TabIndex = 21;
+            panel_qua.BorderStyle = BorderStyle.FixedSingle;
+            panel_qua.Controls.Add(check_quaN);
+            panel_qua.Controls.Add(label2);
+            panel_qua.Controls.Add(check_quaT);
+            panel_qua.Controls.Add(check_quaM);
+            panel_qua.Location = new Point(294, 12);
+            panel_qua.Name = "panel_qua";
+            panel_qua.Size = new Size(124, 157);
+            panel_qua.TabIndex = 21;
             // 
             // check_quaN
             // 
@@ -254,17 +254,17 @@
             airButton1.Transparent = false;
             airButton1.Click += airButton1_Click;
             // 
-            // panel4
+            // panel_qui
             // 
-            panel4.BorderStyle = BorderStyle.FixedSingle;
-            panel4.Controls.Add(check_quiN);
-            panel4.Controls.Add(label6);
-            panel4.Controls.Add(check_quiT);
-            panel4.Controls.Add(check_quiM);
-            panel4.Location = new Point(439, 12);
-            panel4.Name = "panel4";
-            panel4.Size = new Size(124, 157);
-            panel4.TabIndex = 24;
+            panel_qui.BorderStyle = BorderStyle.FixedSingle;
+            panel_qui.Controls.Add(check_quiN);
+            panel_qui.Controls.Add(label6);
+            panel_qui.Controls.Add(check_quiT);
+            panel_qui.Controls.Add(check_quiM);
+            panel_qui.Location = new Point(439, 12);
+            panel_qui.Name = "panel_qui";
+            panel_qui.Size = new Size(124, 157);
+            panel_qui.TabIndex = 24;
             // 
             // check_quiN
             // 
@@ -309,17 +309,17 @@
             check_quiM.UseVisualStyleBackColor = true;
             check_quiM.CheckedChanged += check_quiM_CheckedChanged;
             // 
-            // panel5
+            // panel_sex
             // 
-            panel5.BorderStyle = BorderStyle.FixedSingle;
-            panel5.Controls.Add(check_sexN);
-            panel5.Controls.Add(check_sexT);
-            panel5.Controls.Add(label7);
-            panel5.Controls.Add(check_sexM);
-            panel5.Location = new Point(581, 12);
-            panel5.Name = "panel5";
-            panel5.Size = new Size(124, 157);
-            panel5.TabIndex = 23;
+            panel_sex.BorderStyle = BorderStyle.FixedSingle;
+            panel_sex.Controls.Add(check_sexN);
+            panel_sex.Controls.Add(check_sexT);
+            panel_sex.Controls.Add(label7);
+            panel_sex.Controls.Add(check_sexM);
+            panel_sex.Location = new Point(581, 12);
+            panel_sex.Name = "panel_sex";
+            panel_sex.Size = new Size(124, 157);
+            panel_sex.TabIndex = 23;
             // 
             // check_sexN
             // 
@@ -364,18 +364,18 @@
             check_sexM.UseVisualStyleBackColor = true;
             check_sexM.CheckedChanged += check_sexM_CheckedChanged;
             // 
-            // panel6
+            // panel_seg
             // 
-            panel6.BorderStyle = BorderStyle.FixedSingle;
-            panel6.Controls.Add(check_segN);
-            panel6.Controls.Add(label8);
-            panel6.Controls.Add(check_segT);
-            panel6.Controls.Add(check_segM);
-            panel6.Location = new Point(12, 12);
-            panel6.Name = "panel6";
-            panel6.Size = new Size(124, 157);
-            panel6.TabIndex = 23;
-            panel6.Paint += panel6_Paint;
+            panel_seg.BorderStyle = BorderStyle.FixedSingle;
+            panel_seg.Controls.Add(check_segN);
+            panel_seg.Controls.Add(label8);
+            panel_seg.Controls.Add(check_segT);
+            panel_seg.Controls.Add(check_segM);
+            panel_seg.Location = new Point(12, 12);
+            panel_seg.Name = "panel_seg";
+            panel_seg.Size = new Size(124, 157);
+            panel_seg.TabIndex = 23;
+            panel_seg.Paint += panel6_Paint;
             // 
             // check_segN
             // 
@@ -425,13 +425,13 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(719, 450);
-            Controls.Add(panel6);
-            Controls.Add(panel4);
+            Controls.Add(panel_seg);
+            Controls.Add(panel_qui);
             Controls.Add(panel3);
-            Controls.Add(panel5);
+            Controls.Add(panel_sex);
             Controls.Add(ou);
-            Controls.Add(panel2);
-            Controls.Add(panel1);
+            Controls.Add(panel_ter);
+            Controls.Add(panel_qua);
             Controls.Add(airButton1);
             Name = "form_smn";
             StartPosition = FormStartPosition.CenterScreen;
@@ -439,16 +439,16 @@
             Load += form_smn_Load;
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
-            panel2.ResumeLayout(false);
-            panel2.PerformLayout();
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
-            panel4.ResumeLayout(false);
-            panel4.PerformLayout();
-            panel5.ResumeLayout(false);
-            panel5.PerformLayout();
-            panel6.ResumeLayout(false);
-            panel6.PerformLayout();
+            panel_ter.ResumeLayout(false);
+            panel_ter.PerformLayout();
+            panel_qua.ResumeLayout(false);
+            panel_qua.PerformLayout();
+            panel_qui.ResumeLayout(false);
+            panel_qui.PerformLayout();
+            panel_sex.ResumeLayout(false);
+            panel_sex.PerformLayout();
+            panel_seg.ResumeLayout(false);
+            panel_seg.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -460,16 +460,16 @@
         private Label label5;
         private Label label3;
         private Label ou;
-        private Panel panel2;
+        private Panel panel_ter;
         private Label label1;
-        private Panel panel1;
+        private Panel panel_qua;
         private Label label2;
         private ReaLTaiizor.Controls.AirButton airButton1;
-        private Panel panel4;
+        private Panel panel_qui;
         private Label label6;
-        private Panel panel5;
+        private Panel panel_sex;
         private Label label7;
-        private Panel panel6;
+        private Panel panel_seg;
         private Label label8;
         private CheckBox check_segN;
         private CheckBox check_segT;
