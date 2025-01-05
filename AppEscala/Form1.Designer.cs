@@ -57,6 +57,7 @@ namespace AppEscala
             userControl11 = new UserControl1();
             userControl21 = new UserControl2();
             userAcolitos = new userAcolitos();
+            missas1 = new Missas();
             sidebar.SuspendLayout();
             MenuContainer.SuspendLayout();
             panel3.SuspendLayout();
@@ -386,12 +387,21 @@ namespace AppEscala
             userAcolitos.Size = new Size(746, 472);
             userAcolitos.TabIndex = 8;
             // 
+            // missas1
+            // 
+            missas1.Location = new Point(30, 37);
+            missas1.Name = "missas1";
+            missas1.RightToLeft = RightToLeft.No;
+            missas1.Size = new Size(746, 472);
+            missas1.TabIndex = 10;
+            // 
             // form_menu
             // 
             AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(776, 505);
             Controls.Add(sidebar);
             Controls.Add(panel1);
+            Controls.Add(missas1);
             Controls.Add(userAcolitos);
             Controls.Add(userControl11);
             Controls.Add(userControl21);
@@ -444,5 +454,6 @@ namespace AppEscala
         private UserControl1 userControl11;
         private UserControl2 userControl21;
         private userAcolitos userAcolitos;
+        private Missas missas1;
     }
 }

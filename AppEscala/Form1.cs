@@ -14,7 +14,7 @@ namespace AppEscala
 {
     public partial class form_menu : Form
     {
-        FrmConfig conf;
+        
         FrmEscala Esc;
         FrmInfo inf;
         FrmSub1 sub1;
@@ -174,6 +174,7 @@ namespace AppEscala
         {
             userControl11.Hide();
             userControl21.Hide();
+            missas1.Hide();
             panel1.BringToFront();
         }
 
@@ -184,7 +185,13 @@ namespace AppEscala
 
         private void button7_Click(object sender, EventArgs e)
         {
+            
+            userControl11.Hide();
+            userAcolitos.Hide();
+            userControl21.Hide();
 
+            missas1.Show();
+            
         }
         bool sidebarExpand = true;
         private void timerSideBarTransition_Tick(object sender, EventArgs e)
@@ -255,6 +262,7 @@ namespace AppEscala
             // esconder as outras telas
             userControl21.Hide();
             userControl11.Hide();
+            missas1.Hide();
             //mostrar a que quer
             userAcolitos.Show();
             
@@ -272,6 +280,7 @@ namespace AppEscala
             // esconder as outras telas
             userControl11.Hide();
             userAcolitos.Hide();
+            missas1.Hide();
             //mostrar a que quer
             userControl21.Show();
             
