@@ -44,6 +44,7 @@ namespace AppEscala
 
                 cmd.ExecuteNonQuery();
                 MessageBox.Show($"Igreja {txt_igreja.Text} foi adicionada!");
+
                 Close();
             }
             catch (MySqlException ex)

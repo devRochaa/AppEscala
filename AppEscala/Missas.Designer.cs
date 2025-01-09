@@ -31,16 +31,25 @@
             btnAdd = new Button();
             listBox1 = new ListBox();
             dateTimePicker1 = new DateTimePicker();
-            comboBox1 = new ComboBox();
+            cmb_igrejas = new ComboBox();
             label1 = new Label();
             btn_AddIgreja = new Button();
+            dgv_missas = new DataGridView();
+            coluna1 = new DataGridViewTextBoxColumn();
+            coluna2 = new DataGridViewTextBoxColumn();
+            coluna3 = new DataGridViewTextBoxColumn();
+            coluna4 = new DataGridViewTextBoxColumn();
+            btn_recarregarIgrejas = new Button();
+            btn_editar = new Button();
+            btn_excluir = new Button();
+            ((System.ComponentModel.ISupportInitialize)dgv_missas).BeginInit();
             SuspendLayout();
             // 
             // btnAdd
             // 
-            btnAdd.Location = new Point(370, 387);
+            btnAdd.Location = new Point(61, 414);
             btnAdd.Name = "btnAdd";
-            btnAdd.Size = new Size(108, 40);
+            btnAdd.Size = new Size(222, 40);
             btnAdd.TabIndex = 3;
             btnAdd.Text = "Adicionar";
             btnAdd.UseVisualStyleBackColor = true;
@@ -51,7 +60,7 @@
             listBox1.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             listBox1.FormattingEnabled = true;
             listBox1.ItemHeight = 17;
-            listBox1.Location = new Point(61, 151);
+            listBox1.Location = new Point(61, 132);
             listBox1.MultiColumn = true;
             listBox1.Name = "listBox1";
             listBox1.Size = new Size(222, 276);
@@ -67,13 +76,13 @@
             dateTimePicker1.Size = new Size(222, 23);
             dateTimePicker1.TabIndex = 5;
             // 
-            // comboBox1
+            // cmb_igrejas
             // 
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(61, 57);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(222, 23);
-            comboBox1.TabIndex = 6;
+            cmb_igrejas.FormattingEnabled = true;
+            cmb_igrejas.Location = new Point(61, 57);
+            cmb_igrejas.Name = "cmb_igrejas";
+            cmb_igrejas.Size = new Size(222, 23);
+            cmb_igrejas.TabIndex = 6;
             // 
             // label1
             // 
@@ -96,13 +105,94 @@
             btn_AddIgreja.UseVisualStyleBackColor = true;
             btn_AddIgreja.Click += btn_AddIgreja_Click;
             // 
+            // dgv_missas
+            // 
+            dgv_missas.AllowUserToAddRows = false;
+            dgv_missas.AllowUserToDeleteRows = false;
+            dgv_missas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgv_missas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgv_missas.Columns.AddRange(new DataGridViewColumn[] { coluna1, coluna2, coluna3, coluna4 });
+            dgv_missas.Location = new Point(402, 56);
+            dgv_missas.Name = "dgv_missas";
+            dgv_missas.ReadOnly = true;
+            dgv_missas.Size = new Size(288, 397);
+            dgv_missas.TabIndex = 9;
+            dgv_missas.CellClick += dgv_missas_CellClick;
+            dgv_missas.CellContentClick += dgv_missas_CellContentClick;
+            // 
+            // coluna1
+            // 
+            coluna1.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            coluna1.HeaderText = "Data";
+            coluna1.Name = "coluna1";
+            coluna1.ReadOnly = true;
+            coluna1.Width = 56;
+            // 
+            // coluna2
+            // 
+            coluna2.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            coluna2.HeaderText = "Horário";
+            coluna2.Name = "coluna2";
+            coluna2.ReadOnly = true;
+            coluna2.Width = 72;
+            // 
+            // coluna3
+            // 
+            coluna3.HeaderText = "Local";
+            coluna3.MinimumWidth = 128;
+            coluna3.Name = "coluna3";
+            coluna3.ReadOnly = true;
+            // 
+            // coluna4
+            // 
+            coluna4.HeaderText = "id";
+            coluna4.Name = "coluna4";
+            coluna4.ReadOnly = true;
+            coluna4.Visible = false;
+            // 
+            // btn_recarregarIgrejas
+            // 
+            btn_recarregarIgrejas.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_recarregarIgrejas.Location = new Point(318, 56);
+            btn_recarregarIgrejas.Name = "btn_recarregarIgrejas";
+            btn_recarregarIgrejas.Padding = new Padding(2, 0, 0, 0);
+            btn_recarregarIgrejas.Size = new Size(23, 23);
+            btn_recarregarIgrejas.TabIndex = 10;
+            btn_recarregarIgrejas.Text = "↺";
+            btn_recarregarIgrejas.UseVisualStyleBackColor = true;
+            // 
+            // btn_editar
+            // 
+            btn_editar.Location = new Point(615, 24);
+            btn_editar.Name = "btn_editar";
+            btn_editar.Size = new Size(75, 26);
+            btn_editar.TabIndex = 11;
+            btn_editar.Text = "Editar";
+            btn_editar.UseVisualStyleBackColor = true;
+            // 
+            // btn_excluir
+            // 
+            btn_excluir.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btn_excluir.ForeColor = Color.Red;
+            btn_excluir.Location = new Point(534, 24);
+            btn_excluir.Name = "btn_excluir";
+            btn_excluir.Size = new Size(75, 26);
+            btn_excluir.TabIndex = 12;
+            btn_excluir.Text = "Excluir";
+            btn_excluir.UseVisualStyleBackColor = true;
+            btn_excluir.Click += btn_excluir_Click;
+            // 
             // Missas
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(btn_excluir);
+            Controls.Add(btn_editar);
+            Controls.Add(btn_recarregarIgrejas);
+            Controls.Add(dgv_missas);
             Controls.Add(btn_AddIgreja);
             Controls.Add(label1);
-            Controls.Add(comboBox1);
+            Controls.Add(cmb_igrejas);
             Controls.Add(dateTimePicker1);
             Controls.Add(listBox1);
             Controls.Add(btnAdd);
@@ -110,6 +200,7 @@
             RightToLeft = RightToLeft.No;
             Size = new Size(746, 472);
             Load += Missas_Load;
+            ((System.ComponentModel.ISupportInitialize)dgv_missas).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -118,8 +209,16 @@
         private Button btnAdd;
         private ListBox listBox1;
         private DateTimePicker dateTimePicker1;
-        private ComboBox comboBox1;
+        private ComboBox cmb_igrejas;
         private Label label1;
         private Button btn_AddIgreja;
+        private DataGridView dgv_missas;
+        private Button btn_recarregarIgrejas;
+        private Button btn_editar;
+        private Button btn_excluir;
+        private DataGridViewTextBoxColumn coluna1;
+        private DataGridViewTextBoxColumn coluna2;
+        private DataGridViewTextBoxColumn coluna3;
+        private DataGridViewTextBoxColumn coluna4;
     }
 }
