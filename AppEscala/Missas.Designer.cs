@@ -160,6 +160,7 @@
             btn_recarregarIgrejas.TabIndex = 10;
             btn_recarregarIgrejas.Text = "↺";
             btn_recarregarIgrejas.UseVisualStyleBackColor = true;
+            btn_recarregarIgrejas.Click += btn_recarregarIgrejas_Click;
             // 
             // btn_editar
             // 
@@ -169,6 +170,7 @@
             btn_editar.TabIndex = 11;
             btn_editar.Text = "Editar";
             btn_editar.UseVisualStyleBackColor = true;
+            btn_editar.Click += btn_editar_Click;
             // 
             // btn_excluir
             // 

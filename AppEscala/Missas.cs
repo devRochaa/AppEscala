@@ -199,7 +199,7 @@ namespace AppEscala
 
         private void dgv_missas_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            
+
         }
         int? id_selecionado;
         string data_selecionada = "";
@@ -264,8 +264,35 @@ namespace AppEscala
                 // Acessando valores da linha selecionada
                 id_selecionado = Convert.ToInt32(selectedRow.Cells[3].Value);
                 data_selecionada = selectedRow.Cells[0].Value?.ToString();
-                MessageBox.Show($"{id_selecionado} {data_selecionada}");
+                //MessageBox.Show($"{id_selecionado} {data_selecionada}");
             }
+        }
+
+        private void btn_editar_Click(object sender, EventArgs e)
+        {
+            if (id_selecionado != null)
+            {
+                form_editar form_edit = new form_editar();
+                form_edit.id_missa = id_selecionado;
+                if (form_edit.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
+                {
+                    carregar_missas();
+                    // Obtém o dado da propriedade
+
+                    //string mensagem = string.Join(", ", seg);
+                    //MessageBox.Show($"Dado recebido: {mensagem}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Você precisa selecionar uma missa primeiro!");
+            }
+        }
+
+        private void btn_recarregarIgrejas_Click(object sender, EventArgs e)
+        {
+            carregar_missas();
+            combobox_igreja();
         }
     }
 }   
