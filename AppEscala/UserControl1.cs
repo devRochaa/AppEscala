@@ -16,11 +16,15 @@ using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using MySql.Data.MySqlClient;
 
 namespace AppEscala
 {
     public partial class UserControl1 : UserControl
     {
+        private MySqlConnection Conexao;
+        private string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
+
         public UserControl1()
         {
             InitializeComponent();
@@ -153,47 +157,161 @@ namespace AppEscala
             }
 
 
+            //    public static List<Produtos> GetListaProdutos()
+            //    {
+            //        //instanciar um objeto Lista de produtos
+            //        var relProdutos = new List<Produtos>();
+
+
+            //        relProdutos.Add(new Produtos("02-6ª.Feira", "19h30", "Daniel/Gabriel/João/Felipe", "", "Matriz"));
+            //        relProdutos.Add(new Produtos("22-Sábado", "09h00", "Luisa/Gabriela", "Novena", "Sto. Frei Galvão/Sta. Filomena"));
+            //        relProdutos.Add(new Produtos("01-Sábado", "08h00", "Ana/Marcos/João", "Matriz", "Cemitério"));
+            //        relProdutos.Add(new Produtos("03-Domingo", "07h00", "Carlos/Marina/Fernando", "", "São José"));
+            //        relProdutos.Add(new Produtos("04-2ª.Feira", "15h00", "Lucas/Sofia/Paulo", "Novena", "Matriz"));
+            //        relProdutos.Add(new Produtos("05-3ª.Feira", "19h30", "Mateus/Bruna/Renata", "", "Matriz"));
+            //        relProdutos.Add(new Produtos("06-4ª.Feira", "18h00", "Tiago/Júlia/Pedro", "Novena", "Sto. Frei Galvão"));
+            //        relProdutos.Add(new Produtos("07-5ª.Feira", "19h30", "André/Larissa/Felipe", "", "São Sebastião"));
+            //        relProdutos.Add(new Produtos("08-6ª.Feira", "20h00", "Débora/Rafael/Victor", "Novena", "Cristo Rei"));
+            //        relProdutos.Add(new Produtos("09-Sábado", "17h00", "Joana/Marcelo/Helena", "", "Santa Cecília"));
+            //        relProdutos.Add(new Produtos("10-Domingo", "09h00", "Carla/Thiago/Vinícius", "Novena", "Matriz"));
+            //        relProdutos.Add(new Produtos("11-2ª.Feira", "19h30", "Ester/Leonardo/Natalia", "", "Santa Catarina"));
+            //        relProdutos.Add(new Produtos("12-3ª.Feira", "18h30", "Aline/Ricardo/Gustavo", "Novena", "N.S. Graças"));
+            //        relProdutos.Add(new Produtos("13-4ª.Feira", "19h00", "Fernanda/Luiz/Amanda", "", "Cristo Rei"));
+            //        relProdutos.Add(new Produtos("14-5ª.Feira", "20h00", "Isabela/Renato/Clara", "Novena", "Sto. Frei Galvão"));
+            //        relProdutos.Add(new Produtos("15-6ª.Feira", "19h30", "Sérgio/Patrícia/Luana", "", "São José"));
+            //        relProdutos.Add(new Produtos("16-Sábado", "16h00", "Rodrigo/Mariana/Tânia", "Novena", "Santa Cecília"));
+            //        relProdutos.Add(new Produtos("17-Domingo", "18h00", "Igor/Rafaela/Davi/Clementina/Zé.Felipe/Daniel/Rocha/Oliveira", "", "N.S. Aparecida"));
+            //        relProdutos.Add(new Produtos("18-2ª.Feira", "19h30", "Camila/Fabiano/Flávia", "Novena", "São Sebastião"));
+            //        relProdutos.Add(new Produtos("19-3ª.Feira", "07h00", "Beatriz/Mateus/Rose", "", "Santa Catarina"));
+            //        relProdutos.Add(new Produtos("20-4ª.Feira", "18h30", "Juliano/Priscila/Samuel", "Novena", "Sto. Frei Galvão"));
+            //        relProdutos.Add(new Produtos("21-5ª.Feira", "19h00", "Viviane/Anderson/Lígia", "", "Cristo Rei"));
+            //        relProdutos.Add(new Produtos("23-6ª.Feira", "20h00", "Eduardo/Susana/Elisa", "Novena", "São José"));
+            //        relProdutos.Add(new Produtos("24-Sábado", "17h00", "Paulo/Letícia/Fernando", "", "Santa Cecília"));
+            //        relProdutos.Add(new Produtos("25-Domingo", "08h00", "Luciana/Ronaldo/Regina", "Novena", "N.S. Graças"));
+            //        relProdutos.Add(new Produtos("26-2ª.Feira", "19h30", "Henrique/Glória/Márcia", "", "São Sebastião"));
+            //        relProdutos.Add(new Produtos("27-3ª.Feira", "07h00", "Alexandre/Daniela/Eliane", "Novena", "Sto. Frei Galvão"));
+            //        relProdutos.Add(new Produtos("28-4ª.Feira", "18h30", "Vitor/Rosana/Danilo", "", "Cristo Rei"));
+            //        relProdutos.Add(new Produtos("29-5ª.Feira", "20h00", "Jéssica/Artur/Talita", "Novena", "São José"));
+            //        relProdutos.Add(new Produtos("30-Sexta", "19h00", "Gabriela/Emanuel/Caio", "", "N.S. Aparecida"));
+            //        relProdutos.Add(new Produtos("31-Sábado", "18h00", "Clarice/Osvaldo/Breno", "Novena", "Santa Cecília"));
+
+
+            //        return relProdutos;
+            //    }
+            private static MySqlConnection Conexao;
+            private static string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
+            public string EncaixarAcolitos(string data, string horario, int quant)
+            {
+                string acolitos;
+                DateTime dataConvertida = DateTime.Parse(data);
+                DayOfWeek diaSemana = dataConvertida.DayOfWeek;
+                int horas = int.Parse(horario.Substring(0, 2));
+                if (horas < 12) 
+                {
+                    int turnoMissa = 1;
+                }
+                if (horas > 12 && horas < 18)
+                {
+                    int turnoMissa = 2;
+                }
+                if (horas > 18 || horas == 0)
+                {
+                    int turnoMissa = 3;
+                }
+                try
+                {
+                    Conexao = new MySqlConnection(data_source);
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = Conexao;
+                    Conexao.Open();
+                    cmd.CommandText = "SELECT A.nome FROM acolitos A " +
+                "INNER JOIN disponibilidade D ON D.id_acolito = A.id" +
+                "INNER JOIN dias_semana S on S.id = D.id_dia_semana " +
+                "WHERE S.dia_semana = @diaSemana AND D.id_turno = @turnoMissa;";
+
+                    MySqlDataReader reader = cmd.ExecuteReader();
+                    int count = 0;
+                    while (reader.Read())
+                    {
+                        count++;  // Contar as linhas
+                    }
+                    while (reader.Read())
+                    {
+                        Random random = new Random();                       
+                        int numeroAleatorio = random.Next(0, count);
+                    }
+
+                }
+                catch (MySqlException ex)
+                {
+                    MessageBox.Show($"Erro MySQL: {ex.Message}");
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro geral: {ex.Message}");
+
+                }
+
+                finally
+                {
+                    if (Conexao != null && Conexao.State == ConnectionState.Open)
+                    {
+                        Conexao.Close();
+                    }
+                }
+                return "";
+            }
             public static List<Produtos> GetListaProdutos()
             {
-                //instanciar um objeto Lista de produtos
                 var relProdutos = new List<Produtos>();
+                try
+                {
+                    Conexao = new MySqlConnection(data_source);
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = Conexao;
+                    Conexao.Open();
+                    cmd.CommandText = "SELECT m.data, m.horario, m.descricao, i.nome from missas m " +
+                "INNER JOIN igreja i ON m.id_igreja = i.id;";
 
+                    MySqlDataReader reader = cmd.ExecuteReader();
+                    
+                    while (reader.Read())
+                    {
+                        relProdutos.Add(new Produtos(reader.GetString(0), reader.GetString(1), "Daniel/Gabriel/João/Felipe", reader.GetString(2), reader.GetString(3)));
+                    }
 
-                relProdutos.Add(new Produtos("02-6ª.Feira", "19h30", "Daniel/Gabriel/João/Felipe", "", "Matriz"));
-                relProdutos.Add(new Produtos("22-Sábado", "09h00", "Luisa/Gabriela", "Novena", "Sto. Frei Galvão/Sta. Filomena"));
-                relProdutos.Add(new Produtos("01-Sábado", "08h00", "Ana/Marcos/João", "Matriz", "Cemitério"));
-                relProdutos.Add(new Produtos("03-Domingo", "07h00", "Carlos/Marina/Fernando", "", "São José"));
-                relProdutos.Add(new Produtos("04-2ª.Feira", "15h00", "Lucas/Sofia/Paulo", "Novena", "Matriz"));
-                relProdutos.Add(new Produtos("05-3ª.Feira", "19h30", "Mateus/Bruna/Renata", "", "Matriz"));
-                relProdutos.Add(new Produtos("06-4ª.Feira", "18h00", "Tiago/Júlia/Pedro", "Novena", "Sto. Frei Galvão"));
-                relProdutos.Add(new Produtos("07-5ª.Feira", "19h30", "André/Larissa/Felipe", "", "São Sebastião"));
-                relProdutos.Add(new Produtos("08-6ª.Feira", "20h00", "Débora/Rafael/Victor", "Novena", "Cristo Rei"));
-                relProdutos.Add(new Produtos("09-Sábado", "17h00", "Joana/Marcelo/Helena", "", "Santa Cecília"));
-                relProdutos.Add(new Produtos("10-Domingo", "09h00", "Carla/Thiago/Vinícius", "Novena", "Matriz"));
-                relProdutos.Add(new Produtos("11-2ª.Feira", "19h30", "Ester/Leonardo/Natalia", "", "Santa Catarina"));
-                relProdutos.Add(new Produtos("12-3ª.Feira", "18h30", "Aline/Ricardo/Gustavo", "Novena", "N.S. Graças"));
-                relProdutos.Add(new Produtos("13-4ª.Feira", "19h00", "Fernanda/Luiz/Amanda", "", "Cristo Rei"));
-                relProdutos.Add(new Produtos("14-5ª.Feira", "20h00", "Isabela/Renato/Clara", "Novena", "Sto. Frei Galvão"));
-                relProdutos.Add(new Produtos("15-6ª.Feira", "19h30", "Sérgio/Patrícia/Luana", "", "São José"));
-                relProdutos.Add(new Produtos("16-Sábado", "16h00", "Rodrigo/Mariana/Tânia", "Novena", "Santa Cecília"));
-                relProdutos.Add(new Produtos("17-Domingo", "18h00", "Igor/Rafaela/Davi/Clementina/Zé.Felipe/Daniel/Rocha/Oliveira", "", "N.S. Aparecida"));
-                relProdutos.Add(new Produtos("18-2ª.Feira", "19h30", "Camila/Fabiano/Flávia", "Novena", "São Sebastião"));
-                relProdutos.Add(new Produtos("19-3ª.Feira", "07h00", "Beatriz/Mateus/Rose", "", "Santa Catarina"));
-                relProdutos.Add(new Produtos("20-4ª.Feira", "18h30", "Juliano/Priscila/Samuel", "Novena", "Sto. Frei Galvão"));
-                relProdutos.Add(new Produtos("21-5ª.Feira", "19h00", "Viviane/Anderson/Lígia", "", "Cristo Rei"));
-                relProdutos.Add(new Produtos("23-6ª.Feira", "20h00", "Eduardo/Susana/Elisa", "Novena", "São José"));
-                relProdutos.Add(new Produtos("24-Sábado", "17h00", "Paulo/Letícia/Fernando", "", "Santa Cecília"));
-                relProdutos.Add(new Produtos("25-Domingo", "08h00", "Luciana/Ronaldo/Regina", "Novena", "N.S. Graças"));
-                relProdutos.Add(new Produtos("26-2ª.Feira", "19h30", "Henrique/Glória/Márcia", "", "São Sebastião"));
-                relProdutos.Add(new Produtos("27-3ª.Feira", "07h00", "Alexandre/Daniela/Eliane", "Novena", "Sto. Frei Galvão"));
-                relProdutos.Add(new Produtos("28-4ª.Feira", "18h30", "Vitor/Rosana/Danilo", "", "Cristo Rei"));
-                relProdutos.Add(new Produtos("29-5ª.Feira", "20h00", "Jéssica/Artur/Talita", "Novena", "São José"));
-                relProdutos.Add(new Produtos("30-Sexta", "19h00", "Gabriela/Emanuel/Caio", "", "N.S. Aparecida"));
-                relProdutos.Add(new Produtos("31-Sábado", "18h00", "Clarice/Osvaldo/Breno", "Novena", "Santa Cecília"));
+                }
+                catch (MySqlException ex)
+                {
+                    MessageBox.Show($"Erro MySQL: {ex.Message}");
 
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro geral: {ex.Message}");
+
+                }
+
+                finally
+                {
+                    if (Conexao != null && Conexao.State == ConnectionState.Open)
+                    {
+                        Conexao.Close();
+                    }
+                }
+                //instanciar um objeto Lista de produtos
+                
+
+                //relProdutos.Add(new Produtos("02-6ª.Feira", "19h30", "Daniel/Gabriel/João/Felipe", "", "Matriz"));
 
                 return relProdutos;
             }
+        }
+
+        private void UserControl1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

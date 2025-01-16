@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
@@ -12,6 +13,7 @@ using System.Windows.Forms;
 using iText.Layout.Element;
 using iText.StyledXmlParser.Jsoup.Nodes;
 using MySql.Data.MySqlClient;
+using Mysqlx.Prepare;
 using Org.BouncyCastle.Utilities.Encoders;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
@@ -39,6 +41,40 @@ namespace AppEscala
 
         }
 
+        private void ApagarMissasAntigas(int id, string dataMissa)
+        {
+            try
+            {
+                Conexao = new MySqlConnection(data_source);
+                MySqlCommand cmd = new MySqlCommand();
+                cmd.Connection = Conexao;
+                Conexao.Open();
+                cmd.CommandText = "DELETE FROM missas WHERE id = @id";
+                
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.ExecuteNonQuery();
+                MessageBox.Show($"Missas do dia {dataMissa} foram retiradas do banco.");
+            }
+            catch (MySqlException ex)
+            {
+                MessageBox.Show($"Erro MySQL: {ex.Message}");
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro geral: {ex.Message}");
+                
+            }
+
+            finally
+            {
+                if (Conexao != null && Conexao.State == ConnectionState.Open)
+                {
+                    Conexao.Close();
+                }
+            }
+        }
         private void carregar_missas()
         {
             try
@@ -47,9 +83,25 @@ namespace AppEscala
                 MySqlCommand cmd = new MySqlCommand();
                 cmd.Connection = Conexao;
                 Conexao.Open();
-                cmd.CommandText = "SELECT m.data, m.horario, i.nome, m.id from missas m " +
-                    "INNER JOIN igreja i ON m.id_igreja = i.id;";
+                cmd.CommandText = "SELECT data, id from missas";                  
                 MySqlDataReader reader = cmd.ExecuteReader();
+                                       
+                DateTime dataAtual = DateTime.Now;
+                   
+                while (reader.Read())
+                {
+                    string dataMissa_String = reader.GetString(0);
+                    DateTime dataMissa = DateTime.Parse(dataMissa_String);
+                    if (dataAtual > dataMissa)
+                    {                       
+                        ApagarMissasAntigas(reader.GetInt32(1), dataMissa.ToString().Substring(0, 10));
+                    }           
+                }
+                reader.Close();
+
+                cmd.CommandText = "SELECT m.data, m.horario, i.nome, m.id from missas m " +
+                "INNER JOIN igreja i ON m.id_igreja = i.id;";
+                reader = cmd.ExecuteReader();
                 dgv_missas.Rows.Clear();
                 int rowIndex = 0;
 
@@ -71,10 +123,12 @@ namespace AppEscala
             catch (MySqlException ex)
             {
                 MessageBox.Show($"Erro MySQL: {ex.Message}");
+                
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro geral: {ex.Message}");
+                MessageBox.Show($"Linha do erro: " + new StackTrace(ex, true).GetFrame(0).GetFileLineNumber());
             }
             finally
             {
@@ -170,8 +224,8 @@ namespace AppEscala
                 cmd.Parameters.AddWithValue("@horario", hora);
 
                 cmd.ExecuteNonQuery();
-                carregar_missas();
                 MessageBox.Show("Missa adicionada");
+                carregar_missas();
             }
             catch (MySqlException ex)
             {

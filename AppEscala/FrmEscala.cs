@@ -16,5 +16,10 @@ namespace AppEscala
         {
             InitializeComponent();
         }
+
+        private void FrmEscala_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

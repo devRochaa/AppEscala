@@ -37,7 +37,7 @@
             skyLabel1.AutoSize = true;
             skyLabel1.Font = new Font("Verdana", 6.75F, FontStyle.Bold);
             skyLabel1.ForeColor = Color.FromArgb(27, 94, 137);
-            skyLabel1.Location = new Point(210, 92);
+            skyLabel1.Location = new Point(269, 68);
             skyLabel1.Name = "skyLabel1";
             skyLabel1.Size = new Size(41, 12);
             skyLabel1.TabIndex = 0;
@@ -52,7 +52,7 @@
             button1.Font = new Font("Segoe UI", 12F);
             button1.HoverTextColor = Color.FromArgb(48, 49, 51);
             button1.InfoColor = Color.FromArgb(144, 147, 153);
-            button1.Location = new Point(142, 172);
+            button1.Location = new Point(222, 273);
             button1.Name = "button1";
             button1.PrimaryColor = Color.FromArgb(64, 158, 255);
             button1.Size = new Size(190, 40);
@@ -70,7 +70,8 @@
             Controls.Add(button1);
             Controls.Add(skyLabel1);
             Name = "UserControl1";
-            Size = new Size(459, 280);
+            Size = new Size(641, 383);
+            Load += UserControl1_Load;
             ResumeLayout(false);
             PerformLayout();
         }
