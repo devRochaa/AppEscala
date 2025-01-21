@@ -11,9 +11,9 @@
   <ItemGroup>
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.0.0" />
     <PackageReference Include="itext7" Version="9.0.0" />
-    <PackageReference Include="MaterialSkin" Version="0.2.1" />
     <PackageReference Include="MySql.Data" Version="9.1.0" />
-    <PackageReference Include="ReaLTaiizor" Version="3.8.0.8" />
+    <PackageReference Include="ReaLTaiizor" Version="3.8.1.1" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>
 
   <ItemGroup>

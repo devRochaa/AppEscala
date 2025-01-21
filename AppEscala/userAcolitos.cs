@@ -37,7 +37,7 @@ namespace AppEscala
         {
 
             try
-            {              
+            {
                 Conexao = new MySqlConnection(data_source);
                 Conexao.Open();
 
@@ -51,9 +51,9 @@ namespace AppEscala
                     "RIGHT JOIN turno AS t ON d.id_turno = t.id " +
                     "WHERE a.nome LIKE @q ORDER BY d.id";
 
-                
+
                 cmd.Parameters.AddWithValue("@q", "%" + txtPesquisa.Text + "%");
-                
+
                 MySqlDataReader reader = cmd.ExecuteReader();
                 dgv_acolitos.Rows.Clear();
                 string[] row = new string[8];
@@ -75,14 +75,14 @@ namespace AppEscala
                     string nome = reader.GetString(0);
                     string turno = reader.GetString(2);
                     int id_dia = reader.GetInt32(3);
-                    row[0] = nome;                    
+                    row[0] = nome;
 
                     if (id_dia >= 1 && id_dia <= 7) // Considerando id_dia válido entre 1 e 7
                     {
                         row[id_dia] = string.IsNullOrEmpty(row[id_dia]) ? turno : $"{row[id_dia]}\n{turno}";
                     }
                 }
-                
+
                 if (!string.IsNullOrEmpty(row[0]))
                 {
                     dgv_acolitos.Rows.Add(row);
@@ -134,13 +134,13 @@ namespace AppEscala
                     {
                         idA = reader.GetInt32(4);
                     }
-                    if (id_agora != idA) 
+                    if (id_agora != idA)
                     {
                         dgv_acolitos.Rows.Add(row);
                         row = new string[8]; // Limpa o array para a próxima linha
                         idA = id_agora;
                     }
-                    string nome = reader.GetString(0);                                    
+                    string nome = reader.GetString(0);
                     string turno = reader.GetString(2);
                     int id_dia = reader.GetInt32(3);
                     row[0] = nome;
@@ -148,8 +148,8 @@ namespace AppEscala
                     if (id_dia >= 1 && id_dia <= 7) // Considerando id_dia válido entre 1 e 7
                     {
                         row[id_dia] = string.IsNullOrEmpty(row[id_dia]) ? turno : $"{row[id_dia]}\n{turno}";
-                    }                   
-                    
+                    }
+
                 }
                 if (!string.IsNullOrEmpty(row[0]))
                 {
@@ -177,6 +177,16 @@ namespace AppEscala
         private void dgv_acolitos_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
+        }
+
+        private void dgv_acolitos_SelectionChanged(object sender, EventArgs e)
+        {
+            DataGridViewSelectedRowCollection itens_selecionados = dgv_acolitos.SelectedRows;
+            DataGridViewSelectedCellCollection item_selecionado = dgv_acolitos.SelectedCells;
+            foreach (DataGridView item in itens_selecionados)
+            {
+                txt_nome.Text = item.SelectedRows.Cells[0];
+            }
         }
     }
 }
