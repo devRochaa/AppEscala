@@ -41,28 +41,29 @@
             sexta = new DataGridViewTextBoxColumn();
             sabado = new DataGridViewTextBoxColumn();
             domingo = new DataGridViewTextBoxColumn();
+            oculto = new DataGridViewTextBoxColumn();
             label3 = new Label();
             txt_nome = new TextBox();
-            txt_seg = new TextBox();
-            textBox3 = new TextBox();
-            textBox4 = new TextBox();
-            textBox5 = new TextBox();
-            textBox6 = new TextBox();
-            textBox7 = new TextBox();
-            textBox8 = new TextBox();
-            textBox9 = new TextBox();
-            textBox10 = new TextBox();
-            textBox11 = new TextBox();
-            textBox12 = new TextBox();
-            textBox13 = new TextBox();
-            textBox14 = new TextBox();
+            txt_seg1 = new TextBox();
+            txt_ter1 = new TextBox();
+            txt_qua1 = new TextBox();
+            txt_qui1 = new TextBox();
+            txt_sex1 = new TextBox();
+            txt_sab1 = new TextBox();
+            txt_dom1 = new TextBox();
+            txt_dom2 = new TextBox();
+            txt_sab2 = new TextBox();
+            txt_sex2 = new TextBox();
+            txt_qui2 = new TextBox();
+            txt_qua2 = new TextBox();
+            txt_ter2 = new TextBox();
             txt_seg2 = new TextBox();
-            textBox16 = new TextBox();
-            textBox17 = new TextBox();
-            textBox18 = new TextBox();
-            textBox19 = new TextBox();
-            textBox20 = new TextBox();
-            textBox21 = new TextBox();
+            txt_dom3 = new TextBox();
+            txt_sab3 = new TextBox();
+            txt_sex3 = new TextBox();
+            txt_qui3 = new TextBox();
+            txt_qua3 = new TextBox();
+            txt_ter3 = new TextBox();
             txt_seg3 = new TextBox();
             label4 = new Label();
             label5 = new Label();
@@ -71,6 +72,8 @@
             label8 = new Label();
             label9 = new Label();
             label10 = new Label();
+            btn_salvar = new Button();
+            txt_id = new TextBox();
             ((System.ComponentModel.ISupportInitialize)dgv_acolitos).BeginInit();
             SuspendLayout();
             // 
@@ -117,7 +120,7 @@
             dgv_acolitos.AllowUserToDeleteRows = false;
             dgv_acolitos.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgv_acolitos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgv_acolitos.Columns.AddRange(new DataGridViewColumn[] { nome, segunda, terca, quarta, quinta, sexta, sabado, domingo });
+            dgv_acolitos.Columns.AddRange(new DataGridViewColumn[] { nome, segunda, terca, quarta, quinta, sexta, sabado, domingo, oculto });
             dgv_acolitos.Location = new Point(48, 101);
             dgv_acolitos.MultiSelect = false;
             dgv_acolitos.Name = "dgv_acolitos";
@@ -184,6 +187,13 @@
             domingo.Name = "domingo";
             domingo.ReadOnly = true;
             // 
+            // oculto
+            // 
+            oculto.HeaderText = "id";
+            oculto.Name = "oculto";
+            oculto.ReadOnly = true;
+            oculto.Visible = false;
+            // 
             // label3
             // 
             label3.AutoSize = true;
@@ -196,154 +206,154 @@
             // 
             // txt_nome
             // 
-            txt_nome.Location = new Point(48, 354);
+            txt_nome.Location = new Point(48, 344);
             txt_nome.Name = "txt_nome";
             txt_nome.Size = new Size(135, 23);
             txt_nome.TabIndex = 7;
             // 
-            // txt_seg
+            // txt_seg1
             // 
-            txt_seg.Location = new Point(196, 355);
-            txt_seg.Name = "txt_seg";
-            txt_seg.Size = new Size(66, 23);
-            txt_seg.TabIndex = 8;
+            txt_seg1.Location = new Point(193, 342);
+            txt_seg1.Name = "txt_seg1";
+            txt_seg1.Size = new Size(66, 23);
+            txt_seg1.TabIndex = 8;
             // 
-            // textBox3
+            // txt_ter1
             // 
-            textBox3.Location = new Point(268, 355);
-            textBox3.Name = "textBox3";
-            textBox3.Size = new Size(66, 23);
-            textBox3.TabIndex = 9;
+            txt_ter1.Location = new Point(265, 342);
+            txt_ter1.Name = "txt_ter1";
+            txt_ter1.Size = new Size(66, 23);
+            txt_ter1.TabIndex = 9;
             // 
-            // textBox4
+            // txt_qua1
             // 
-            textBox4.Location = new Point(340, 355);
-            textBox4.Name = "textBox4";
-            textBox4.Size = new Size(66, 23);
-            textBox4.TabIndex = 10;
+            txt_qua1.Location = new Point(337, 342);
+            txt_qua1.Name = "txt_qua1";
+            txt_qua1.Size = new Size(66, 23);
+            txt_qua1.TabIndex = 10;
             // 
-            // textBox5
+            // txt_qui1
             // 
-            textBox5.Location = new Point(412, 355);
-            textBox5.Name = "textBox5";
-            textBox5.Size = new Size(66, 23);
-            textBox5.TabIndex = 11;
+            txt_qui1.Location = new Point(409, 342);
+            txt_qui1.Name = "txt_qui1";
+            txt_qui1.Size = new Size(66, 23);
+            txt_qui1.TabIndex = 11;
             // 
-            // textBox6
+            // txt_sex1
             // 
-            textBox6.Location = new Point(484, 355);
-            textBox6.Name = "textBox6";
-            textBox6.Size = new Size(66, 23);
-            textBox6.TabIndex = 12;
+            txt_sex1.Location = new Point(481, 342);
+            txt_sex1.Name = "txt_sex1";
+            txt_sex1.Size = new Size(66, 23);
+            txt_sex1.TabIndex = 12;
             // 
-            // textBox7
+            // txt_sab1
             // 
-            textBox7.Location = new Point(556, 355);
-            textBox7.Name = "textBox7";
-            textBox7.Size = new Size(66, 23);
-            textBox7.TabIndex = 13;
+            txt_sab1.Location = new Point(553, 342);
+            txt_sab1.Name = "txt_sab1";
+            txt_sab1.Size = new Size(66, 23);
+            txt_sab1.TabIndex = 13;
             // 
-            // textBox8
+            // txt_dom1
             // 
-            textBox8.Location = new Point(628, 355);
-            textBox8.Name = "textBox8";
-            textBox8.Size = new Size(66, 23);
-            textBox8.TabIndex = 14;
+            txt_dom1.Location = new Point(625, 342);
+            txt_dom1.Name = "txt_dom1";
+            txt_dom1.Size = new Size(66, 23);
+            txt_dom1.TabIndex = 14;
             // 
-            // textBox9
+            // txt_dom2
             // 
-            textBox9.Location = new Point(628, 384);
-            textBox9.Name = "textBox9";
-            textBox9.Size = new Size(66, 23);
-            textBox9.TabIndex = 21;
+            txt_dom2.Location = new Point(625, 371);
+            txt_dom2.Name = "txt_dom2";
+            txt_dom2.Size = new Size(66, 23);
+            txt_dom2.TabIndex = 21;
             // 
-            // textBox10
+            // txt_sab2
             // 
-            textBox10.Location = new Point(556, 384);
-            textBox10.Name = "textBox10";
-            textBox10.Size = new Size(66, 23);
-            textBox10.TabIndex = 20;
+            txt_sab2.Location = new Point(553, 371);
+            txt_sab2.Name = "txt_sab2";
+            txt_sab2.Size = new Size(66, 23);
+            txt_sab2.TabIndex = 20;
             // 
-            // textBox11
+            // txt_sex2
             // 
-            textBox11.Location = new Point(484, 384);
-            textBox11.Name = "textBox11";
-            textBox11.Size = new Size(66, 23);
-            textBox11.TabIndex = 19;
+            txt_sex2.Location = new Point(481, 371);
+            txt_sex2.Name = "txt_sex2";
+            txt_sex2.Size = new Size(66, 23);
+            txt_sex2.TabIndex = 19;
             // 
-            // textBox12
+            // txt_qui2
             // 
-            textBox12.Location = new Point(412, 384);
-            textBox12.Name = "textBox12";
-            textBox12.Size = new Size(66, 23);
-            textBox12.TabIndex = 18;
+            txt_qui2.Location = new Point(409, 371);
+            txt_qui2.Name = "txt_qui2";
+            txt_qui2.Size = new Size(66, 23);
+            txt_qui2.TabIndex = 18;
             // 
-            // textBox13
+            // txt_qua2
             // 
-            textBox13.Location = new Point(340, 384);
-            textBox13.Name = "textBox13";
-            textBox13.Size = new Size(66, 23);
-            textBox13.TabIndex = 17;
+            txt_qua2.Location = new Point(337, 371);
+            txt_qua2.Name = "txt_qua2";
+            txt_qua2.Size = new Size(66, 23);
+            txt_qua2.TabIndex = 17;
             // 
-            // textBox14
+            // txt_ter2
             // 
-            textBox14.Location = new Point(268, 384);
-            textBox14.Name = "textBox14";
-            textBox14.Size = new Size(66, 23);
-            textBox14.TabIndex = 16;
+            txt_ter2.Location = new Point(265, 371);
+            txt_ter2.Name = "txt_ter2";
+            txt_ter2.Size = new Size(66, 23);
+            txt_ter2.TabIndex = 16;
             // 
             // txt_seg2
             // 
-            txt_seg2.Location = new Point(196, 384);
+            txt_seg2.Location = new Point(193, 371);
             txt_seg2.Name = "txt_seg2";
             txt_seg2.Size = new Size(66, 23);
             txt_seg2.TabIndex = 15;
             // 
-            // textBox16
+            // txt_dom3
             // 
-            textBox16.Location = new Point(628, 413);
-            textBox16.Name = "textBox16";
-            textBox16.Size = new Size(66, 23);
-            textBox16.TabIndex = 28;
+            txt_dom3.Location = new Point(625, 400);
+            txt_dom3.Name = "txt_dom3";
+            txt_dom3.Size = new Size(66, 23);
+            txt_dom3.TabIndex = 28;
             // 
-            // textBox17
+            // txt_sab3
             // 
-            textBox17.Location = new Point(556, 413);
-            textBox17.Name = "textBox17";
-            textBox17.Size = new Size(66, 23);
-            textBox17.TabIndex = 27;
+            txt_sab3.Location = new Point(553, 400);
+            txt_sab3.Name = "txt_sab3";
+            txt_sab3.Size = new Size(66, 23);
+            txt_sab3.TabIndex = 27;
             // 
-            // textBox18
+            // txt_sex3
             // 
-            textBox18.Location = new Point(484, 413);
-            textBox18.Name = "textBox18";
-            textBox18.Size = new Size(66, 23);
-            textBox18.TabIndex = 26;
+            txt_sex3.Location = new Point(481, 400);
+            txt_sex3.Name = "txt_sex3";
+            txt_sex3.Size = new Size(66, 23);
+            txt_sex3.TabIndex = 26;
             // 
-            // textBox19
+            // txt_qui3
             // 
-            textBox19.Location = new Point(412, 413);
-            textBox19.Name = "textBox19";
-            textBox19.Size = new Size(66, 23);
-            textBox19.TabIndex = 25;
+            txt_qui3.Location = new Point(409, 400);
+            txt_qui3.Name = "txt_qui3";
+            txt_qui3.Size = new Size(66, 23);
+            txt_qui3.TabIndex = 25;
             // 
-            // textBox20
+            // txt_qua3
             // 
-            textBox20.Location = new Point(340, 413);
-            textBox20.Name = "textBox20";
-            textBox20.Size = new Size(66, 23);
-            textBox20.TabIndex = 24;
+            txt_qua3.Location = new Point(337, 400);
+            txt_qua3.Name = "txt_qua3";
+            txt_qua3.Size = new Size(66, 23);
+            txt_qua3.TabIndex = 24;
             // 
-            // textBox21
+            // txt_ter3
             // 
-            textBox21.Location = new Point(268, 413);
-            textBox21.Name = "textBox21";
-            textBox21.Size = new Size(66, 23);
-            textBox21.TabIndex = 23;
+            txt_ter3.Location = new Point(265, 400);
+            txt_ter3.Name = "txt_ter3";
+            txt_ter3.Size = new Size(66, 23);
+            txt_ter3.TabIndex = 23;
             // 
             // txt_seg3
             // 
-            txt_seg3.Location = new Point(196, 413);
+            txt_seg3.Location = new Point(193, 400);
             txt_seg3.Name = "txt_seg3";
             txt_seg3.Size = new Size(66, 23);
             txt_seg3.TabIndex = 22;
@@ -352,7 +362,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label4.Location = new Point(196, 335);
+            label4.Location = new Point(193, 322);
             label4.Name = "label4";
             label4.Size = new Size(64, 17);
             label4.TabIndex = 29;
@@ -362,7 +372,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label5.Location = new Point(281, 335);
+            label5.Location = new Point(278, 322);
             label5.Name = "label5";
             label5.Size = new Size(42, 17);
             label5.TabIndex = 30;
@@ -372,7 +382,7 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label6.Location = new Point(349, 335);
+            label6.Location = new Point(346, 322);
             label6.Name = "label6";
             label6.Size = new Size(50, 17);
             label6.TabIndex = 31;
@@ -382,7 +392,7 @@
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label7.Location = new Point(421, 335);
+            label7.Location = new Point(418, 322);
             label7.Name = "label7";
             label7.Size = new Size(49, 17);
             label7.TabIndex = 32;
@@ -392,7 +402,7 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label8.Location = new Point(496, 335);
+            label8.Location = new Point(493, 322);
             label8.Name = "label8";
             label8.Size = new Size(44, 17);
             label8.TabIndex = 33;
@@ -402,7 +412,7 @@
             // 
             label9.AutoSize = true;
             label9.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label9.Location = new Point(560, 335);
+            label9.Location = new Point(557, 322);
             label9.Name = "label9";
             label9.Size = new Size(56, 17);
             label9.TabIndex = 34;
@@ -412,16 +422,35 @@
             // 
             label10.AutoSize = true;
             label10.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label10.Location = new Point(630, 335);
+            label10.Location = new Point(627, 322);
             label10.Name = "label10";
             label10.Size = new Size(67, 17);
             label10.TabIndex = 35;
             label10.Text = "Domingo:";
             // 
+            // btn_salvar
+            // 
+            btn_salvar.Location = new Point(613, 429);
+            btn_salvar.Name = "btn_salvar";
+            btn_salvar.Size = new Size(78, 24);
+            btn_salvar.TabIndex = 36;
+            btn_salvar.Text = "Salvar";
+            btn_salvar.UseVisualStyleBackColor = true;
+            btn_salvar.Click += btn_salvar_Click;
+            // 
+            // txt_id
+            // 
+            txt_id.Location = new Point(628, 22);
+            txt_id.Name = "txt_id";
+            txt_id.Size = new Size(66, 23);
+            txt_id.TabIndex = 37;
+            // 
             // userAcolitos
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(txt_id);
+            Controls.Add(btn_salvar);
             Controls.Add(label10);
             Controls.Add(label9);
             Controls.Add(label8);
@@ -429,27 +458,27 @@
             Controls.Add(label6);
             Controls.Add(label5);
             Controls.Add(label4);
-            Controls.Add(textBox16);
-            Controls.Add(textBox17);
-            Controls.Add(textBox18);
-            Controls.Add(textBox19);
-            Controls.Add(textBox20);
-            Controls.Add(textBox21);
+            Controls.Add(txt_dom3);
+            Controls.Add(txt_sab3);
+            Controls.Add(txt_sex3);
+            Controls.Add(txt_qui3);
+            Controls.Add(txt_qua3);
+            Controls.Add(txt_ter3);
             Controls.Add(txt_seg3);
-            Controls.Add(textBox9);
-            Controls.Add(textBox10);
-            Controls.Add(textBox11);
-            Controls.Add(textBox12);
-            Controls.Add(textBox13);
-            Controls.Add(textBox14);
+            Controls.Add(txt_dom2);
+            Controls.Add(txt_sab2);
+            Controls.Add(txt_sex2);
+            Controls.Add(txt_qui2);
+            Controls.Add(txt_qua2);
+            Controls.Add(txt_ter2);
             Controls.Add(txt_seg2);
-            Controls.Add(textBox8);
-            Controls.Add(textBox7);
-            Controls.Add(textBox6);
-            Controls.Add(textBox5);
-            Controls.Add(textBox4);
-            Controls.Add(textBox3);
-            Controls.Add(txt_seg);
+            Controls.Add(txt_dom1);
+            Controls.Add(txt_sab1);
+            Controls.Add(txt_sex1);
+            Controls.Add(txt_qui1);
+            Controls.Add(txt_qua1);
+            Controls.Add(txt_ter1);
+            Controls.Add(txt_seg1);
             Controls.Add(txt_nome);
             Controls.Add(label3);
             Controls.Add(dgv_acolitos);
@@ -482,26 +511,26 @@
         private DataGridViewTextBoxColumn domingo;
         private Label label3;
         private TextBox txt_nome;
-        private TextBox txt_seg;
-        private TextBox textBox3;
-        private TextBox textBox4;
-        private TextBox textBox5;
-        private TextBox textBox6;
-        private TextBox textBox7;
-        private TextBox textBox8;
-        private TextBox textBox9;
-        private TextBox textBox10;
-        private TextBox textBox11;
-        private TextBox textBox12;
-        private TextBox textBox13;
-        private TextBox textBox14;
+        private TextBox txt_seg1;
+        private TextBox txt_ter1;
+        private TextBox txt_qua1;
+        private TextBox txt_qui1;
+        private TextBox txt_sex1;
+        private TextBox txt_sab1;
+        private TextBox txt_dom1;
+        private TextBox txt_dom2;
+        private TextBox txt_sab2;
+        private TextBox txt_sex2;
+        private TextBox txt_qui2;
+        private TextBox txt_qua2;
+        private TextBox txt_ter2;
         private TextBox txt_seg2;
-        private TextBox textBox16;
-        private TextBox textBox17;
-        private TextBox textBox18;
-        private TextBox textBox19;
-        private TextBox textBox20;
-        private TextBox textBox21;
+        private TextBox txt_dom3;
+        private TextBox txt_sab3;
+        private TextBox txt_sex3;
+        private TextBox txt_qui3;
+        private TextBox txt_qua3;
+        private TextBox txt_ter3;
         private TextBox txt_seg3;
         private Label label4;
         private Label label5;
@@ -510,5 +539,8 @@
         private Label label8;
         private Label label9;
         private Label label10;
+        private Button btn_salvar;
+        private DataGridViewTextBoxColumn oculto;
+        private TextBox txt_id;
     }
 }
