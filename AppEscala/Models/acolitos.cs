@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SQLite;
 
 namespace AppEscala.Models
 {
-    internal class acolitos
+    public class Acolitos
     {
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public string Nome { get; set; }
     }
+   
 }

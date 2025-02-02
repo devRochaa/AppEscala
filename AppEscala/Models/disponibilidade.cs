@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AppEscala.Models
 {
-    internal class disponibilidade
+    internal class Disponibilidade
     {
     }
 }
