@@ -20,6 +20,6 @@ namespace AppEscala.Models
 
         public string Descricao {  get; set; }
 
-        public int Quant_A {  get; set; }
+        public int Qnt_acolitos {  get; set; }
     }
 }
