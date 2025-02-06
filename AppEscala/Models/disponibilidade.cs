@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SQLite;
+﻿using SQLite;
 
 namespace AppEscala.Models
 {
@@ -12,10 +7,11 @@ namespace AppEscala.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
+        [NotNull]
         public int Id_acolitos { get; set; }
-
+        [NotNull]
         public int Id_turno { get; set; }
-
-        public int id_dia_semana { get; set; }
+        [NotNull]
+        public int IdDiaSemana { get; set; }
     }
 }

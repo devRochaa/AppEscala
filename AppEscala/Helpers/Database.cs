@@ -11,109 +11,243 @@ namespace AppEscala.Helpers
 {
     public class Database
     {
-        readonly SQLiteAsyncConnection _conn;
-        public Database(string path)
+        SQLiteConnection db;
+        public void Initialize()
         {
-            _conn = new SQLiteAsyncConnection(path);
-            _conn.CreateTableAsync<Acolitos>().Wait();
-            _conn.CreateTableAsync<Dia>().Wait();
-            _conn.CreateTableAsync<Dias_semanas>().Wait();
-            _conn.CreateTableAsync<Turno>().Wait();
-            _conn.CreateTableAsync<Disponibilidade>().Wait();
-            _conn.CreateTableAsync<Igreja>().Wait();
-            _conn.CreateTableAsync<Missas>().Wait();
-        }
-        
-        public async Task Inititialize()
-        {
-            string[] dias_semanas = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado","Domingo"};
-
-            foreach (string dia in dias_semanas)
+            try
             {
-                var novoDia = new Dias_semanas { Nome = dia };
-                await _conn.InsertAsync(novoDia);
-            }
+                this.db = new SQLiteConnection(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "data.db"));
+                this.db.CreateTable<Acolitos>();
+                this.db.CreateTable<Dia>();
+                this.db.CreateTable<Dias_semanas>();
+                this.db.CreateTable<Turno>();
+                this.db.CreateTable<Disponibilidade>();
+                this.db.CreateTable<Igreja>();
+                this.db.CreateTable<MissasC>();
 
-            string[] turnos = {"Manhã", "Tarde","Noite"};
-            foreach (string turno in turnos)
+                this.db.BeginTransaction();
+                try
+                {
+                    string[] dias_da_semana = { "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo" };
+                    foreach (string dia in dias_da_semana)
+                    {
+                        // Verifica se o dia já existe antes de inserir
+                        var diaExistente = this.db.Table<Dias_semanas>().FirstOrDefault(d => d.Nome == dia);
+                        if (diaExistente == null)
+                        {
+                            Dias_semanas novoDia = new Dias_semanas { Nome = dia };
+                            this.db.Insert(novoDia);
+                        }
+
+                    }
+
+                    string[] turnos = { "Manhã", "Tarde", "Noite" };
+                    foreach (string turno in turnos)
+                    {
+                        var turnoExistente = this.db.Table<Turno>().FirstOrDefault(t => t.Nome == turno);
+                        if (turnoExistente == null)
+                        {
+                            Turno novoTurno = new Turno { Nome = turno };
+                            this.db.Insert(novoTurno);
+                        }
+                    }
+
+                    this.db.Commit();
+                }
+                catch
+                {
+                    this.db.Rollback();
+                    throw;
+                }
+            }
+            catch (Exception ex)
             {
-                var novoTurno = new Turno { Nome = turno };
-                await _conn.InsertAsync(novoTurno);
+                MessageBox.Show("Erro ao inicializar o banco de dados: " + ex.ToString());
+            }
+        }
+        public int InsertAcolito(Acolitos AcolitoNome)
+        {           
+                try
+                {                    
+                    return this.db.Insert(AcolitoNome);                   
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Erro ao inserir igreja: " + ex.Message);
+                }            
+        }
+
+        public class Dias_Disponibilidade
+        {
+            public string segunda;
+            public string terça;
+            public string quarta;
+        }
+        //public void InsertDisponibilidade(int id,)
+
+        public void InsertIgreja(Igreja dados_igreja)
+        {
+            try
+            {
+                this.db.Insert(dados_igreja);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }
+        }
+        public TableQuery<Igreja> SelectAllIgreja()
+        {
+            return this.db.Table<Igreja>();
+        }
+        public void UpdateIgrejas(int id, Igreja DadosAtualizados)
+        {
+            try { 
+            var registro = this.db.Find<Igreja>(id);
+            if (registro != null) { 
+                                   
+                registro.nome = DadosAtualizados.nome;
+                this.db.Update(registro);
+                
+            }
+            else
+            {
+                throw new Exception("Registro não encontrado.");
+            }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
+            }
+        }
+        public void DeleteIgrejas(int id)
+        {
+            try 
+            { 
+                var registro = this.db.Find<Igreja>(id);
+                if (registro != null) 
+                {
+                    this.db.Delete(registro);
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao excluir igreja: " + ex.Message);
             }
         }
 
-        public Task<int> Insert(Acolitos a)
-        { 
-            return _conn.InsertAsync(a);
-        }
-
-        public Task<List<Acolitos>> Update(Acolitos a)
+        public Igreja SelectTeste()
         {
-            string sql = "UPDATE Acolitos SET nome= ? WHERE id = ?";
-            return _conn.QueryAsync<Acolitos>(sql, a.Nome, a.Id);
+            try
+            {
+                string comando = "SELECT nome FROM igreja WHERE id = 1;";
+                return this.db.Query<Igreja>(comando).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
         }
-       
-
-        public Task<int> Delete(int id)
+        public class AcolitoDisponibilidade
         {
-            return _conn.Table<Acolitos>().DeleteAsync(i => i.Id == id);
+            public string Nome { get; set; }       
+            public string DiaSemana { get; set; }  
+            public string Turno { get; set; }      
+            public int IdDiaSemana { get; set; }   
+            public int Id_acolito { get; set; }     
         }
-
-        public Task<List<Acolitos>> GetAll() 
+        public List<AcolitoDisponibilidade> ListaUserAcolitos()
         {
-            return _conn.Table<Acolitos>().ToListAsync();
+            try
+            {
+                string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
+                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito 
+                    FROM Acolitos AS a 
+                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
+                    INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
+                    INNER JOIN Turno AS t ON d.Id_turno = t.Id ORDER BY a.Id";
+                return this.db.Query<AcolitoDisponibilidade>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
         }
-
-
-        public Task<List<Acolitos>> Search(string q) 
-        {
-            string sql = "SELECT * from Acolitos WHERE id LIKE '%" + q + "%'";
-            return _conn.QueryAsync<Acolitos>(sql);
-        }
-
-        public Task<List<Acolitos>> SelectListaAcolitos()
-        {
-            string sql = "SELECT a.nome, s.dia_semana, t.turno, d.id_dia_semana, a.id " +
-                    "FROM acolitos AS a " +
-                    "LEFT JOIN disponibilidade AS d ON a.id = d.id_acolito " +
-                    "RIGHT JOIN dias_semana AS s ON d.id_dia_semana = s.id " +
-                    "RIGHT JOIN turno AS t ON d.id_turno = t.id ORDER BY a.id";
-
-            return _conn.QueryAsync<Acolitos>(sql);
-        }
-
-        //SQLiteConnection db;
-        //public void Inititialize() 
+        //readonly SQLiteAsyncConnection _conn;
+        //public Database(string path)
         //{
-        //    this.db = new SQLiteConnection(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "data.db"));
-        //    this.db.CreateTable<Igreja>();
-
-        //}
-        //public void InsertIgreja(Igreja dados_igreja)
-        //{
-        //    this.db.Insert(dados_igreja);
-        //}
-        //public TableQuery<Igreja> SelectAllIgreja()
-        //{
-        //    return this.db.Table<Igreja>();                        
-        //}
-        //public void UpdateIgrejas(int id, Igreja DadosAtualizados)
-        //{
-        //    var registro = this.db.Find<Igreja>(id);
-        //    registro.id = DadosAtualizados.id;
-        //    registro.nome = DadosAtualizados.nome;
-        //    this.db.Update(registro);
-        //}
-        //public void DeleteIgrejas(int id)
-        //{
-        //    var registro = this.db.Find<Igreja>(id);
-        //    this.db.Delete(registro);
+        //    _conn = new SQLiteAsyncConnection(path);
+        //    _conn.CreateTableAsync<Acolitos>().Wait();
+        //    _conn.CreateTableAsync<Dia>().Wait();
+        //    _conn.CreateTableAsync<Dias_semanas>().Wait();
+        //    _conn.CreateTableAsync<Turno>().Wait();
+        //    _conn.CreateTableAsync<Disponibilidade>().Wait();
+        //    _conn.CreateTableAsync<Igreja>().Wait();
+        //    _conn.CreateTableAsync<Missas>().Wait();
         //}
 
-        //public void SelectTeste()
+        //public async Task Inititialize()
         //{
-        //    string comando = "SELECT nome FROM igreja WHERE id = 1;";
-        //    this.db.Query<Igreja>(comando);
+        //    string[] dias_semanas = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado","Domingo"};
+
+        //    foreach (string dia in dias_semanas)
+        //    {
+        //        var novoDia = new Dias_semanas { Nome = dia };
+        //        await _conn.InsertAsync(novoDia);
+        //    }
+
+        //    string[] turnos = {"Manhã", "Tarde","Noite"};
+        //    foreach (string turno in turnos)
+        //    {
+        //        var novoTurno = new Turno { Nome = turno };
+        //        await _conn.InsertAsync(novoTurno);
+        //    }
         //}
+
+        //public Task<int> Insert(Acolitos a)
+        //{ 
+        //    return _conn.InsertAsync(a);
+        //}
+
+        //public Task<List<Acolitos>> Update(Acolitos a)
+        //{
+        //    string sql = "UPDATE Acolitos SET nome= ? WHERE id = ?";
+        //    return _conn.QueryAsync<Acolitos>(sql, a.Nome, a.Id);
+        //}
+
+
+        //public Task<int> Delete(int id)
+        //{
+        //    return _conn.Table<Acolitos>().DeleteAsync(i => i.Id == id);
+        //}
+
+        //public Task<List<Acolitos>> GetAll() 
+        //{
+        //    return _conn.Table<Acolitos>().ToListAsync();
+        //}
+
+
+        //public Task<List<Acolitos>> Search(string q) 
+        //{
+        //    string sql = "SELECT * from Acolitos WHERE id LIKE '%" + q + "%'";
+        //    return _conn.QueryAsync<Acolitos>(sql);
+        //}
+
+        //public Task<List<Acolitos>> SelectListaAcolitos()
+        //{
+        //    string sql = "SELECT a.nome, s.dia_semana, t.turno, d.id_dia_semana, a.id " +
+        //            "FROM acolitos AS a " +
+        //            "LEFT JOIN disponibilidade AS d ON a.id = d.id_acolito " +
+        //            "RIGHT JOIN dias_semana AS s ON d.id_dia_semana = s.id " +
+        //            "RIGHT JOIN turno AS t ON d.id_turno = t.id ORDER BY a.id";
+
+        //    return _conn.QueryAsync<Acolitos>(sql);
+        //}
+
     }
 }

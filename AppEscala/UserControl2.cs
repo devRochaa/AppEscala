@@ -9,7 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using AppEscala.Helpers;
+using AppEscala.Models;
 using MySql.Data.MySqlClient;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 namespace AppEscala
@@ -18,11 +19,13 @@ namespace AppEscala
     {
         private MySqlConnection Conexao;
         private string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
-
+        private Database db;
 
         public UserControl2()
         {
             InitializeComponent();
+            db = new Database();
+            db.Initialize();
         }
 
 
@@ -207,6 +210,20 @@ namespace AppEscala
         
         private void button2_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(txtNome.Text))
+            {
+                MessageBox.Show("O nome do acólito não pode estar vazio!",
+                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            Acolitos novoAcolito = new Acolitos { Nome = txtNome.Text};            
+            int id_inserido = db.InsertAcolito(novoAcolito);
+
+            if (datas.Count != 0)
+            {
+                //
+            }
+
             if (string.IsNullOrEmpty(txtNome.Text)) 
             {
                 MessageBox.Show("O nome do acólito não pode estar vazio!",

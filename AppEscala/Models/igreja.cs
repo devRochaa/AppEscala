@@ -11,6 +11,7 @@ namespace AppEscala.Models
     {
         [PrimaryKey, AutoIncrement]
         public int id { get; set; }
+        [NotNull]
         public string nome { get; set; }
     }
 }
