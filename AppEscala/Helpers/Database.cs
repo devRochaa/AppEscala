@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AppEscala.Models;
+using Microsoft.Win32;
 using SQLite;
 
 namespace AppEscala.Helpers
@@ -41,7 +42,7 @@ namespace AppEscala.Helpers
 
                     }
 
-                    string[] turnos = { "Manhã", "Tarde", "Noite" };
+                    string[] turnos = { "Manhã", "Tarde", "Noite", "-----" };
                     foreach (string turno in turnos)
                     {
                         var turnoExistente = this.db.Table<Turno>().FirstOrDefault(t => t.Nome == turno);
@@ -67,23 +68,42 @@ namespace AppEscala.Helpers
         }
         public int InsertAcolito(Acolitos AcolitoNome)
         {           
-                try
-                {                    
-                    return this.db.Insert(AcolitoNome);                   
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Erro ao inserir igreja: " + ex.Message);
-                }            
+            try
+            {
+                this.db.Insert(AcolitoNome); // Insere o registro
+                return AcolitoNome.Id; // Retorna o ID correto
+            }            
+            catch (Exception ex)
+            {
+               throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }            
         }
 
-        public class Dias_Disponibilidade
-        {
-            public string segunda;
-            public string terça;
-            public string quarta;
-        }
+        
         //public void InsertDisponibilidade(int id,)
+        public void InsertDisponibilidade(Disponibilidade dados_d)
+        {
+            try
+            {
+                this.db.Insert(dados_d);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }
+        }
+
+        public void InsertDias(Dia dados_dia)
+        {
+            try
+            {
+                this.db.Insert(dados_dia);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }
+        }
 
         public void InsertIgreja(Igreja dados_igreja)
         {
@@ -99,6 +119,18 @@ namespace AppEscala.Helpers
         public TableQuery<Igreja> SelectAllIgreja()
         {
             return this.db.Table<Igreja>();
+        }
+        public List<Acolitos> SelectAllAcolitos()
+        {
+            try
+            {
+                string comando = "SELECT Nome FROM Acolitos;";
+                return this.db.Query<Acolitos>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
         }
         public void UpdateIgrejas(int id, Igreja DadosAtualizados)
         {

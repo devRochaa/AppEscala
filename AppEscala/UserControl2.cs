@@ -102,52 +102,58 @@ namespace AppEscala
 
 
         }
-        private void AddDias(int Id)             
+        private void AddDias(int Id)
         {
-            try
+            foreach (string data in datas)
             {
-                Conexao = new MySqlConnection(data_source);
+                Dia dados_dia = new Dia() { Id_acolitos = Id, dia = data };
+                db.InsertDias(dados_dia);
+            }
 
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.Connection = Conexao;
-                Conexao.Open();
-                cmd.CommandText = "INSERT INTO dia (id_acolito,dia) VALUES (@Id, @dia)";
-                foreach (string data in datas)
-                {
-                    cmd.Parameters.Clear();
-                    cmd.Parameters.AddWithValue("@Id", Id);
-                    cmd.Parameters.AddWithValue("@dia", data);
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show($"Erro MySQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro geral: {ex.Message}");
-            }
-            finally
-            {
-                if (Conexao != null && Conexao.State == ConnectionState.Open)
-                {
-                    Conexao.Close();
-                }
-            }
+            //    try
+            //{
+            //    Conexao = new MySqlConnection(data_source);
+
+            //    MySqlCommand cmd = new MySqlCommand();
+            //    cmd.Connection = Conexao;
+            //    Conexao.Open();
+            //    cmd.CommandText = "INSERT INTO dia (id_acolito,dia) VALUES (@Id, @dia)";
+            //    foreach (string data in datas)
+            //    {
+            //        cmd.Parameters.Clear();
+            //        cmd.Parameters.AddWithValue("@Id", Id);
+            //        cmd.Parameters.AddWithValue("@dia", data);
+            //        cmd.ExecuteNonQuery();
+            //    }
+            //}
+            //catch (MySqlException ex)
+            //{
+            //    MessageBox.Show($"Erro MySQL: {ex.Message}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"Erro geral: {ex.Message}");
+            //}
+            //finally
+            //{
+            //    if (Conexao != null && Conexao.State == ConnectionState.Open)
+            //    {
+            //        Conexao.Close();
+            //    }
+            //}
 
         }
-        private void ProcessarSemana(int[] array, Int32 Id, int dia)
+
+        private void ProcessarSemana(int[] array, int Id, int dia)
         {
             if (array != null)
             {
-
                 // Processar os dados conforme a lógica necessária
                 int i = 1;
                 int index = 0;
                 foreach (int valor in array)
                 {
-                    
+
                     if (valor == 1)
                     {
                         array[index] = i;
@@ -161,53 +167,60 @@ namespace AppEscala
                 }
                 //string mensagem = string.Join(", ", array);
                 //MessageBox.Show($"Valores sab: {mensagem}");
-                
+
             }
-            AdicionarSemana(array, Id, dia);    
-            
+            AdicionarSemana(array, Id, dia);
+
 
         }
-        private void AdicionarSemana(int[] array, Int32 Id, int dia)
+        private void AdicionarSemana(int[] array, int Id, int dia)
         {
-            if (array == null || array.Length == 0) return;
-            Conexao = new MySqlConnection(data_source);
-            try
+            foreach (int valor in array)
             {
+                Disponibilidade dados_d = new Disponibilidade { Id_acolitos = Id, IdDiaSemana = dia,  Id_turno = valor };
+                db.InsertDisponibilidade(dados_d);
+            }
 
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = Conexao;
-                    Conexao.Open();
-                    cmd.CommandText = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@Id, @Dia, @Turno)";
-                    
-                foreach (int valor in array)
-                {
-                    cmd.Parameters.Clear();
 
-                    cmd.Parameters.AddWithValue("@Id", Id);
-                    cmd.Parameters.AddWithValue("@Dia", dia);
-                    cmd.Parameters.AddWithValue("@Turno", valor);
+            //if (array == null || array.Length == 0) return;
+            //Conexao = new MySqlConnection(data_source);
+            //try
+            //{
 
-                    cmd.ExecuteNonQuery();                    
-                }
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show($"Erro MySQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro geral: {ex.Message}");
-            }
-            finally
-            {
-                if (Conexao != null && Conexao.State == ConnectionState.Open)
-                {
-                    Conexao.Close();
-                }
-            }
+            //        MySqlCommand cmd = new MySqlCommand();
+            //        cmd.Connection = Conexao;
+            //        Conexao.Open();
+            //        cmd.CommandText = "INSERT INTO disponibilidade (id_acolito, id_dia_semana, id_turno) VALUES (@Id, @Dia, @Turno)";
+
+            //    foreach (int valor in array)
+            //    {
+            //        cmd.Parameters.Clear();
+
+            //        cmd.Parameters.AddWithValue("@Id", Id);
+            //        cmd.Parameters.AddWithValue("@Dia", dia);
+            //        cmd.Parameters.AddWithValue("@Turno", valor);
+
+            //        cmd.ExecuteNonQuery();                    
+            //    }
+            //}
+            //catch (MySqlException ex)
+            //{
+            //    MessageBox.Show($"Erro MySQL: {ex.Message}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"Erro geral: {ex.Message}");
+            //}
+            //finally
+            //{
+            //    if (Conexao != null && Conexao.State == ConnectionState.Open)
+            //    {
+            //        Conexao.Close();
+            //    }
+            //}
 
         }
-        
+
         private void button2_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(txtNome.Text))
@@ -216,72 +229,85 @@ namespace AppEscala
                 "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            Acolitos novoAcolito = new Acolitos { Nome = txtNome.Text};            
+            Acolitos novoAcolito = new Acolitos { Nome = txtNome.Text };
             int id_inserido = db.InsertAcolito(novoAcolito);
-
+            MessageBox.Show($"{id_inserido}");
+            if (id_inserido == null) { MessageBox.Show("O acólito não foi adicionado!");
+                return; }
+            if (seg != null || sab != null)
+            {
+                ProcessarSemana(seg, id_inserido, 1); ProcessarSemana(ter, id_inserido, 2); ProcessarSemana(qua, id_inserido, 3);
+                ProcessarSemana(qui, id_inserido, 4); ProcessarSemana(sex, id_inserido, 5);
+                ProcessarSemana(sab, id_inserido, 6); ProcessarSemana(dom, id_inserido, 7);
+            }
             if (datas.Count != 0)
             {
-                //
+                AddDias(id_inserido);
             }
 
-            if (string.IsNullOrEmpty(txtNome.Text)) 
-            {
-                MessageBox.Show("O nome do acólito não pode estar vazio!",
-                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            try
-            {
+            MessageBox.Show("O Acólito foi adicionado");
 
-                //Criar conexão com mysql
-                Conexao = new MySqlConnection(data_source);
-                Conexao.Open();
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.Connection = Conexao;
-                cmd.CommandText = "INSERT INTO acolitos (nome) VALUES (@nome); SELECT LAST_INSERT_ID();";
-                
-                cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+            //if (string.IsNullOrEmpty(txtNome.Text)) 
+            //{
+            //    MessageBox.Show("O nome do acólito não pode estar vazio!",
+            //    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+            //try
+            //{
 
-                //foreach (string data in datas)
-                //{ 
-                //string sql3 = "INSERT INTO dia (id_acolito,dia) VALUES (,)";  
-                //}
+            //    //Criar conexão com mysql
+            //    Conexao = new MySqlConnection(data_source);
+            //    Conexao.Open();
+            //    MySqlCommand cmd = new MySqlCommand();
+            //    cmd.Connection = Conexao;
+            //    cmd.CommandText = "INSERT INTO acolitos (nome) VALUES (@nome); SELECT LAST_INSERT_ID();";
+
+            //    cmd.Parameters.AddWithValue("@nome", txtNome.Text);
+
+            //    //foreach (string data in datas)
+            //    //{ 
+            //    //string sql3 = "INSERT INTO dia (id_acolito,dia) VALUES (,)";  
+            //    //}
 
 
-                //executar comando insert
+            //    //executar comando insert
 
 
-                object result = cmd.ExecuteScalar();
-                int idRetorno = Convert.ToInt32(result);
-                
-                //adiciona dias da semana:
-                ProcessarSemana(seg, idRetorno, 1); ProcessarSemana(ter, idRetorno, 2); ProcessarSemana(qua, idRetorno, 3);
-                ProcessarSemana(qui, idRetorno, 4); ProcessarSemana(sex, idRetorno, 5);
-                ProcessarSemana(sab, idRetorno, 6); ProcessarSemana(dom, idRetorno, 7);
+            //    object result = cmd.ExecuteScalar();
+            //    int idRetorno = Convert.ToInt32(result);
 
-                //adiciona dias:
-                if(datas.Count != 0)
-                {
-                    AddDias(idRetorno);
-                }
-                
+            //    //adiciona dias da semana:
+            //    ProcessarSemana(seg, idRetorno, 1); ProcessarSemana(ter, idRetorno, 2); ProcessarSemana(qua, idRetorno, 3);
+            //    ProcessarSemana(qui, idRetorno, 4); ProcessarSemana(sex, idRetorno, 5);
+            //    ProcessarSemana(sab, idRetorno, 6); ProcessarSemana(dom, idRetorno, 7);
 
-                MessageBox.Show("O Acólito foi adicionado");
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show("Erro " + ex.Number + " ocorreu: " + ex.Message,
-                "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                if (Conexao != null && Conexao.State == ConnectionState.Open)
-                {
-                    Conexao.Close();
-                }
-            }
+            //    //adiciona dias:
+            //    if(datas.Count != 0)
+            //    {
+            //        AddDias(idRetorno);
+            //    }
+
+
+            //    MessageBox.Show("O Acólito foi adicionado");
+            //}
+            //catch (MySqlException ex)
+            //{
+            //    MessageBox.Show("Erro " + ex.Number + " ocorreu: " + ex.Message,
+            //    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
+            //finally
+            //{
+            //    if (Conexao != null && Conexao.State == ConnectionState.Open)
+            //    {
+            //        Conexao.Close();
+            //    }
+            //}
         }
 
-        
+        private void UserControl2_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

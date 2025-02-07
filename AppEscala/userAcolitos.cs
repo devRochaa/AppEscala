@@ -13,7 +13,7 @@ namespace AppEscala
         public userAcolitos()
         {
             InitializeComponent();
-            
+
             dgv_acolitos.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
 
@@ -28,7 +28,7 @@ namespace AppEscala
 
         private void btn_buscar_Click(object sender, EventArgs e)
         {
-           
+
             try
             {
                 Conexao = new MySqlConnection(data_source);
@@ -102,12 +102,15 @@ namespace AppEscala
 
         private void Carregar_Acolitos()
         {
+
             var listaAcolitos = db.ListaUserAcolitos().ToList();
+            dgv_acolitos.Rows.Clear();
+            txt_aviso.Visible = false;
+
             string[] row = new string[9];
             int idAtual = 0;
-
             foreach (var acolitoL in listaAcolitos)
-            {               
+            {
                 int id_agora = acolitoL.Id_acolito; //define id_agora como o id dessa volta do for
                 if (idAtual == 0) //se o id_atual for igual a 0, vai ser o primeiro item
                 {
@@ -140,7 +143,7 @@ namespace AppEscala
             }
             if (string.IsNullOrEmpty(row[0])) // se não encontrar nenhum registro
             {
-                MessageBox.Show("Não foi encontrado nenhum nome relacionado.");
+                txt_aviso.Visible = true;
             }
 
             //try
@@ -230,7 +233,8 @@ namespace AppEscala
                 i++;
             }
         }
-        int id_acolito_seleconado = 0;
+        int id_acolito_selecionado = 0;
+        int? selecionado = null;
         private void dgv_acolitos_SelectionChanged(object sender, EventArgs e)
         {
             //DataGridViewSelectedRowCollection itens_selecionados = dgv_acolitos.SelectedRows;
@@ -243,7 +247,7 @@ namespace AppEscala
             if (dgv_acolitos.SelectedRows.Count > 0)
             {
                 var selectedRow = dgv_acolitos.SelectedRows[0];
-
+                selecionado = int.Parse(selectedRow.Cells[8].Value.ToString());
                 // Verifica se a célula não é nula antes de acessar
                 if (selectedRow.Cells[1].Value != null && selectedRow.Cells.Count > 1)
                 {
@@ -260,7 +264,7 @@ namespace AppEscala
                     string pattern = "(Manhã|Tarde|Noite)";
                     MatchCollection separar = Regex.Matches("", "vazio");
                     int g = 0;
-                    id_acolito_seleconado = int.Parse(selectedRow.Cells[8].Value.ToString());
+                    id_acolito_selecionado = int.Parse(selectedRow.Cells[8].Value.ToString());
                     for (int i = 1; i <= 7; i++)
                     {
 
@@ -318,7 +322,29 @@ namespace AppEscala
 
         private void btn_salvar_Click(object sender, EventArgs e)
         {
- 
+
+        }
+
+        private void userAcolitos_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void userAcolitos_VisibleChanged(object sender, EventArgs e)
+        {
+            if (this.Visible) // Só executa quando o controle estiver visível
+            {
+                Carregar_Acolitos();
+            }
+        }
+
+        private void btn_edit_Click(object sender, EventArgs e)
+        {
+            if (selecionado == null)
+            {
+                MessageBox.Show("Primeiramente Selecione um acólito."); return;
+            }
+
         }
     }
 }
