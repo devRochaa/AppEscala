@@ -210,6 +210,24 @@ namespace AppEscala.Helpers
                 throw new Exception("Erro ao executar consulta: " + ex.Message);
             }
         }
+
+        public List<AcolitoDisponibilidade> Acolitos_Dias(int? id)
+        {
+            try
+            {
+                string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
+                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito 
+                    FROM Acolitos AS a 
+                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
+                    INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
+                    INNER JOIN Turno AS t ON d.Id_turno = t.Id WHERE a.Id = " + id +";";
+                return this.db.Query<AcolitoDisponibilidade>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+        }
         //readonly SQLiteAsyncConnection _conn;
         //public Database(string path)
         //{

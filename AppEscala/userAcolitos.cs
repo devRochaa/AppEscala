@@ -2,6 +2,7 @@
 using AppEscala.Helpers;
 using MySql.Data.MySqlClient;
 using AppEscala.Models;
+using AppEscala.Views;
 namespace AppEscala
 {
 
@@ -247,7 +248,7 @@ namespace AppEscala
             if (dgv_acolitos.SelectedRows.Count > 0)
             {
                 var selectedRow = dgv_acolitos.SelectedRows[0];
-                selecionado = int.Parse(selectedRow.Cells[8].Value.ToString());
+                //selecionado = int.Parse(selectedRow.Cells[8].Value.ToString());
                 // Verifica se a célula não é nula antes de acessar
                 if (selectedRow.Cells[1].Value != null && selectedRow.Cells.Count > 1)
                 {
@@ -345,6 +346,32 @@ namespace AppEscala
                 MessageBox.Show("Primeiramente Selecione um acólito."); return;
             }
 
+                form_editarAcolito form_edit = new form_editarAcolito();
+                form_edit.id_acolito = selecionado;
+                if (form_edit.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
+                {
+                    
+                    // Obtém o dado da propriedade
+
+                    //string mensagem = string.Join(", ", seg);
+                    //MessageBox.Show($"Dado recebido: {mensagem}");
+                }
+            
+            
+
+        }
+
+        private void dgv_acolitos_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0) // Certifique-se de que não é um clique no cabeçalho
+            {
+                DataGridViewRow selectedRow = dgv_acolitos.Rows[e.RowIndex];
+
+                // Acessando valores da linha selecionada
+                selecionado = Convert.ToInt32(selectedRow.Cells[8].Value);
+               
+                //MessageBox.Show($"{id_selecionado} {data_selecionada}");
+            }
         }
     }
 }

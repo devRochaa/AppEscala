@@ -130,6 +130,7 @@
             dgv_acolitos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgv_acolitos.Size = new Size(646, 203);
             dgv_acolitos.TabIndex = 5;
+            dgv_acolitos.CellClick += dgv_acolitos_CellClick;
             dgv_acolitos.CellContentClick += dgv_acolitos_CellContentClick;
             dgv_acolitos.SelectionChanged += dgv_acolitos_SelectionChanged;
             // 
