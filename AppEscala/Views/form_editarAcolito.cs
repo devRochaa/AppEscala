@@ -31,43 +31,42 @@ namespace AppEscala.Views
             db.Initialize();
 
             carregar_acolito();
+            ComboBoxDias();
         }
 
         private void carregar_acolito()
         {
+            txt_turno1.Text = "";
+            txt_turno2.Text = "";
+            txt_turno3.Text = "";
+            int i = 1;
             var listaAcolitos = db.Acolitos_Dias(id_acolito).ToList();
             foreach (var acolitoL in listaAcolitos)
             {
                 txt_nome.Text = acolitoL.Nome;
-                int id_dia = acolitoL.IdDiaSemana;
 
-                if (id_dia == 1)
+                if (cmb_dias.SelectedIndex != -1)
                 {
-                    txt_seg.Text = txt_seg.Text + acolitoL.Turno + " ";
-                }
-                if (id_dia == 2)
-                {
-                    txt_ter.Text = txt_ter.Text + acolitoL.Turno + " ";
-                }
-                if (id_dia == 3)
-                {
-                    txt_qua.Text = txt_qua.Text + acolitoL.Turno + " ";
-                }
-                if (id_dia == 4)
-                {
-                    txt_qui.Text = txt_qui.Text + acolitoL.Turno + " ";
-                }
-                if (id_dia == 5)
-                {
-                    txt_sex.Text = txt_sex.Text + acolitoL.Turno + " ";
-                }
-                if (id_dia == 6)
-                {
-                    txt_sab.Text = txt_sab.Text + acolitoL.Turno + " ";
-                }
-                if (id_dia == 7)
-                {
-                    txt_dom.Text = txt_dom.Text + acolitoL.Turno + " ";
+                    if (cmb_dias.SelectedItem is Item selectedItem)
+                    {
+                        if (acolitoL.IdDiaSemana == selectedItem.Value)
+                        {
+                            if (i == 1)
+                            {
+                                cmb_turno1.SelectedIndex = acolitoL.Id_Turno - 1;
+                            }
+                            if (i == 2)
+                            {
+                                cmb_turno2.SelectedIndex = acolitoL.Id_Turno - 1;
+                            }
+                            if (i == 3)
+                            {
+                                cmb_turno3.SelectedIndex = acolitoL.Id_Turno - 1;
+                            }
+                            i++;
+                        }
+
+                    }
                 }
             }
         }
@@ -75,6 +74,53 @@ namespace AppEscala.Views
         private void label10_Click(object sender, EventArgs e)
         {
 
+        }
+        private void UpdateTurno()
+        {
+
+        }
+        public class Item
+        {
+            public string Display { get; set; } // O texto visível
+            public int Value { get; set; } // O valor oculto
+
+            public override string ToString()
+            {
+                return Display; // Exibe apenas o texto no ComboBox
+            }
+        }
+        private void ComboBoxDias()
+        {
+            var listaDias = db.SelectDias().ToList();
+            foreach (var dia in listaDias)
+            {
+                cmb_dias.Items.Add(new Item { Display = dia.Nome, Value = dia.Id });
+            }
+
+            var listaTurnos = db.SelectTurnos().ToList();
+            foreach (var turno in listaTurnos)
+            {
+                cmb_turno1.Items.Add(new Item { Display = turno.Nome, Value = turno.Id });
+                cmb_turno2.Items.Add(new Item { Display = turno.Nome, Value = turno.Id });
+                cmb_turno3.Items.Add(new Item { Display = turno.Nome, Value = turno.Id });
+            }
+        }
+
+        private void CarregarTurnos()
+        {
+
+        }
+
+
+        private void cmb_dias_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            carregar_acolito();
+            lbl_dia.Text = cmb_dias.SelectedItem.ToString() + ":";
+        }
+
+        private void cmb_turno1_TextUpdate(object sender, EventArgs e)
+        {
+            //confirmar que o texto foi alterado
         }
     }
 }

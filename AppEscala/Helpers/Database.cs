@@ -191,7 +191,8 @@ namespace AppEscala.Helpers
             public string DiaSemana { get; set; }  
             public string Turno { get; set; }      
             public int IdDiaSemana { get; set; }   
-            public int Id_acolito { get; set; }     
+            public int Id_acolito { get; set; }
+            public int Id_Turno { get; set; }
         }
         public List<AcolitoDisponibilidade> ListaUserAcolitos()
         {
@@ -216,7 +217,7 @@ namespace AppEscala.Helpers
             try
             {
                 string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
-                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito 
+                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito, t.Id AS Id_Turno
                     FROM Acolitos AS a 
                     INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
                     INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
@@ -226,6 +227,54 @@ namespace AppEscala.Helpers
             catch (Exception ex)
             {
                 throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+        }
+
+        public void UpdateTurnoAcolito(int id, int id_dia, int id_turno, int novo_id)
+        {
+            try
+            {
+                string comando = "SELECT * FROM Disponibilidade WHERE Id_acolitos = " + id + " AND IdDiaSemana = " + id_dia + " AND Id_Turno = " + id_turno +";";
+                Disponibilidade registro = this.db.Query<Disponibilidade>(comando).FirstOrDefault(); ;
+                if (registro != null)
+                {
+
+                    registro.Id_turno = novo_id;
+                    this.db.Update(registro);
+
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
+            }
+        }
+
+        public TableQuery<Dias_semanas> SelectDias()
+        {
+            try
+            {
+                return this.db.Table<Dias_semanas>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
+            }
+        }
+
+        public TableQuery<Turno> SelectTurnos()
+        {
+            try
+            {
+                return this.db.Table<Turno>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
             }
         }
         //readonly SQLiteAsyncConnection _conn;

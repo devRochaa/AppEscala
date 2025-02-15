@@ -50,7 +50,7 @@ namespace AppEscala
                 cmd.Connection = Conexao;
                 Conexao.Open();
                 cmd.CommandText = "DELETE FROM missas WHERE id = @id";
-                
+
                 cmd.Parameters.Clear();
                 cmd.Parameters.AddWithValue("@id", id);
                 cmd.ExecuteNonQuery();
@@ -59,12 +59,12 @@ namespace AppEscala
             catch (MySqlException ex)
             {
                 MessageBox.Show($"Erro MySQL: {ex.Message}");
-                
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Erro geral: {ex.Message}");
-                
+
             }
 
             finally
@@ -83,19 +83,19 @@ namespace AppEscala
                 MySqlCommand cmd = new MySqlCommand();
                 cmd.Connection = Conexao;
                 Conexao.Open();
-                cmd.CommandText = "SELECT data, id from missas";                  
+                cmd.CommandText = "SELECT data, id from missas";
                 MySqlDataReader reader = cmd.ExecuteReader();
-                                       
+
                 DateTime dataAtual = DateTime.Now;
-                   
+
                 while (reader.Read())
                 {
                     string dataMissa_String = reader.GetString(0);
                     DateTime dataMissa = DateTime.Parse(dataMissa_String);
                     if (dataAtual > dataMissa)
-                    {                       
+                    {
                         ApagarMissasAntigas(reader.GetInt32(1), dataMissa.ToString().Substring(0, 10));
-                    }           
+                    }
                 }
                 reader.Close();
 
@@ -123,7 +123,7 @@ namespace AppEscala
             catch (MySqlException ex)
             {
                 MessageBox.Show($"Erro MySQL: {ex.Message}");
-                
+
             }
             catch (Exception ex)
             {
@@ -347,6 +347,11 @@ namespace AppEscala
         {
             carregar_missas();
             combobox_igreja();
+        }
+
+        private void cmb_igrejas_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }   

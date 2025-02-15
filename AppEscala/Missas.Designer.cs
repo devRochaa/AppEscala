@@ -83,6 +83,7 @@
             cmb_igrejas.Name = "cmb_igrejas";
             cmb_igrejas.Size = new Size(222, 23);
             cmb_igrejas.TabIndex = 6;
+            cmb_igrejas.SelectedIndexChanged += cmb_igrejas_SelectedIndexChanged;
             // 
             // label1
             // 
