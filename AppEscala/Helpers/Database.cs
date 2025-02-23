@@ -67,19 +67,19 @@ namespace AppEscala.Helpers
             }
         }
         public int InsertAcolito(Acolitos AcolitoNome)
-        {           
+        {
             try
             {
                 this.db.Insert(AcolitoNome); // Insere o registro
                 return AcolitoNome.Id; // Retorna o ID correto
-            }            
+            }
             catch (Exception ex)
             {
-               throw new Exception("Erro ao inserir igreja: " + ex.Message);
-            }            
+                throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }
         }
 
-        
+
         //public void InsertDisponibilidade(int id,)
         public void InsertDisponibilidade(Disponibilidade dados_d)
         {
@@ -134,18 +134,20 @@ namespace AppEscala.Helpers
         }
         public void UpdateIgrejas(int id, Igreja DadosAtualizados)
         {
-            try { 
-            var registro = this.db.Find<Igreja>(id);
-            if (registro != null) { 
-                                   
-                registro.nome = DadosAtualizados.nome;
-                this.db.Update(registro);
-                
-            }
-            else
+            try
             {
-                throw new Exception("Registro não encontrado.");
-            }
+                var registro = this.db.Find<Igreja>(id);
+                if (registro != null)
+                {
+
+                    registro.nome = DadosAtualizados.nome;
+                    this.db.Update(registro);
+
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
             }
             catch (Exception ex)
             {
@@ -154,10 +156,10 @@ namespace AppEscala.Helpers
         }
         public void DeleteIgrejas(int id)
         {
-            try 
-            { 
+            try
+            {
                 var registro = this.db.Find<Igreja>(id);
-                if (registro != null) 
+                if (registro != null)
                 {
                     this.db.Delete(registro);
                 }
@@ -187,10 +189,10 @@ namespace AppEscala.Helpers
         }
         public class AcolitoDisponibilidade
         {
-            public string Nome { get; set; }       
-            public string DiaSemana { get; set; }  
-            public string Turno { get; set; }      
-            public int IdDiaSemana { get; set; }   
+            public string Nome { get; set; }
+            public string DiaSemana { get; set; }
+            public string Turno { get; set; }
+            public int IdDiaSemana { get; set; }
             public int Id_acolito { get; set; }
             public int Id_Turno { get; set; }
         }
@@ -221,7 +223,7 @@ namespace AppEscala.Helpers
                     FROM Acolitos AS a 
                     INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
                     INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
-                    INNER JOIN Turno AS t ON d.Id_turno = t.Id WHERE a.Id = " + id +";";
+                    INNER JOIN Turno AS t ON d.Id_turno = t.Id WHERE a.Id = " + id + ";";
                 return this.db.Query<AcolitoDisponibilidade>(comando);
             }
             catch (Exception ex)
@@ -230,18 +232,17 @@ namespace AppEscala.Helpers
             }
         }
 
-        public void UpdateTurnoAcolito(int id, int id_dia, int id_turno, int novo_id)
+        public bool UpdateTurnoAcolito(int? id, int id_dia, int id_turno, int novo_id)
         {
             try
             {
-                string comando = "SELECT * FROM Disponibilidade WHERE Id_acolitos = " + id + " AND IdDiaSemana = " + id_dia + " AND Id_Turno = " + id_turno +";";
+                string comando = "SELECT * FROM Disponibilidade WHERE Id_acolitos = " + id + " AND IdDiaSemana = " + id_dia + " AND Id_Turno = " + id_turno + ";";
                 Disponibilidade registro = this.db.Query<Disponibilidade>(comando).FirstOrDefault(); ;
                 if (registro != null)
                 {
-
                     registro.Id_turno = novo_id;
                     this.db.Update(registro);
-
+                    return true;
                 }
                 else
                 {
@@ -250,11 +251,11 @@ namespace AppEscala.Helpers
             }
             catch (Exception ex)
             {
-                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
+                throw new Exception("Erro ao atualizar acolito: " + ex.Message);
             }
         }
 
-        public TableQuery<Dias_semanas> SelectDias()
+        public TableQuery<Dias_semanas> SelectDiasSemana()
         {
             try
             {
@@ -277,6 +278,45 @@ namespace AppEscala.Helpers
                 throw new Exception("Erro ao atualizar igreja: " + ex.Message);
             }
         }
+
+        public List<Dia> SelectDiasAcolito(int? id)
+        {
+            try
+            {
+                string comando = "SELECT * FROM Dia WHERE Id_Acolitos = " + id;
+                return this.db.Query<Dia>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+            
+        }
+
+        public void UpdateDias(int? id, string diaAntes, string diaNovo)
+        {
+            try
+            {
+
+                var registro = db.Table<Dia>().FirstOrDefault(x => x.Id_acolitos == id && x.dia == diaAntes);
+                if (registro != null)
+                {
+
+                    registro.dia = diaNovo;
+                    this.db.Update(registro);
+
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
+            }
+        }
+
         //readonly SQLiteAsyncConnection _conn;
         //public Database(string path)
         //{

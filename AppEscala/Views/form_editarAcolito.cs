@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using AppEscala.Helpers;
 using AppEscala.Models;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace AppEscala.Views
 {
@@ -16,14 +18,13 @@ namespace AppEscala.Views
     {
         private Database db;
         public int? id_acolito { get; set; }
+        int id_dia = -1;
+        public bool atualizou = false;
         public form_editarAcolito()
         {
             InitializeComponent();
         }
-        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
-        {
 
-        }
 
         private void form_editarAcolito_Load(object sender, EventArgs e)
         {
@@ -32,13 +33,18 @@ namespace AppEscala.Views
 
             carregar_acolito();
             ComboBoxDias();
+            carregarListView();
+
+            dtp_add.Format = DateTimePickerFormat.Custom;
+            dtp_add.CustomFormat = "dd/MM/yyyy";
+
+            dtp_edit.Format = DateTimePickerFormat.Custom;
+            dtp_edit.CustomFormat = "dd/MM/yyyy";
         }
 
         private void carregar_acolito()
         {
-            txt_turno1.Text = "";
-            txt_turno2.Text = "";
-            txt_turno3.Text = "";
+
             int i = 1;
             var listaAcolitos = db.Acolitos_Dias(id_acolito).ToList();
             foreach (var acolitoL in listaAcolitos)
@@ -49,25 +55,39 @@ namespace AppEscala.Views
                 {
                     if (cmb_dias.SelectedItem is Item selectedItem)
                     {
+                        id_dia = selectedItem.Value;
                         if (acolitoL.IdDiaSemana == selectedItem.Value)
                         {
                             if (i == 1)
                             {
                                 cmb_turno1.SelectedIndex = acolitoL.Id_Turno - 1;
+                                id_turnoAntigo1 = acolitoL.Id_Turno;
                             }
                             if (i == 2)
                             {
                                 cmb_turno2.SelectedIndex = acolitoL.Id_Turno - 1;
+                                id_turnoAntigo2 = acolitoL.Id_Turno;
                             }
                             if (i == 3)
                             {
                                 cmb_turno3.SelectedIndex = acolitoL.Id_Turno - 1;
+                                id_turnoAntigo3 = acolitoL.Id_Turno;
                             }
                             i++;
                         }
 
                     }
                 }
+            }
+        }
+
+        private void carregarListView()
+        {
+            var listaDias = db.SelectDiasAcolito(id_acolito);
+
+            foreach (Dia item in listaDias)
+            {
+                lst_dias.Items.Add(item.dia);
             }
         }
 
@@ -91,7 +111,7 @@ namespace AppEscala.Views
         }
         private void ComboBoxDias()
         {
-            var listaDias = db.SelectDias().ToList();
+            var listaDias = db.SelectDiasSemana().ToList();
             foreach (var dia in listaDias)
             {
                 cmb_dias.Items.Add(new Item { Display = dia.Nome, Value = dia.Id });
@@ -106,11 +126,6 @@ namespace AppEscala.Views
             }
         }
 
-        private void CarregarTurnos()
-        {
-
-        }
-
 
         private void cmb_dias_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -121,6 +136,102 @@ namespace AppEscala.Views
         private void cmb_turno1_TextUpdate(object sender, EventArgs e)
         {
             //confirmar que o texto foi alterado
+            teste.Text = "vish";
+        }
+
+        int id_turnoNovo1 = -1;
+        int id_turnoNovo2 = -1;
+        int id_turnoNovo3 = -1;
+        int id_turnoAntigo1 = -1;
+        int id_turnoAntigo2 = -1;
+        int id_turnoAntigo3 = -1;
+
+        private void cmb_turno1_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (cmb_turno1.SelectedItem is Item selectedItem)
+            {
+                id_turnoNovo1 = selectedItem.Value;
+            }
+        }
+        private void cmb_turno2_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (cmb_turno2.SelectedItem is Item selectedItem)
+            {
+                id_turnoNovo2 = selectedItem.Value;
+            }
+        }
+        private void cmb_turno3_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            if (cmb_turno3.SelectedItem is Item selectedItem)
+            {
+                id_turnoNovo3 = selectedItem.Value;
+            }
+        }
+
+        private void salvarTurno()
+        {
+            
+            if (id_turnoNovo1 != -1)
+            {
+                atualizou = db.UpdateTurnoAcolito(id_acolito, id_dia, id_turnoAntigo1, id_turnoNovo1);
+            }
+            if (id_turnoNovo2 != -1)
+            {
+                atualizou = db.UpdateTurnoAcolito(id_acolito, id_dia, id_turnoAntigo2, id_turnoNovo2);
+            }
+            if (id_turnoNovo3 != -1)
+            {
+                atualizou = db.UpdateTurnoAcolito(id_acolito, id_dia, id_turnoAntigo3, id_turnoNovo3);
+            }
+            if (atualizou)
+            {
+                MessageBox.Show("Suas alterações foram salvas.");
+            }
+        }
+
+        private void editarData()
+        {
+            string dataNova = dtp_edit.Value.ToString();
+            db.UpdateDias(id_acolito, lst_dias.Text, dtp_edit.Text);
+        }
+
+        private void btn_salvar_Click(object sender, EventArgs e)
+        {
+            int FoiChamado = 0;
+            if (id_turnoNovo1 == -1 && id_turnoNovo2 == -1 && id_turnoNovo3 == -1)
+            {
+                FoiChamado++;
+            }
+            else 
+            {
+                salvarTurno();
+            }
+
+            if (dtp_edit.Text != lst_dias.Text) // arranja um modo de conferir se foi editado
+            {
+                editarData();
+            }
+            else
+            {
+                FoiChamado++;
+            }
+            if(FoiChamado == 2) { MessageBox.Show("Você tem que editar ao menos 1 coisa para poder salvar."); }
+        }
+
+      
+
+        private void lst_dias_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            string horaTexto = lst_dias.Text;
+
+            if (DateTime.TryParse(horaTexto, out DateTime hora))
+            {
+                dtp_edit.Value = hora;
+            }
+            else
+            {
+                MessageBox.Show("Formato de data/hora inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

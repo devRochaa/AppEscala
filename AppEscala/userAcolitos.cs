@@ -236,90 +236,7 @@ namespace AppEscala
         }
         int id_acolito_selecionado = 0;
         int? selecionado = null;
-        private void dgv_acolitos_SelectionChanged(object sender, EventArgs e)
-        {
-            //DataGridViewSelectedRowCollection itens_selecionados = dgv_acolitos.SelectedRows;
-            //DataGridViewSelectedCellCollection item_selecionado = dgv_acolitos.SelectedCells;
-            //foreach (DataGridView item in itens_selecionados)
-            //{
-            //    txt_nome.Text = item.SelectedRows.Cells[0];
-            //}
 
-            if (dgv_acolitos.SelectedRows.Count > 0)
-            {
-                var selectedRow = dgv_acolitos.SelectedRows[0];
-                //selecionado = int.Parse(selectedRow.Cells[8].Value.ToString());
-                // Verifica se a célula não é nula antes de acessar
-                if (selectedRow.Cells[1].Value != null && selectedRow.Cells.Count > 1)
-                {
-                    txt_seg1.Text = ""; txt_seg2.Text = ""; txt_seg3.Text = "";
-                    txt_ter1.Text = ""; txt_ter2.Text = ""; txt_ter3.Text = "";
-                    txt_qua1.Text = ""; txt_qua2.Text = ""; txt_qua3.Text = "";
-                    txt_qui1.Text = ""; txt_qui2.Text = ""; txt_qui3.Text = "";
-                    txt_sex1.Text = ""; txt_sex2.Text = ""; txt_sex3.Text = "";
-                    txt_sab1.Text = ""; txt_sab2.Text = ""; txt_sab3.Text = "";
-                    txt_dom1.Text = ""; txt_dom2.Text = ""; txt_dom3.Text = "";
-
-                    txt_nome.Text = selectedRow.Cells[0].Value.ToString();
-                    string[] dias = new string[7];
-                    string pattern = "(Manhã|Tarde|Noite)";
-                    MatchCollection separar = Regex.Matches("", "vazio");
-                    int g = 0;
-                    id_acolito_selecionado = int.Parse(selectedRow.Cells[8].Value.ToString());
-                    for (int i = 1; i <= 7; i++)
-                    {
-
-                        if (selectedRow.Cells[i].Value != null)
-                        {
-
-                            dias[g] = selectedRow.Cells[i].Value.ToString();
-                            separar = Regex.Matches(dias[g], pattern);
-                            g++;
-                            switch (i)
-                            {
-                                case 1:
-                                    TurnosEditarPalavras(txt_seg1, txt_seg2, txt_seg3, separar);
-                                    break;
-
-                                case 2:
-                                    TurnosEditarPalavras(txt_ter1, txt_ter2, txt_ter3, separar);
-                                    break;
-
-                                case 3:
-                                    TurnosEditarPalavras(txt_qua1, txt_qua2, txt_qua3, separar);
-                                    break;
-
-                                case 4:
-                                    TurnosEditarPalavras(txt_qui1, txt_qui2, txt_qui3, separar);
-                                    break;
-
-                                case 5:
-                                    TurnosEditarPalavras(txt_sex1, txt_sex2, txt_sex3, separar);
-                                    break;
-
-                                case 6:
-                                    TurnosEditarPalavras(txt_sab1, txt_sab2, txt_sab3, separar);
-                                    break;
-
-                                case 7:
-                                    TurnosEditarPalavras(txt_dom1, txt_dom2, txt_dom3, separar);
-                                    break;
-
-                            }
-
-                        }
-                        else { selectedRow.Cells[i].Value = ""; }
-                    }
-
-
-                }
-                else
-                {
-                    txt_nome.Text = ""; // Ou algum valor padrão
-                }
-            }
-
-        }
 
         private void btn_salvar_Click(object sender, EventArgs e)
         {
@@ -338,27 +255,28 @@ namespace AppEscala
                 Carregar_Acolitos();
             }
         }
+        private void ChamarEdicao()
+        {
+            
+            form_editarAcolito form_edit = new form_editarAcolito();
+            form_edit.id_acolito = selecionado;
+            if (form_edit.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
+            {
+                bool editado = form_edit.atualizou;
+                if (editado) { Carregar_Acolitos(); }
+                // Obtém o dado da propriedade
 
+                //string mensagem = string.Join(", ", seg);
+                //MessageBox.Show($"Dado recebido: {mensagem}");
+            }
+        }
         private void btn_edit_Click(object sender, EventArgs e)
         {
             if (selecionado == null)
             {
                 MessageBox.Show("Primeiramente Selecione um acólito."); return;
             }
-
-                form_editarAcolito form_edit = new form_editarAcolito();
-                form_edit.id_acolito = selecionado;
-                if (form_edit.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
-                {
-                    
-                    // Obtém o dado da propriedade
-
-                    //string mensagem = string.Join(", ", seg);
-                    //MessageBox.Show($"Dado recebido: {mensagem}");
-                }
-            
-            
-
+            ChamarEdicao();
         }
 
         private void dgv_acolitos_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -369,9 +287,18 @@ namespace AppEscala
 
                 // Acessando valores da linha selecionada
                 selecionado = Convert.ToInt32(selectedRow.Cells[8].Value);
-               
+
                 //MessageBox.Show($"{id_selecionado} {data_selecionada}");
             }
+        }
+
+        private void dgv_acolitos_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (selecionado == null)
+            {
+                MessageBox.Show("Primeiramente Selecione um acólito."); return;
+            }
+            ChamarEdicao();
         }
     }
 }
