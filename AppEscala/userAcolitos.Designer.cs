@@ -175,7 +175,7 @@
             // txt_aviso
             // 
             txt_aviso.AutoSize = true;
-            txt_aviso.Location = new Point(278, 199);
+            txt_aviso.Location = new Point(268, 199);
             txt_aviso.Name = "txt_aviso";
             txt_aviso.Size = new Size(204, 15);
             txt_aviso.TabIndex = 38;
@@ -184,7 +184,7 @@
             // 
             // btn_edit
             // 
-            btn_edit.Location = new Point(48, 321);
+            btn_edit.Location = new Point(310, 310);
             btn_edit.Name = "btn_edit";
             btn_edit.Size = new Size(115, 39);
             btn_edit.TabIndex = 39;

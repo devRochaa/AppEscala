@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AppEscala.Models;
 using Microsoft.Win32;
 using SQLite;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace AppEscala.Helpers
 {
@@ -214,6 +215,24 @@ namespace AppEscala.Helpers
             }
         }
 
+        public List<AcolitoDisponibilidade> BuscarUserAcolitos(string inputNome)
+        {
+            try
+            {
+                string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
+                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito 
+                    FROM Acolitos AS a 
+                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
+                    INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
+                    INNER JOIN Turno AS t ON d.Id_turno = t.Id WHERE a.Nome LIKE '%" + inputNome + "%' ORDER BY a.Id";
+                return this.db.Query<AcolitoDisponibilidade>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+        }
+
         public List<AcolitoDisponibilidade> Acolitos_Dias(int? id)
         {
             try
@@ -317,76 +336,77 @@ namespace AppEscala.Helpers
             }
         }
 
-        //readonly SQLiteAsyncConnection _conn;
-        //public Database(string path)
-        //{
-        //    _conn = new SQLiteAsyncConnection(path);
-        //    _conn.CreateTableAsync<Acolitos>().Wait();
-        //    _conn.CreateTableAsync<Dia>().Wait();
-        //    _conn.CreateTableAsync<Dias_semanas>().Wait();
-        //    _conn.CreateTableAsync<Turno>().Wait();
-        //    _conn.CreateTableAsync<Disponibilidade>().Wait();
-        //    _conn.CreateTableAsync<Igreja>().Wait();
-        //    _conn.CreateTableAsync<Missas>().Wait();
-        //}
+        public void InsertMissa(MissasC dadosMissa)
+        {
+            try
+            {
+                this.db.Insert(dadosMissa);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }
+        }
 
-        //public async Task Inititialize()
-        //{
-        //    string[] dias_semanas = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado","Domingo"};
+        public class MissasDadosCompletos
+        {
+            public string Data { get; set; }
+            public string Horario { get; set; }
+            public string Igreja { get; set; }
+            public int idMissa { get; set; }
+            public string Descricao { get; set; }
+            public int Qnt_acolitos { get; set; }
+        }
 
-        //    foreach (string dia in dias_semanas)
-        //    {
-        //        var novoDia = new Dias_semanas { Nome = dia };
-        //        await _conn.InsertAsync(novoDia);
-        //    }
+        public List<MissasDadosCompletos> SelectAllMissas()
+        {
+            try
+            {
+                string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos from MissasC m " +
+                "INNER JOIN Igreja i ON m.Id_igreja = i.id;";
+                return this.db.Query<MissasDadosCompletos>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
 
-        //    string[] turnos = {"Manhã", "Tarde","Noite"};
-        //    foreach (string turno in turnos)
-        //    {
-        //        var novoTurno = new Turno { Nome = turno };
-        //        await _conn.InsertAsync(novoTurno);
-        //    }
-        //}
+        }
+        public MissasDadosCompletos SelectMissa(int? id)
+        {
 
-        //public Task<int> Insert(Acolitos a)
-        //{ 
-        //    return _conn.InsertAsync(a);
-        //}
+            try
+            {
+                string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos from MissasC m " +
+                "INNER JOIN Igreja i ON m.Id_igreja = i.id WHERE m.Id = " + id;
+                return this.db.Query<MissasDadosCompletos>(comando).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
 
-        //public Task<List<Acolitos>> Update(Acolitos a)
-        //{
-        //    string sql = "UPDATE Acolitos SET nome= ? WHERE id = ?";
-        //    return _conn.QueryAsync<Acolitos>(sql, a.Nome, a.Id);
-        //}
+        }
 
+        public void DeleteMissa(int idMissa)
+        {
+            try
+            {
+                var registro = this.db.Find<MissasC>(idMissa);
+                if (registro != null)
+                {
+                    this.db.Delete(registro);
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
 
-        //public Task<int> Delete(int id)
-        //{
-        //    return _conn.Table<Acolitos>().DeleteAsync(i => i.Id == id);
-        //}
-
-        //public Task<List<Acolitos>> GetAll() 
-        //{
-        //    return _conn.Table<Acolitos>().ToListAsync();
-        //}
-
-
-        //public Task<List<Acolitos>> Search(string q) 
-        //{
-        //    string sql = "SELECT * from Acolitos WHERE id LIKE '%" + q + "%'";
-        //    return _conn.QueryAsync<Acolitos>(sql);
-        //}
-
-        //public Task<List<Acolitos>> SelectListaAcolitos()
-        //{
-        //    string sql = "SELECT a.nome, s.dia_semana, t.turno, d.id_dia_semana, a.id " +
-        //            "FROM acolitos AS a " +
-        //            "LEFT JOIN disponibilidade AS d ON a.id = d.id_acolito " +
-        //            "RIGHT JOIN dias_semana AS s ON d.id_dia_semana = s.id " +
-        //            "RIGHT JOIN turno AS t ON d.id_turno = t.id ORDER BY a.id";
-
-        //    return _conn.QueryAsync<Acolitos>(sql);
-        //}
-
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao excluir igreja: " + ex.Message);
+            }
+        }
     }
 }

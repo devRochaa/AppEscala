@@ -202,27 +202,35 @@ namespace AppEscala.Views
             {
                 FoiChamado++;
             }
-            else 
+            else
             {
                 salvarTurno();
             }
+            if (diaSelecionado == true) { 
 
-            if (dtp_edit.Text != lst_dias.Text) // arranja um modo de conferir se foi editado
-            {
-                editarData();
+                if (dtp_edit.Text != lst_dias.Text) 
+                {
+                    editarData();              
+                }
+                else
+                { 
+                    FoiChamado++;
+                }
+
             }
             else
             {
                 FoiChamado++;
             }
-            if(FoiChamado == 2) { MessageBox.Show("Você tem que editar ao menos 1 coisa para poder salvar."); }
+            if(FoiChamado >= 2) { MessageBox.Show("Você tem que editar ao menos 1 coisa para poder salvar."); }
         }
 
-      
+        bool diaSelecionado = false;
 
         private void lst_dias_SelectedIndexChanged_1(object sender, EventArgs e)
         {
             string horaTexto = lst_dias.Text;
+            diaSelecionado = true;
 
             if (DateTime.TryParse(horaTexto, out DateTime hora))
             {
