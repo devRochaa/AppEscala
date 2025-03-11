@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using AppEscala.Helpers;
 using AppEscala.Models;
+using iText.Bouncycastle.Crypto.Modes;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace AppEscala.Views
@@ -83,6 +84,7 @@ namespace AppEscala.Views
 
         private void carregarListView()
         {
+            lst_dias.Items.Clear();
             var listaDias = db.SelectDiasAcolito(id_acolito);
 
             foreach (Dia item in listaDias)
@@ -170,7 +172,7 @@ namespace AppEscala.Views
 
         private void salvarTurno()
         {
-            
+
             if (id_turnoNovo1 != -1)
             {
                 atualizou = db.UpdateTurnoAcolito(id_acolito, id_dia, id_turnoAntigo1, id_turnoNovo1);
@@ -183,10 +185,7 @@ namespace AppEscala.Views
             {
                 atualizou = db.UpdateTurnoAcolito(id_acolito, id_dia, id_turnoAntigo3, id_turnoNovo3);
             }
-            if (atualizou)
-            {
-                MessageBox.Show("Suas alterações foram salvas.");
-            }
+
         }
 
         private void editarData()
@@ -206,23 +205,30 @@ namespace AppEscala.Views
             {
                 salvarTurno();
             }
-            if (diaSelecionado == true) { 
-
-                if (dtp_edit.Text != lst_dias.Text) 
+            if (diaSelecionado == true)
+            {
+                if (lst_dias.SelectedItem != null)
                 {
-                    editarData();              
+                    if (dtp_edit.Text != lst_dias.SelectedItem.ToString())
+                    {
+                        editarData();
+                    }
+                    else
+                    {
+                        FoiChamado++;
+                    }
                 }
-                else
-                { 
-                    FoiChamado++;
-                }
+                else { FoiChamado++; }
 
             }
             else
             {
                 FoiChamado++;
             }
-            if(FoiChamado >= 2) { MessageBox.Show("Você tem que editar ao menos 1 coisa para poder salvar."); }
+            if (FoiChamado >= 2 && diasEditado == false) { MessageBox.Show("Você tem que editar ao menos 1 coisa para poder salvar."); return; }
+            MessageBox.Show("Suas alterações foram salvas!");
+            DialogResult = DialogResult.OK; // Define o resultado do diálogo
+            this.Close();
         }
 
         bool diaSelecionado = false;
@@ -240,6 +246,36 @@ namespace AppEscala.Views
             {
                 MessageBox.Show("Formato de data/hora inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        bool diasEditado = false;
+        private void btn_excluirDia_Click(object sender, EventArgs e)
+        {
+            if (lst_dias.SelectedItem == null)
+            {
+                MessageBox.Show("Para apagar, selecione um dia primeiro!");
+                return;
+            }
+            db.DeleteDias(id_acolito.Value, lst_dias.SelectedItem.ToString());
+            
+            carregarListView();
+            diasEditado = true;
+        }
+
+        private void btn_addDia_Click(object sender, EventArgs e)
+        {
+            string dataDia = dtp_add.Value.ToString().Substring(0, 10);
+            foreach (string dia in lst_dias.Items) 
+            { 
+                if (dia == dataDia)
+                {
+                    MessageBox.Show("Essa data já foi adicionada!");
+                    return;
+                }
+            }
+            Dia novoDia = new Dia() { Id_acolitos = id_acolito.Value, dia = dataDia  };
+            db.InsertDias(novoDia);
+            carregarListView();
+            diasEditado = true;
         }
     }
 }

@@ -42,9 +42,10 @@
             dtp_add = new DateTimePicker();
             label4 = new Label();
             label5 = new Label();
-            button1 = new Button();
+            btn_excluirDia = new Button();
             dtp_edit = new DateTimePicker();
             lst_dias = new ListBox();
+            btn_addDia = new Button();
             SuspendLayout();
             // 
             // txt_nome
@@ -176,14 +177,15 @@
             label5.TabIndex = 88;
             label5.Text = "Editar:";
             // 
-            // button1
+            // btn_excluirDia
             // 
-            button1.Location = new Point(213, 287);
-            button1.Name = "button1";
-            button1.Size = new Size(30, 23);
-            button1.TabIndex = 89;
-            button1.Text = "🗑";
-            button1.UseVisualStyleBackColor = true;
+            btn_excluirDia.Location = new Point(213, 287);
+            btn_excluirDia.Name = "btn_excluirDia";
+            btn_excluirDia.Size = new Size(30, 23);
+            btn_excluirDia.TabIndex = 89;
+            btn_excluirDia.Text = "🗑";
+            btn_excluirDia.UseVisualStyleBackColor = true;
+            btn_excluirDia.Click += btn_excluirDia_Click;
             // 
             // dtp_edit
             // 
@@ -204,14 +206,26 @@
             lst_dias.TabIndex = 91;
             lst_dias.SelectedIndexChanged += lst_dias_SelectedIndexChanged_1;
             // 
+            // btn_addDia
+            // 
+            btn_addDia.Location = new Point(315, 201);
+            btn_addDia.Name = "btn_addDia";
+            btn_addDia.Size = new Size(24, 23);
+            btn_addDia.TabIndex = 92;
+            btn_addDia.Text = "+";
+            btn_addDia.TextAlign = ContentAlignment.MiddleRight;
+            btn_addDia.UseVisualStyleBackColor = true;
+            btn_addDia.Click += btn_addDia_Click;
+            // 
             // form_editarAcolito
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(358, 363);
+            Controls.Add(btn_addDia);
             Controls.Add(lst_dias);
             Controls.Add(dtp_edit);
-            Controls.Add(button1);
+            Controls.Add(btn_excluirDia);
             Controls.Add(label5);
             Controls.Add(label4);
             Controls.Add(dtp_add);
@@ -248,8 +262,9 @@
         private DateTimePicker dtp_add;
         private Label label4;
         private Label label5;
-        private Button button1;
+        private Button btn_excluirDia;
         private DateTimePicker dtp_edit;
         private ListBox lst_dias;
+        private Button btn_addDia;
     }
 }

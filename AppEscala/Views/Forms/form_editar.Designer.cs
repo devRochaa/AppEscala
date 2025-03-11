@@ -38,12 +38,14 @@
             label3 = new Label();
             label4 = new Label();
             label5 = new Label();
+            txt_desc = new RichTextBox();
+            cmb_quant = new ComboBox();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(103, 94);
+            label1.Location = new Point(103, 59);
             label1.Name = "label1";
             label1.Size = new Size(39, 15);
             label1.TabIndex = 9;
@@ -52,7 +54,7 @@
             // cmb_igrejas
             // 
             cmb_igrejas.FormattingEnabled = true;
-            cmb_igrejas.Location = new Point(103, 112);
+            cmb_igrejas.Location = new Point(103, 77);
             cmb_igrejas.Name = "cmb_igrejas";
             cmb_igrejas.Size = new Size(222, 23);
             cmb_igrejas.TabIndex = 8;
@@ -60,7 +62,7 @@
             // dtp_missa
             // 
             dtp_missa.Format = DateTimePickerFormat.Short;
-            dtp_missa.Location = new Point(103, 162);
+            dtp_missa.Location = new Point(103, 255);
             dtp_missa.MaxDate = new DateTime(2050, 12, 31, 0, 0, 0, 0);
             dtp_missa.MinDate = new DateTime(2025, 1, 1, 0, 0, 0, 0);
             dtp_missa.Name = "dtp_missa";
@@ -69,7 +71,7 @@
             // 
             // btn_salvar
             // 
-            btn_salvar.Location = new Point(103, 250);
+            btn_salvar.Location = new Point(103, 343);
             btn_salvar.Name = "btn_salvar";
             btn_salvar.Size = new Size(222, 23);
             btn_salvar.TabIndex = 12;
@@ -79,7 +81,7 @@
             // 
             // txt_hora1
             // 
-            txt_hora1.Location = new Point(103, 212);
+            txt_hora1.Location = new Point(103, 305);
             txt_hora1.MaxLength = 5;
             txt_hora1.Name = "txt_hora1";
             txt_hora1.Size = new Size(91, 23);
@@ -88,7 +90,7 @@
             // 
             // txt_hora2
             // 
-            txt_hora2.Location = new Point(234, 212);
+            txt_hora2.Location = new Point(234, 305);
             txt_hora2.MaxLength = 5;
             txt_hora2.Name = "txt_hora2";
             txt_hora2.Size = new Size(91, 23);
@@ -99,7 +101,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(209, 212);
+            label2.Location = new Point(209, 305);
             label2.Name = "label2";
             label2.Size = new Size(13, 20);
             label2.TabIndex = 15;
@@ -108,7 +110,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(106, 194);
+            label3.Location = new Point(106, 287);
             label3.Name = "label3";
             label3.Size = new Size(36, 15);
             label3.TabIndex = 16;
@@ -117,7 +119,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(105, 144);
+            label4.Location = new Point(105, 237);
             label4.Name = "label4";
             label4.Size = new Size(34, 15);
             label4.TabIndex = 17;
@@ -133,11 +135,29 @@
             label5.TabIndex = 18;
             label5.Text = "Editar Missa";
             // 
+            // txt_desc
+            // 
+            txt_desc.Location = new Point(103, 118);
+            txt_desc.Name = "txt_desc";
+            txt_desc.Size = new Size(172, 96);
+            txt_desc.TabIndex = 19;
+            txt_desc.Text = "";
+            // 
+            // cmb_quant
+            // 
+            cmb_quant.FormattingEnabled = true;
+            cmb_quant.Location = new Point(281, 118);
+            cmb_quant.Name = "cmb_quant";
+            cmb_quant.Size = new Size(44, 23);
+            cmb_quant.TabIndex = 20;
+            // 
             // form_editar
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(432, 343);
+            ClientSize = new Size(432, 385);
+            Controls.Add(cmb_quant);
+            Controls.Add(txt_desc);
             Controls.Add(label5);
             Controls.Add(label4);
             Controls.Add(label3);
@@ -167,5 +187,7 @@
         private Label label3;
         private Label label4;
         private Label label5;
+        private RichTextBox txt_desc;
+        private ComboBox cmb_quant;
     }
 }

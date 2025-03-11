@@ -8,6 +8,7 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using Image = iText.Layout.Element.Image;
+using AppEscala.Views;
 
 
 namespace AppEscala
@@ -15,10 +16,7 @@ namespace AppEscala
     public partial class form_menu : Form
     {
 
-        FrmEscala Esc;
-        FrmInfo inf;
-        FrmSub1 sub1;
-        FrmSub2 sub2;
+        
 
         public form_menu()
         {
@@ -270,10 +268,7 @@ namespace AppEscala
 
         }
 
-        private void sub1_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            sub1 = null;
-        }
+        
 
         private void subMenu2_Click(object sender, EventArgs e)
         {

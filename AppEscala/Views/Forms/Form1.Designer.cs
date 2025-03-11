@@ -411,7 +411,6 @@ namespace AppEscala
             Name = "form_menu";
             StartPosition = FormStartPosition.CenterScreen;
             Text = " ";
-            FormClosed += sub1_FormClosed;
             Load += Form1_Load;
             sidebar.ResumeLayout(false);
             MenuContainer.ResumeLayout(false);

@@ -35,6 +35,12 @@
             label1 = new Label();
             btn_AddIgreja = new Button();
             dgv_missas = new DataGridView();
+            coluna1 = new DataGridViewTextBoxColumn();
+            coluna2 = new DataGridViewTextBoxColumn();
+            coluna3 = new DataGridViewTextBoxColumn();
+            coluna4 = new DataGridViewTextBoxColumn();
+            Descricao = new DataGridViewTextBoxColumn();
+            Qnt_Acolitos = new DataGridViewTextBoxColumn();
             btn_recarregarIgrejas = new Button();
             btn_editar = new Button();
             btn_excluir = new Button();
@@ -43,12 +49,6 @@
             label3 = new Label();
             label4 = new Label();
             cmb_quant = new ComboBox();
-            coluna1 = new DataGridViewTextBoxColumn();
-            coluna2 = new DataGridViewTextBoxColumn();
-            coluna3 = new DataGridViewTextBoxColumn();
-            coluna4 = new DataGridViewTextBoxColumn();
-            Descricao = new DataGridViewTextBoxColumn();
-            Qnt_Acolitos = new DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)dgv_missas).BeginInit();
             SuspendLayout();
             // 
@@ -127,6 +127,53 @@
             dgv_missas.TabIndex = 9;
             dgv_missas.CellClick += dgv_missas_CellClick;
             dgv_missas.CellContentClick += dgv_missas_CellContentClick;
+            dgv_missas.CellMouseDoubleClick += dgv_missas_CellMouseDoubleClick;
+            // 
+            // coluna1
+            // 
+            coluna1.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            coluna1.HeaderText = "Data";
+            coluna1.Name = "coluna1";
+            coluna1.ReadOnly = true;
+            coluna1.Width = 56;
+            // 
+            // coluna2
+            // 
+            coluna2.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            coluna2.HeaderText = "Horário";
+            coluna2.Name = "coluna2";
+            coluna2.ReadOnly = true;
+            coluna2.Width = 72;
+            // 
+            // coluna3
+            // 
+            coluna3.HeaderText = "Local";
+            coluna3.MinimumWidth = 128;
+            coluna3.Name = "coluna3";
+            coluna3.ReadOnly = true;
+            // 
+            // coluna4
+            // 
+            coluna4.HeaderText = "id";
+            coluna4.Name = "coluna4";
+            coluna4.ReadOnly = true;
+            coluna4.Visible = false;
+            // 
+            // Descricao
+            // 
+            Descricao.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Descricao.HeaderText = "Descrição";
+            Descricao.Name = "Descricao";
+            Descricao.ReadOnly = true;
+            Descricao.Width = 83;
+            // 
+            // Qnt_Acolitos
+            // 
+            Qnt_Acolitos.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Qnt_Acolitos.HeaderText = "Qnt";
+            Qnt_Acolitos.Name = "Qnt_Acolitos";
+            Qnt_Acolitos.ReadOnly = true;
+            Qnt_Acolitos.Width = 52;
             // 
             // btn_recarregarIgrejas
             // 
@@ -204,52 +251,6 @@
             cmb_quant.Name = "cmb_quant";
             cmb_quant.Size = new Size(130, 23);
             cmb_quant.TabIndex = 18;
-            // 
-            // coluna1
-            // 
-            coluna1.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            coluna1.HeaderText = "Data";
-            coluna1.Name = "coluna1";
-            coluna1.ReadOnly = true;
-            coluna1.Width = 56;
-            // 
-            // coluna2
-            // 
-            coluna2.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            coluna2.HeaderText = "Horário";
-            coluna2.Name = "coluna2";
-            coluna2.ReadOnly = true;
-            coluna2.Width = 72;
-            // 
-            // coluna3
-            // 
-            coluna3.HeaderText = "Local";
-            coluna3.MinimumWidth = 128;
-            coluna3.Name = "coluna3";
-            coluna3.ReadOnly = true;
-            // 
-            // coluna4
-            // 
-            coluna4.HeaderText = "id";
-            coluna4.Name = "coluna4";
-            coluna4.ReadOnly = true;
-            coluna4.Visible = false;
-            // 
-            // Descricao
-            // 
-            Descricao.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            Descricao.HeaderText = "Descrição";
-            Descricao.Name = "Descricao";
-            Descricao.ReadOnly = true;
-            Descricao.Width = 83;
-            // 
-            // Qnt_Acolitos
-            // 
-            Qnt_Acolitos.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
-            Qnt_Acolitos.HeaderText = "Qnt";
-            Qnt_Acolitos.Name = "Qnt_Acolitos";
-            Qnt_Acolitos.ReadOnly = true;
-            Qnt_Acolitos.Width = 52;
             // 
             // Missas
             // 

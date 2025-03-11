@@ -36,14 +36,10 @@ namespace AppEscala
             }
             Igreja novaigreja = new Igreja { nome = txt_igreja.Text };
             db.InsertIgreja(novaigreja);
+            DialogResult = DialogResult.OK; // Define o resultado do diálogo
+            this.Close();
 
-            var igrejas = db.SelectAllIgreja().ToList();
-            foreach ( var igreja in igrejas)
-            {
-                
-                MessageBox.Show($"{igreja.nome}");
-            }
-            
+
             //try
             //{
             //    Conexao = new MySqlConnection(data_source);

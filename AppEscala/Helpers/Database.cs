@@ -106,6 +106,27 @@ namespace AppEscala.Helpers
             }
         }
 
+        public void DeleteDias(int id_acolito, string dia)
+        {
+            try
+            {
+                var registro = this.db.Table<Dia>().FirstOrDefault(diaZ => diaZ.dia == dia && diaZ.Id_acolitos == id_acolito);
+                if (registro != null)
+                {
+                    this.db.Delete(registro);
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+        }
+
         public void InsertIgreja(Igreja dados_igreja)
         {
             try
@@ -356,13 +377,14 @@ namespace AppEscala.Helpers
             public int idMissa { get; set; }
             public string Descricao { get; set; }
             public int Qnt_acolitos { get; set; }
+            public int Id_igreja { get; set; }
         }
 
         public List<MissasDadosCompletos> SelectAllMissas()
         {
             try
             {
-                string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos from MissasC m " +
+                string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissasC m " +
                 "INNER JOIN Igreja i ON m.Id_igreja = i.id;";
                 return this.db.Query<MissasDadosCompletos>(comando);
             }
@@ -377,7 +399,7 @@ namespace AppEscala.Helpers
 
             try
             {
-                string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos from MissasC m " +
+                string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissasC m " +
                 "INNER JOIN Igreja i ON m.Id_igreja = i.id WHERE m.Id = " + id;
                 return this.db.Query<MissasDadosCompletos>(comando).FirstOrDefault();
             }
@@ -406,6 +428,26 @@ namespace AppEscala.Helpers
             catch (Exception ex)
             {
                 throw new Exception("Erro ao excluir igreja: " + ex.Message);
+            }
+        }
+
+        public void UpdateMissa(int? id, MissasC dadosMissa)
+        {
+            try
+            {
+                
+                if (dadosMissa != null)
+                {
+                    this.db.Update(dadosMissa);
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
             }
         }
     }

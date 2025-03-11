@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AppEscala.Helpers;
 using iText.IO.Font.Constants;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
@@ -17,17 +18,27 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using MySql.Data.MySqlClient;
+using AppEscala.Models;
+using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
+using System.Drawing.Text;
 
 namespace AppEscala
 {
     public partial class UserControl1 : UserControl
     {
+        private static Database db;
         private MySqlConnection Conexao;
         private string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
-
+        
         public UserControl1()
         {
             InitializeComponent();
+        }
+        private void UserControl1_Load(object sender, EventArgs e)
+        {
+            db = new Database();
+            db.Initialize();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -202,6 +213,8 @@ namespace AppEscala
             private static string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
             public string EncaixarAcolitos(string data, string horario, int quant)
             {
+
+
                 string acolitos;
                 DateTime dataConvertida = DateTime.Parse(data);
                 DayOfWeek diaSemana = dataConvertida.DayOfWeek;
@@ -262,44 +275,63 @@ namespace AppEscala
                 }
                 return "";
             }
+            public static string ConverterData(int indexDia)
+            {
+                string[] dias = ["Domingo", "2ª.feira", "3ª.feira", "4ª.feira", "5ª.feira", "6ª.feira", "Sábado"];
+                return dias[indexDia];
+            }
             public static List<Produtos> GetListaProdutos()
             {
+                var listaMissa = db.SelectAllMissas();
                 var relProdutos = new List<Produtos>();
-                try
+                foreach(var missa in listaMissa)
                 {
-                    Conexao = new MySqlConnection(data_source);
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = Conexao;
-                    Conexao.Open();
-                    cmd.CommandText = "SELECT m.data, m.horario, m.descricao, i.nome from missas m " +
-                "INNER JOIN igreja i ON m.id_igreja = i.id;";
+                    //string format = "dddd";
+                    //string cultureInfo = "pt-BR";
+                    //MessageBox.Show($"{dataConvertida.ToString(format, new CultureInfo(cultureInfo))}");
+                    //MessageBox.Show($"{diaConvertido}");
+                    DateTime dataConvertida = DateTime.Parse(missa.Data);
+                    string diaConvertido = ConverterData((int)dataConvertida.DayOfWeek);
 
-                    MySqlDataReader reader = cmd.ExecuteReader();
+                    relProdutos.Add(new Produtos(diaConvertido, missa.Horario, "Daniel/Gabriel/João/Felipe", missa.Descricao, missa.Igreja));
+                }
+
+
+                //try
+                //{
+                //    Conexao = new MySqlConnection(data_source);
+                //    MySqlCommand cmd = new MySqlCommand();
+                //    cmd.Connection = Conexao;
+                //    Conexao.Open();
+                //    cmd.CommandText = "SELECT m.data, m.horario, m.descricao, i.nome from missas m " +
+                //"INNER JOIN igreja i ON m.id_igreja = i.id;";
+
+                //    MySqlDataReader reader = cmd.ExecuteReader();
                     
-                    while (reader.Read())
-                    {
-                        relProdutos.Add(new Produtos(reader.GetString(0), reader.GetString(1), "Daniel/Gabriel/João/Felipe", reader.GetString(2), reader.GetString(3)));
-                    }
+                //    while (reader.Read())
+                //    {
+                //        relProdutos.Add(new Produtos(reader.GetString(0), reader.GetString(1), "Daniel/Gabriel/João/Felipe", reader.GetString(2), reader.GetString(3)));
+                //    }
 
-                }
-                catch (MySqlException ex)
-                {
-                    MessageBox.Show($"Erro MySQL: {ex.Message}");
+                //}
+                //catch (MySqlException ex)
+                //{
+                //    MessageBox.Show($"Erro MySQL: {ex.Message}");
 
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Erro geral: {ex.Message}");
+                //}
+                //catch (Exception ex)
+                //{
+                //    MessageBox.Show($"Erro geral: {ex.Message}");
 
-                }
+                //}
 
-                finally
-                {
-                    if (Conexao != null && Conexao.State == ConnectionState.Open)
-                    {
-                        Conexao.Close();
-                    }
-                }
+                //finally
+                //{
+                //    if (Conexao != null && Conexao.State == ConnectionState.Open)
+                //    {
+                //        Conexao.Close();
+                //    }
+                //}
                 //instanciar um objeto Lista de produtos
                 
 
@@ -309,9 +341,5 @@ namespace AppEscala
             }
         }
 
-        private void UserControl1_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }

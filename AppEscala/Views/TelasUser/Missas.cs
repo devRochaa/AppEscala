@@ -44,11 +44,11 @@ namespace AppEscala
             MontarHorarios();
             combobox_igreja();
 
-            for (int i = 0; i <= 15; i++) 
+            for (int i = 0; i <= 15; i++)
             {
                 cmb_quant.Items.Add(i);
             }
-            
+
         }
 
         private void ApagarMissasAntigas()
@@ -66,7 +66,7 @@ namespace AppEscala
                     MessageBox.Show($"Missas do dia {dataMissa} foram retiradas do banco.");
                 }
             }
-           
+
         }
         private void carregar_missas()
         {
@@ -80,7 +80,7 @@ namespace AppEscala
                 dgv_missas.Rows.Add(); //adiciona uma nova linha
 
                 dgv_missas.Rows[rowIndex].Cells[0].Value = missa.Data; //add as informações de acordo com a linha
-                dgv_missas.Rows[rowIndex].Cells[1].Value = missa.Horario;  
+                dgv_missas.Rows[rowIndex].Cells[1].Value = missa.Horario;
                 dgv_missas.Rows[rowIndex].Cells[2].Value = missa.Igreja;
                 dgv_missas.Rows[rowIndex].Cells[3].Value = missa.idMissa;
                 dgv_missas.Rows[rowIndex].Cells[4].Value = missa.Descricao;
@@ -89,7 +89,7 @@ namespace AppEscala
                 rowIndex++; //aumenta o index para add os valores na proxima linha 
             }
 
-            
+
         }
         public class Item
         {
@@ -103,6 +103,7 @@ namespace AppEscala
         }
         private void combobox_igreja()
         {
+            cmb_igrejas.Items.Clear();
             var listaIgreja = db.SelectAllIgreja();
             foreach (var igreja in listaIgreja)
             {
@@ -139,10 +140,10 @@ namespace AppEscala
             string data = dateTimePicker1.Value.ToString().Substring(0, 10);
             string hora = listBox1.Text.TrimStart();
             int qnt_acolitos = cmb_quant.SelectedIndex != -1 ? cmb_quant.SelectedIndex : 4;
-            MessageBox.Show($"{qnt_acolitos}");
             int idIgrejaSelecionada = -1;
 
-            if(cmb_igrejas.SelectedItem is Item selectedItem){
+            if (cmb_igrejas.SelectedItem is Item selectedItem)
+            {
                 idIgrejaSelecionada = selectedItem.Value;
             }
             if (idIgrejaSelecionada == -1)
@@ -150,17 +151,19 @@ namespace AppEscala
                 MessageBox.Show("Ocorreu um erro em relação a seleção da Igreja!");
                 return;
             }
-            
-            MissasC novaMissa = new MissasC() { Id_igreja = idIgrejaSelecionada, 
-                Data = data, 
+
+            MissasC novaMissa = new MissasC()
+            {
+                Id_igreja = idIgrejaSelecionada,
+                Data = data,
                 Horario = hora,
                 Descricao = txt_desc.Text,
                 Qnt_acolitos = qnt_acolitos
             };
-            db.InsertMissa( novaMissa );
+            db.InsertMissa(novaMissa);
             MessageBox.Show("Missa Adicionada!");
             carregar_missas();
-            
+
 
         }
 
@@ -192,7 +195,7 @@ namespace AppEscala
                 MessageBox.Show("Você escolheu Não!");
                 return;
             }
-            db.DeleteMissa( id_selecionado.Value );
+            db.DeleteMissa(id_selecionado.Value);
             carregar_missas();
 
         }
@@ -212,6 +215,10 @@ namespace AppEscala
 
         private void btn_editar_Click(object sender, EventArgs e)
         {
+            ChamarEdicao();
+        }
+        private void ChamarEdicao()
+        {
             if (id_selecionado != null)
             {
                 form_editar form_edit = new form_editar();
@@ -230,7 +237,6 @@ namespace AppEscala
                 MessageBox.Show("Você precisa selecionar uma missa primeiro!");
             }
         }
-
         private void btn_recarregarIgrejas_Click(object sender, EventArgs e)
         {
             carregar_missas();
@@ -240,6 +246,13 @@ namespace AppEscala
         private void cmb_igrejas_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        
+
+        private void dgv_missas_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            ChamarEdicao();
         }
     }
 }   
