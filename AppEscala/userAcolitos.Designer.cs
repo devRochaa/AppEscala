@@ -41,6 +41,10 @@
             sexta = new DataGridViewTextBoxColumn();
             sabado = new DataGridViewTextBoxColumn();
             domingo = new DataGridViewTextBoxColumn();
+            oculto = new DataGridViewTextBoxColumn();
+            txt_id = new TextBox();
+            txt_aviso = new Label();
+            btn_edit = new Button();
             ((System.ComponentModel.ISupportInitialize)dgv_acolitos).BeginInit();
             SuspendLayout();
             // 
@@ -85,16 +89,18 @@
             // 
             dgv_acolitos.AllowUserToAddRows = false;
             dgv_acolitos.AllowUserToDeleteRows = false;
-            dgv_acolitos.AllowUserToOrderColumns = true;
             dgv_acolitos.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgv_acolitos.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgv_acolitos.Columns.AddRange(new DataGridViewColumn[] { nome, segunda, terca, quarta, quinta, sexta, sabado, domingo });
-            dgv_acolitos.Location = new Point(48, 122);
+            dgv_acolitos.Columns.AddRange(new DataGridViewColumn[] { nome, segunda, terca, quarta, quinta, sexta, sabado, domingo, oculto });
+            dgv_acolitos.Location = new Point(48, 101);
+            dgv_acolitos.MultiSelect = false;
             dgv_acolitos.Name = "dgv_acolitos";
             dgv_acolitos.ReadOnly = true;
+            dgv_acolitos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgv_acolitos.Size = new Size(646, 203);
             dgv_acolitos.TabIndex = 5;
-            dgv_acolitos.CellContentClick += dgv_acolitos_CellContentClick;
+            dgv_acolitos.CellClick += dgv_acolitos_CellClick;
+            dgv_acolitos.CellDoubleClick += dgv_acolitos_CellDoubleClick;
             // 
             // nome
             // 
@@ -152,18 +158,58 @@
             domingo.Name = "domingo";
             domingo.ReadOnly = true;
             // 
+            // oculto
+            // 
+            oculto.HeaderText = "id";
+            oculto.Name = "oculto";
+            oculto.ReadOnly = true;
+            oculto.Visible = false;
+            // 
+            // txt_id
+            // 
+            txt_id.Location = new Point(628, 22);
+            txt_id.Name = "txt_id";
+            txt_id.Size = new Size(66, 23);
+            txt_id.TabIndex = 37;
+            // 
+            // txt_aviso
+            // 
+            txt_aviso.AutoSize = true;
+            txt_aviso.Location = new Point(268, 199);
+            txt_aviso.Name = "txt_aviso";
+            txt_aviso.Size = new Size(204, 15);
+            txt_aviso.TabIndex = 38;
+            txt_aviso.Text = "Não foi encontrado nenhum registro.";
+            txt_aviso.Visible = false;
+            // 
+            // btn_edit
+            // 
+            btn_edit.Location = new Point(310, 310);
+            btn_edit.Name = "btn_edit";
+            btn_edit.Size = new Size(115, 39);
+            btn_edit.TabIndex = 39;
+            btn_edit.Text = "Editar Acólito";
+            btn_edit.UseVisualStyleBackColor = true;
+            btn_edit.Click += btn_edit_Click;
+            // 
             // userAcolitos
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(btn_edit);
+            Controls.Add(txt_aviso);
+            Controls.Add(txt_id);
             Controls.Add(dgv_acolitos);
             Controls.Add(btn_buscar);
             Controls.Add(label2);
             Controls.Add(txtPesquisa);
             Controls.Add(label1);
+            ImeMode = ImeMode.KatakanaHalf;
             Name = "userAcolitos";
             Size = new Size(746, 472);
             Load += acolitos_Load;
+            VisibleChanged += userAcolitos_VisibleChanged;
+            Enter += userAcolitos_Enter;
             ((System.ComponentModel.ISupportInitialize)dgv_acolitos).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -183,5 +229,9 @@
         private DataGridViewTextBoxColumn sexta;
         private DataGridViewTextBoxColumn sabado;
         private DataGridViewTextBoxColumn domingo;
+        private DataGridViewTextBoxColumn oculto;
+        private TextBox txt_id;
+        private Label txt_aviso;
+        private Button btn_edit;
     }
 }

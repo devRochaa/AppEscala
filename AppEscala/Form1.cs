@@ -14,7 +14,7 @@ namespace AppEscala
 {
     public partial class form_menu : Form
     {
-        
+
         FrmEscala Esc;
         FrmInfo inf;
         FrmSub1 sub1;
@@ -185,13 +185,13 @@ namespace AppEscala
 
         private void button7_Click(object sender, EventArgs e)
         {
-            
+
             userControl11.Hide();
             userAcolitos.Hide();
             userControl21.Hide();
 
             missas1.Show();
-            
+
         }
         bool sidebarExpand = true;
         private void timerSideBarTransition_Tick(object sender, EventArgs e)
@@ -265,7 +265,7 @@ namespace AppEscala
             missas1.Hide();
             //mostrar a que quer
             userAcolitos.Show();
-            
+
 
 
         }
@@ -283,7 +283,7 @@ namespace AppEscala
             missas1.Hide();
             //mostrar a que quer
             userControl21.Show();
-            
+
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -299,6 +299,15 @@ namespace AppEscala
         private void sidebar_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            userAcolitos.Hide();
+            missas1.Hide();
+            userControl21.Hide();
+            //mostrar a que quer
+            userControl11.Show();
         }
     }
     public class Produtos

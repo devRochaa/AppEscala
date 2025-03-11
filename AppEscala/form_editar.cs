@@ -7,12 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using AppEscala.Helpers;
+using AppEscala.Models;
 using MySql.Data.MySqlClient;
+using static AppEscala.Helpers.Database;
 
 namespace AppEscala
 {
     public partial class form_editar : Form
     {
+        private Database db;
         private MySqlConnection Conexao;
         private string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
         public int? id_missa { get; set; }
@@ -23,43 +27,29 @@ namespace AppEscala
 
         private void form_editar_Load(object sender, EventArgs e)
         {
+            db = new Database();
+            db.Initialize();
             combobox_igreja();
             carregar_missaSelecionada();
         }
 
+        public class Item
+        {
+            public string Display { get; set; } // O texto visível
+            public int Value { get; set; } // O valor oculto
+
+            public override string ToString()
+            {
+                return Display; // Exibe apenas o texto no ComboBox
+            }
+        }
+
         private void combobox_igreja()
         {
-            try
+            var listaIgreja = db.SelectAllIgreja();
+            foreach (var igreja in listaIgreja)
             {
-                Conexao = new MySqlConnection(data_source);
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.Connection = Conexao;
-                Conexao.Open();
-                cmd.CommandText = "SELECT id, nome from igreja;";
-                MySqlDataReader reader = cmd.ExecuteReader();
-                cmb_igrejas.Items.Clear();
-
-                while (reader.Read())
-                {
-                    cmb_igrejas.Items.Add(reader.GetString(1));
-                }
-                reader.Close();
-
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show($"Erro MySQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro geral: {ex.Message}");
-            }
-            finally
-            {
-                if (Conexao != null && Conexao.State == ConnectionState.Open)
-                {
-                    Conexao.Close();
-                }
+                cmb_igrejas.Items.Add(new Item { Display = igreja.nome, Value = igreja.id });
             }
         }
 
@@ -68,56 +58,74 @@ namespace AppEscala
         string igreja;
         private void carregar_missaSelecionada()
         {
-            try
-            {
-                Conexao = new MySqlConnection(data_source);
-                MySqlCommand cmd = new MySqlCommand();
-                cmd.Connection = Conexao;
-                Conexao.Open();
-                cmd.CommandText = "SELECT m.data, m.horario, i.nome from missas m " +
-                    "INNER JOIN igreja i ON m.id_igreja = i.id WHERE m.id = @id_missa;";
-                cmd.Parameters.AddWithValue("@id_missa", id_missa);
-                MySqlDataReader reader = cmd.ExecuteReader();
-                //dgv_missas.Rows.Clear();
-                int rowIndex = 0;
 
-                while (reader.Read())
-                {
-                    string data_bruta = reader.GetString(0);
-                    if (DateTime.TryParse(data_bruta, out dataConvertida))
-                    {
-                        
-                        dtp_missa.Value = dataConvertida;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Não foi possível converter a data");
-                    }
-                    hora = reader.GetString(1);                    
-                    txt_hora1.Text = hora.Substring(0 , 2);
-                    txt_hora2.Text = hora.Substring(3);
-                    igreja = reader.GetString(2);
-                    cmb_igrejas.SelectedItem = igreja;
-                }
-                reader.Close();
+            MissasDadosCompletos missaSelecionada = db.SelectMissa(id_missa);
+            string data_bruta = missaSelecionada.Data;
+            if (DateTime.TryParse(data_bruta, out dataConvertida))
+            {
+
+                dtp_missa.Value = dataConvertida;
+            }
+            else
+            {
+                MessageBox.Show("Não foi possível converter a data");
+            }
+            hora = missaSelecionada.Horario;
+            txt_hora1.Text = missaSelecionada.Horario.Substring(0, 2);
+            txt_hora2.Text = missaSelecionada.Horario.Substring(3);
+            igreja = missaSelecionada.Igreja;
+            MessageBox.Show($"{cmb_igrejas.SelectedItem}"); //cmb_igrejas.selec.. esta vazio porcausa do Item
+            cmb_igrejas.SelectedItem = igreja;
+
+            //try
+            //{
+            //    Conexao = new MySqlConnection(data_source);
+            //    MySqlCommand cmd = new MySqlCommand();
+            //    cmd.Connection = Conexao;
+            //    Conexao.Open();
+            //    cmd.CommandText = "SELECT m.data, m.horario, i.nome from missas m " +
+            //        "INNER JOIN igreja i ON m.id_igreja = i.id WHERE m.id = @id_missa;";
+            //    cmd.Parameters.AddWithValue("@id_missa", id_missa);
+            //    MySqlDataReader reader = cmd.ExecuteReader();
 
 
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show($"Erro MySQL: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erro geral: {ex.Message}");
-            }
-            finally
-            {
-                if (Conexao != null && Conexao.State == ConnectionState.Open)
-                {
-                    Conexao.Close();
-                }
-            }
+            //    while (reader.Read())
+            //    {
+            //        //string data_bruta = reader.GetString(0);
+            //        if (DateTime.TryParse(data_bruta, out dataConvertida))
+            //        {
+
+            //            dtp_missa.Value = dataConvertida;
+            //        }
+            //        else
+            //        {
+            //            MessageBox.Show("Não foi possível converter a data");
+            //        }
+            //        hora = reader.GetString(1);                    
+            //        txt_hora1.Text = hora.Substring(0 , 2);
+            //        txt_hora2.Text = hora.Substring(3);
+            //        igreja = reader.GetString(2);
+            //        cmb_igrejas.SelectedItem = igreja;
+            //    }
+            //    reader.Close();
+
+
+            //}
+            //catch (MySqlException ex)
+            //{
+            //    MessageBox.Show($"Erro MySQL: {ex.Message}");
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"Erro geral: {ex.Message}");
+            //}
+            //finally
+            //{
+            //    if (Conexao != null && Conexao.State == ConnectionState.Open)
+            //    {
+            //        Conexao.Close();
+            //    }
+            //}
         }
 
         private void btn_salvar_Click(object sender, EventArgs e)

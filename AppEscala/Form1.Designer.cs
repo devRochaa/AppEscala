@@ -233,6 +233,7 @@ namespace AppEscala
             button3.Text = "     Informações";
             button3.TextAlign = ContentAlignment.MiddleLeft;
             button3.UseVisualStyleBackColor = false;
+            button3.Click += button3_Click;
             // 
             // pnConfig
             // 
