@@ -286,25 +286,45 @@ namespace AppEscala
                 return dias[indexDia];
             }
 
-            public static string SelecionarAcolitos(int dia, string diaS, int turno)
+            public static string SelecionarAcolitos(int dia, string diaS, int turno, int qntAc)
             {
                 dia = dia + 1;
                 var lista = db.SelecionarAcolitoDia(dia, diaS, turno);
                 string acolitosQpodem = "";
                 int indice = lista.Count;
-                foreach (var acolito in lista)
+                if (lista.Count >= qntAc)
                 {
-                    if(indice > 1)
-                    {
-                        acolitosQpodem += acolito.Nome + "/";
-                    }
-                    if(indice == 1)
-                    {
-                        acolitosQpodem += acolito.Nome;
-                    }
-                    indice--;
+                    indice = qntAc;
                 }
-                MessageBox.Show(acolitosQpodem);
+                Random randNum = new Random();
+                for(int i = 0; i < indice; i++)
+                {
+                        int indexRand = randNum.Next(indice);
+                    MessageBox.Show($"indice: {indice} qntAC:{qntAc} randNUm: {indexRand} listaRNome : {lista[indexRand].Nome} acolitos: {acolitosQpodem} ");
+                    if (indice > 1 && i == 0)
+                    {
+                        acolitosQpodem += lista[indexRand].Nome + "/";
+                    }
+                    if (indice == 1 || i + 1 == indice)
+                    {
+                        acolitosQpodem += lista[indexRand].Nome;
+                    }
+                    
+                }
+
+                //foreach (var acolito in lista)
+                //{
+                //    if(indice > 1)
+                //    {
+                //        acolitosQpodem += acolito.Nome + "/";
+                //    }
+                //    if(indice == 1)
+                //    {
+                //        acolitosQpodem += acolito.Nome;
+                //    }
+                //    indice--;
+                //}
+                //MessageBox.Show(acolitosQpodem);
                 return acolitosQpodem;
             }
 
@@ -327,7 +347,7 @@ namespace AppEscala
             {
                 var listaMissa = db.SelectAllMissas();
                 var relProdutos = new List<Produtos>();
-                    int repeticaoDeMissa = 1;
+                    
                 foreach (var missa in listaMissa)
                 {
                     int turno = HorarioParaTurno(missa.Horario);
@@ -336,20 +356,29 @@ namespace AppEscala
                     DateTime dataConvertida = DateTime.Parse(missa.Data);
                     int diaSemanaNum = (int)dataConvertida.DayOfWeek;
                     string diaConvertido = ConverterData(diaSemanaNum);
-                    string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data, turno);
+                    string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data, turno, missa.Qnt_acolitos);
 
-                    foreach(var missaPara in listaMissa)
-                    {
-                        if(missaPara.Data == missa.Data)
+                    bool isDataRepetida = false;
+                   
+                        foreach(Produtos p in relProdutos)
                         {
-                            repeticaoDeMissa++;
+                            string dataJunta = dataConvertida.Day.ToString() + "-" + diaConvertido;
+                            if (p.data == dataJunta)
+                            {
+                                isDataRepetida = true;
+                            }
+                            
                         }
-                    }
-                    if(repeticaoDeMissa > 1)
-                    {
-                    relProdutos.Add(new Produtos(dataConvertida.Day + "-" + diaConvertido, missa.Horario, acolitos, missa.Descricao, missa.Igreja));
-                        repeticaoDeMissa = 1;
-                    }
+
+                        if(isDataRepetida == true)
+                        {
+                        relProdutos.Add(new Produtos("", missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                        }
+                        else
+                        {
+                        relProdutos.Add(new Produtos(dataConvertida.Day + "-" + diaConvertido, missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                        }
+
                 }
 
 
