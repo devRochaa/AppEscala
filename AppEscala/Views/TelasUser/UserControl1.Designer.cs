@@ -30,6 +30,7 @@
         {
             skyLabel1 = new ReaLTaiizor.Controls.SkyLabel();
             button1 = new ReaLTaiizor.Controls.HopeRoundButton();
+            cmb_diasSemana = new ComboBox();
             SuspendLayout();
             // 
             // skyLabel1
@@ -37,7 +38,7 @@
             skyLabel1.AutoSize = true;
             skyLabel1.Font = new Font("Verdana", 6.75F, FontStyle.Bold);
             skyLabel1.ForeColor = Color.FromArgb(27, 94, 137);
-            skyLabel1.Location = new Point(269, 68);
+            skyLabel1.Location = new Point(297, 66);
             skyLabel1.Name = "skyLabel1";
             skyLabel1.Size = new Size(41, 12);
             skyLabel1.TabIndex = 0;
@@ -63,10 +64,19 @@
             button1.WarningColor = Color.FromArgb(230, 162, 60);
             button1.Click += button1_Click;
             // 
+            // cmb_diasSemana
+            // 
+            cmb_diasSemana.FormattingEnabled = true;
+            cmb_diasSemana.Location = new Point(253, 126);
+            cmb_diasSemana.Name = "cmb_diasSemana";
+            cmb_diasSemana.Size = new Size(121, 23);
+            cmb_diasSemana.TabIndex = 2;
+            // 
             // UserControl1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(cmb_diasSemana);
             Controls.Add(button1);
             Controls.Add(skyLabel1);
             Name = "UserControl1";
@@ -80,5 +90,6 @@
 
         private ReaLTaiizor.Controls.SkyLabel skyLabel1;
         private ReaLTaiizor.Controls.HopeRoundButton button1;
+        private ComboBox cmb_diasSemana;
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using AppEscala.Models;
@@ -450,5 +451,61 @@ namespace AppEscala.Helpers
                 throw new Exception("Erro ao atualizar igreja: " + ex.Message);
             }
         }
+
+        public List<AcolitoDisponibilidade> SelecionarAcolitoPorDias(int[] diasNum)
+        {
+            try
+            {
+                int indices = diasNum.Length;
+
+                string comando = @"SELECT a.Nome AS Nome, t.Id AS Id_Turno 
+                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito
+                    FROM Acolitos AS a 
+                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
+                    INNER JOIN Turno AS t ON d.Id_turno = t.Id ";
+
+
+                foreach (int dia in diasNum)
+                {
+                    if (indices > 1)
+                    {
+                        comando += "WHERE d.IdDiaSemana = " + dia + " OR ";
+                    }
+                    if (indices == 1)
+                    {
+                        comando += "WHERE d.IdDiaSemana = " + dia;
+                    }
+                    indices--;
+                }
+
+                return this.db.Query<AcolitoDisponibilidade>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+        }
+
+        public List<AcolitoDisponibilidade> SelecionarAcolitoDia(int dia, string diaQnaoPode, int turno)
+        {
+            try
+            {
+                string comando = @"SELECT a.Nome AS Nome, t.Id AS Id_Turno, d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito
+                                   FROM Acolitos AS a
+                                   INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos
+                                   INNER JOIN Turno AS t ON d.Id_turno = t.Id
+                                   LEFT JOIN Dia ON Dia.Id_acolitos = a.id AND Dia.dia = '" +diaQnaoPode + @"' 
+                                   WHERE d.IdDiaSemana = " + dia + " AND Dia.Id_acolitos IS NULL AND d.Id_turno = " + turno + ";";
+
+                return this.db.Query<AcolitoDisponibilidade>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+        }
+
+
+
     }
 }

@@ -30,7 +30,7 @@ namespace AppEscala
         private static Database db;
         private MySqlConnection Conexao;
         private string data_source = "datasource=localhost;Port=3307;username=root;password=;database=escala_acolitos;";
-        
+
         public UserControl1()
         {
             InitializeComponent();
@@ -39,6 +39,11 @@ namespace AppEscala
         {
             db = new Database();
             db.Initialize();
+
+            for (int i = 0; i < 10; i++)
+            {
+                cmb_diasSemana.Items.Add(i);
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -219,7 +224,7 @@ namespace AppEscala
                 DateTime dataConvertida = DateTime.Parse(data);
                 DayOfWeek diaSemana = dataConvertida.DayOfWeek;
                 int horas = int.Parse(horario.Substring(0, 2));
-                if (horas < 12) 
+                if (horas < 12)
                 {
                     int turnoMissa = 1;
                 }
@@ -250,7 +255,7 @@ namespace AppEscala
                     }
                     while (reader.Read())
                     {
-                        Random random = new Random();                       
+                        Random random = new Random();
                         int numeroAleatorio = random.Next(0, count);
                     }
 
@@ -280,66 +285,84 @@ namespace AppEscala
                 string[] dias = ["Domingo", "2ª.feira", "3ª.feira", "4ª.feira", "5ª.feira", "6ª.feira", "Sábado"];
                 return dias[indexDia];
             }
+
+            public static string SelecionarAcolitos(int dia, string diaS, int turno)
+            {
+                dia = dia + 1;
+                var lista = db.SelecionarAcolitoDia(dia, diaS, turno);
+                string acolitosQpodem = "";
+                int indice = lista.Count;
+                foreach (var acolito in lista)
+                {
+                    if(indice > 1)
+                    {
+                        acolitosQpodem += acolito.Nome + "/";
+                    }
+                    if(indice == 1)
+                    {
+                        acolitosQpodem += acolito.Nome;
+                    }
+                    indice--;
+                }
+                MessageBox.Show(acolitosQpodem);
+                return acolitosQpodem;
+            }
+
+            public static int HorarioParaTurno(string horario)
+            {
+                DateTime horaConvertida = DateTime.Parse(horario);
+                //MessageBox.Show($" {horaConvertida.Hour}");
+                if (horaConvertida.Hour > 0 && horaConvertida.Hour < 11)
+                {
+                    return 1;
+                }
+                if (horaConvertida.Hour >= 12 && horaConvertida.Hour < 18)
+                {
+                    return 2;
+                }            
+                    return 3;
+
+            }
             public static List<Produtos> GetListaProdutos()
             {
                 var listaMissa = db.SelectAllMissas();
                 var relProdutos = new List<Produtos>();
-                foreach(var missa in listaMissa)
+                    int repeticaoDeMissa = 1;
+                foreach (var missa in listaMissa)
                 {
-                    //string format = "dddd";
-                    //string cultureInfo = "pt-BR";
-                    //MessageBox.Show($"{dataConvertida.ToString(format, new CultureInfo(cultureInfo))}");
-                    //MessageBox.Show($"{diaConvertido}");
-                    DateTime dataConvertida = DateTime.Parse(missa.Data);
-                    string diaConvertido = ConverterData((int)dataConvertida.DayOfWeek);
+                    int turno = HorarioParaTurno(missa.Horario);
 
-                    relProdutos.Add(new Produtos(diaConvertido, missa.Horario, "Daniel/Gabriel/João/Felipe", missa.Descricao, missa.Igreja));
+
+                    DateTime dataConvertida = DateTime.Parse(missa.Data);
+                    int diaSemanaNum = (int)dataConvertida.DayOfWeek;
+                    string diaConvertido = ConverterData(diaSemanaNum);
+                    string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data, turno);
+
+                    foreach(var missaPara in listaMissa)
+                    {
+                        if(missaPara.Data == missa.Data)
+                        {
+                            repeticaoDeMissa++;
+                        }
+                    }
+                    if(repeticaoDeMissa > 1)
+                    {
+                    relProdutos.Add(new Produtos(dataConvertida.Day + "-" + diaConvertido, missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                        repeticaoDeMissa = 1;
+                    }
                 }
 
 
-                //try
-                //{
-                //    Conexao = new MySqlConnection(data_source);
-                //    MySqlCommand cmd = new MySqlCommand();
-                //    cmd.Connection = Conexao;
-                //    Conexao.Open();
-                //    cmd.CommandText = "SELECT m.data, m.horario, m.descricao, i.nome from missas m " +
-                //"INNER JOIN igreja i ON m.id_igreja = i.id;";
-
-                //    MySqlDataReader reader = cmd.ExecuteReader();
-                    
-                //    while (reader.Read())
-                //    {
-                //        relProdutos.Add(new Produtos(reader.GetString(0), reader.GetString(1), "Daniel/Gabriel/João/Felipe", reader.GetString(2), reader.GetString(3)));
-                //    }
-
-                //}
-                //catch (MySqlException ex)
-                //{
-                //    MessageBox.Show($"Erro MySQL: {ex.Message}");
-
-                //}
-                //catch (Exception ex)
-                //{
-                //    MessageBox.Show($"Erro geral: {ex.Message}");
-
-                //}
-
-                //finally
-                //{
-                //    if (Conexao != null && Conexao.State == ConnectionState.Open)
-                //    {
-                //        Conexao.Close();
-                //    }
-                //}
                 //instanciar um objeto Lista de produtos
-                
+
 
                 //relProdutos.Add(new Produtos("02-6ª.Feira", "19h30", "Daniel/Gabriel/João/Felipe", "", "Matriz"));
 
                 return relProdutos;
             }
-        }
 
+        }
     }
 }
+
+   

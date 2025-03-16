@@ -23,6 +23,7 @@ namespace AppEscala
             db = new Database();
             db.Initialize();
             Carregar_Acolitos();
+
         }
 
 
