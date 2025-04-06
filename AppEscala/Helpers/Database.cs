@@ -27,6 +27,7 @@ namespace AppEscala.Helpers
                 this.db.CreateTable<Disponibilidade>();
                 this.db.CreateTable<Igreja>();
                 this.db.CreateTable<MissasC>();
+                this.db.CreateTable<MissaClasse>();
 
                 this.db.BeginTransaction();
                 try
@@ -505,6 +506,82 @@ namespace AppEscala.Helpers
             }
         }
 
+        public void InsertMissaNova(MissaClasse dadosMissa)
+        {
+            try
+            {
+                this.db.Insert(dadosMissa);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao inserir igreja: " + ex.Message);
+            }
+        }
+
+        public class MissaNovaDadosCompletos
+        {
+            public DateTime Data { get; set; }
+            public string Igreja { get; set; }
+            public int idMissa { get; set; }
+            public string Descricao { get; set; }
+            public int Qnt_acolitos { get; set; }
+            public int Id_igreja { get; set; }
+        }
+        public MissasDadosCompletos SelectMissaNova(int? id)
+        {
+
+            try
+            {
+                string comando = "SELECT m.Data AS Data, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissasC m " +
+                "INNER JOIN Igreja i ON m.Id_igreja = i.id WHERE m.Id = " + id;
+                return this.db.Query<MissasDadosCompletos>(comando).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
+
+        }
+
+        public void UpdateMissaNova(int? id, MissaClasse dadosMissa)
+        {
+            try
+            {
+                if (dadosMissa != null)
+                {
+                    this.db.Update(dadosMissa);
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
+            }
+        }
+
+        public void DeleteMissaNova(int idMissa)
+        {
+            try
+            {
+                var registro = this.db.Find<MissaClasse>(idMissa);
+                if (registro != null)
+                {
+                    this.db.Delete(registro);
+                }
+                else
+                {
+                    throw new Exception("Registro não encontrado.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao excluir igreja: " + ex.Message);
+            }
+        }
 
 
     }

@@ -77,7 +77,7 @@ namespace AppEscala
                 string mes = DateTime.Now.ToString("MMMM", new System.Globalization.CultureInfo("pt-BR"));
                 mes = char.ToUpper(mes[0]) + mes.Substring(1);
 
-                var cellFotter = new Cell(1, 5).Add(new Paragraph("Escala dos acólitos " + day + " - " + mes ))
+                var cellFotter = new Cell(1, 5).Add(new Paragraph("Escala dos acólitos " + day + " - " + mes))
                     .SetFont(fonteNegrito)
                     .SetFontSize(10)
                     .SetFontColor(ColorConstants.BLACK)
@@ -88,7 +88,7 @@ namespace AppEscala
                 tabela.AddHeaderCell(cellFotter);
 
 
-                
+
 
                 //Cabeçalho com os títulos das colunas da tabela
 
@@ -263,10 +263,10 @@ namespace AppEscala
                     indice = qntAc;
                 }
                 Random randNum = new Random();
-                    
-                    List<int> lstIndexAcolitos = new List<int>();
 
-                for(int i = 0; i < indice; i++)
+                List<int> lstIndexAcolitos = new List<int>();
+
+                for (int i = 0; i < indice; i++)
                 {
                     int indexRand;
 
@@ -277,7 +277,7 @@ namespace AppEscala
                     } while (lstIndexAcolitos.Contains(indexRand));
 
                     lstIndexAcolitos.Add(indexRand);
-                    string strLista = string.Join(", ", lstIndexAcolitos);  
+                    string strLista = string.Join(", ", lstIndexAcolitos);
                     //MessageBox.Show($"indice: {indice} qntAC:{qntAc} randNUm: {indexRand} listaRNome : {lista[indexRand].Nome} acolitos: {acolitosQpodem} listaIndex:{strLista} ");
 
                     if (indice == 1 || i + 1 == indice)
@@ -286,7 +286,7 @@ namespace AppEscala
                         break;
                     }
 
-                    if(i == 0)
+                    if (i == 0)
                     {
                         acolitosQpodem += lista[indexRand].Nome + "/ ";
                     }
@@ -294,11 +294,11 @@ namespace AppEscala
                     {
                         if (indice > 1)
                         {
-                          acolitosQpodem += lista[indexRand].Nome + "/ ";
+                            acolitosQpodem += lista[indexRand].Nome + "/ ";
                         }
                     }
-                    
-                    
+
+
                 }
 
                 return acolitosQpodem;
@@ -315,15 +315,15 @@ namespace AppEscala
                 if (horaConvertida.Hour >= 12 && horaConvertida.Hour < 18)
                 {
                     return 2;
-                }            
-                    return 3;
+                }
+                return 3;
 
             }
             public static List<Produtos> GetListaProdutos()
             {
                 var listaMissa = db.SelectAllMissas();
                 var relProdutos = new List<Produtos>();
-                    
+
                 foreach (var missa in listaMissa)
                 {
                     int turno = HorarioParaTurno(missa.Horario);
@@ -335,25 +335,25 @@ namespace AppEscala
                     string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data, turno, missa.Qnt_acolitos);
 
                     bool isDataRepetida = false;
-                   
-                        foreach(Produtos p in relProdutos)
+
+                    foreach (Produtos p in relProdutos)
+                    {
+                        string dataJunta = dataConvertida.Day.ToString() + "-" + diaConvertido;
+                        if (p.data == dataJunta)
                         {
-                            string dataJunta = dataConvertida.Day.ToString() + "-" + diaConvertido;
-                            if (p.data == dataJunta)
-                            {
-                                isDataRepetida = true;
-                            }
-                            
+                            isDataRepetida = true;
                         }
-                    string vazio = "  ";
-                        if(isDataRepetida == true)
-                        {
-                        relProdutos.Add(new Produtos("", missa.Horario, vazio + acolitos, missa.Descricao, missa.Igreja));
-                        }
-                        else
-                        {
-                        relProdutos.Add(new Produtos(dataConvertida.Day + "-" + diaConvertido, missa.Horario, vazio + acolitos, missa.Descricao, missa.Igreja));
-                        }
+
+                    }
+
+                    if (isDataRepetida == true)
+                    {
+                        relProdutos.Add(new Produtos("", missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                    }
+                    else
+                    {
+                        relProdutos.Add(new Produtos(dataConvertida.Day + "-" + diaConvertido, missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                    }
 
                 }
 
@@ -367,6 +367,8 @@ namespace AppEscala
             }
 
         }
+
+       
     }
 }
 

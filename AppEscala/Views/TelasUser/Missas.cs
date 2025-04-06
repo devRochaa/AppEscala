@@ -125,6 +125,7 @@ namespace AppEscala
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
+
             if (cmb_igrejas.SelectedItem == null)
             {
                 MessageBox.Show($"Nenhuma Igreja selecionada");
@@ -139,6 +140,17 @@ namespace AppEscala
 
             string data = dateTimePicker1.Value.ToString().Substring(0, 10);
             string hora = listBox1.Text.TrimStart();
+
+            DateTime dataDate = dateTimePicker1.Value.Date;
+
+            DateTime horaSpan = DateTime.Parse(hora);
+            double horasDecimais = horaSpan.TimeOfDay.TotalHours;
+
+            DateTime dataConvertida = dataDate.AddHours(horasDecimais);
+
+            //System.Diagnostics.Debug.WriteLine(horasDecimais);
+            //System.Diagnostics.Debug.WriteLine(dataConvertida.ToString());
+
             int qnt_acolitos = cmb_quant.SelectedIndex != -1 ? cmb_quant.SelectedIndex : 4;
             int idIgrejaSelecionada = -1;
 
@@ -160,7 +172,15 @@ namespace AppEscala
                 Descricao = txt_desc.Text,
                 Qnt_acolitos = qnt_acolitos
             };
+            MissaClasse newMissa = new MissaClasse()
+            {
+                Id_igreja = idIgrejaSelecionada,
+                Data = dataDate,
+                Descricao = txt_desc.Text,
+                Qnt_acolitos = qnt_acolitos
+            };
             db.InsertMissa(novaMissa);
+            db.InsertMissaNova(newMissa);
             MessageBox.Show("Missa Adicionada!");
             carregar_missas();
 
