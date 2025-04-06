@@ -71,7 +71,7 @@ namespace AppEscala
         private void carregar_missas()
         {
             ApagarMissasAntigas();
-            var listaMissas = db.SelectAllMissas();
+            var listaMissas = db.SelectAllMissasNova();
 
             dgv_missas.Rows.Clear();
             int rowIndex = 0;
@@ -79,8 +79,8 @@ namespace AppEscala
             {
                 dgv_missas.Rows.Add(); //adiciona uma nova linha
 
-                dgv_missas.Rows[rowIndex].Cells[0].Value = missa.Data; //add as informações de acordo com a linha
-                dgv_missas.Rows[rowIndex].Cells[1].Value = missa.Horario;
+                dgv_missas.Rows[rowIndex].Cells[0].Value = missa.Data.ToString("d"); //add as informações de acordo com a linha
+                dgv_missas.Rows[rowIndex].Cells[1].Value = missa.Data.ToString("HH:mm");
                 dgv_missas.Rows[rowIndex].Cells[2].Value = missa.Igreja;
                 dgv_missas.Rows[rowIndex].Cells[3].Value = missa.idMissa;
                 dgv_missas.Rows[rowIndex].Cells[4].Value = missa.Descricao;
@@ -175,7 +175,7 @@ namespace AppEscala
             MissaClasse newMissa = new MissaClasse()
             {
                 Id_igreja = idIgrejaSelecionada,
-                Data = dataDate,
+                Data = dataConvertida,
                 Descricao = txt_desc.Text,
                 Qnt_acolitos = qnt_acolitos
             };

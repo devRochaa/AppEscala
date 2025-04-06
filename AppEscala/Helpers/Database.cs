@@ -583,6 +583,19 @@ namespace AppEscala.Helpers
             }
         }
 
+        public List<MissaNovaDadosCompletos> SelectAllMissasNova()
+        {
+            try
+            {
+                string comando = "SELECT m.Data AS Data, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissaClasse m " +
+                "INNER JOIN Igreja i ON m.Id_igreja = i.id ORDER by m.Data ASC;";
+                return this.db.Query<MissaNovaDadosCompletos>(comando);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao executar consulta: " + ex.Message);
+            }
 
+        }
     }
 }

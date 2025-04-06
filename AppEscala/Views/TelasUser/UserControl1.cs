@@ -304,15 +304,15 @@ namespace AppEscala
                 return acolitosQpodem;
             }
 
-            public static int HorarioParaTurno(string horario)
+            public static int HorarioParaTurno(DateTime horario)
             {
-                DateTime horaConvertida = DateTime.Parse(horario);
+                //DateTime horaConvertida = DateTime.Parse(horario);
                 //MessageBox.Show($" {horaConvertida.Hour}");
-                if (horaConvertida.Hour > 0 && horaConvertida.Hour < 11)
+                if (horario.Hour > 0 && horario.Hour < 11)
                 {
                     return 1;
                 }
-                if (horaConvertida.Hour >= 12 && horaConvertida.Hour < 18)
+                if (horario.Hour >= 12 && horario.Hour < 18)
                 {
                     return 2;
                 }
@@ -321,24 +321,27 @@ namespace AppEscala
             }
             public static List<Produtos> GetListaProdutos()
             {
-                var listaMissa = db.SelectAllMissas();
+                var listaMissa = db.SelectAllMissasNova();
                 var relProdutos = new List<Produtos>();
+
 
                 foreach (var missa in listaMissa)
                 {
-                    int turno = HorarioParaTurno(missa.Horario);
+                    int turno = HorarioParaTurno(missa.Data);
 
 
-                    DateTime dataConvertida = DateTime.Parse(missa.Data);
-                    int diaSemanaNum = (int)dataConvertida.DayOfWeek;
+                    //DateTime dataConvertida = DateTime.Parse(missa.Data);
+                    //int diaSemanaNum = (int)dataConvertida.DayOfWeek;
+                    int diaSemanaNum = (int)missa.Data.DayOfWeek;
                     string diaConvertido = ConverterData(diaSemanaNum);
-                    string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data, turno, missa.Qnt_acolitos);
+                    string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data.Date.ToString(), turno, missa.Qnt_acolitos);
+                    System.Diagnostics.Debug.WriteLine(missa.Data.ToString());
 
                     bool isDataRepetida = false;
 
                     foreach (Produtos p in relProdutos)
                     {
-                        string dataJunta = dataConvertida.Day.ToString() + "-" + diaConvertido;
+                        string dataJunta = missa.Data.Day.ToString() + "-" + diaConvertido;
                         if (p.data == dataJunta)
                         {
                             isDataRepetida = true;
@@ -348,11 +351,11 @@ namespace AppEscala
 
                     if (isDataRepetida == true)
                     {
-                        relProdutos.Add(new Produtos("", missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                        relProdutos.Add(new Produtos("", missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
                     }
                     else
                     {
-                        relProdutos.Add(new Produtos(dataConvertida.Day + "-" + diaConvertido, missa.Horario, acolitos, missa.Descricao, missa.Igreja));
+                        relProdutos.Add(new Produtos(missa.Data.Day + "-" + diaConvertido, missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
                     }
 
                 }
