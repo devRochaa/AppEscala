@@ -231,7 +231,7 @@ namespace AppEscala
             }
             Acolitos novoAcolito = new Acolitos { Nome = txtNome.Text };
             int id_inserido = db.InsertAcolito(novoAcolito);
-            MessageBox.Show($"{id_inserido}");
+            //MessageBox.Show($"{id_inserido}");
             if (id_inserido == null) { MessageBox.Show("O acólito não foi adicionado!");
                 return; }
             if (seg != null || sab != null)

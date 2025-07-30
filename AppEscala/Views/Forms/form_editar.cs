@@ -55,7 +55,7 @@ namespace AppEscala
             foreach (var igreja in listaIgreja)
             {
                 cmb_igrejas.Items.Add(new Item { Display = igreja.nome, Value = igreja.id });
-                
+
             }
         }
 
@@ -67,33 +67,36 @@ namespace AppEscala
         private void carregar_missaSelecionada()
         {
 
-            MissasDadosCompletos missaSelecionada = db.SelectMissa(id_missa);
-            string data_bruta = missaSelecionada.Data;
-            if (DateTime.TryParse(data_bruta, out dataConvertida))
+            MissaNovaDadosCompletos missaSelecionada = db.SelectMissaNova(id_missa);
+           // DateTime data_bruta = missaSelecionada.Data;
+            //if (DateTime.TryParse(data_bruta, out dataConvertida))
+            //{
+                dtp_missa.Value = missaSelecionada.Data;
+            //}
+            //else
+            //{
+            //    MessageBox.Show("Não foi possível converter a data");
+            //}
+
+
+            if (missaSelecionada.Data != null)
             {
-                dtp_missa.Value = dataConvertida;
-            } 
-            else
-            {
-                MessageBox.Show("Não foi possível converter a data");
-            }
-            if(missaSelecionada.Horario.Trim() != "") { 
-            hora = missaSelecionada.Horario;
-            txt_hora1.Text = missaSelecionada.Horario.Substring(0, 2);
-            txt_hora2.Text = missaSelecionada.Horario.Substring(3);
+                hora = missaSelecionada.Data.ToString();
+                txt_hora1.Text = missaSelecionada.Data.ToString("HH:mm").Substring(0, 2);
+                txt_hora2.Text = missaSelecionada.Data.ToString("HH:mm").Substring(3);
             }
             igreja = missaSelecionada.Igreja;
 
             foreach (Item item in cmb_igrejas.Items)
             {
-                
+
                 if ((int)item.Value == missaSelecionada.Id_igreja)
                 {
                     cmb_igrejas.SelectedItem = item;
                     break;
                 }
             }
-            
+
             cmb_quant.SelectedIndex = missaSelecionada.Qnt_acolitos;
             qntAntiga = missaSelecionada.Qnt_acolitos;
 
@@ -110,7 +113,7 @@ namespace AppEscala
             {
                 foiAlterado = true;
             }
-            
+
             if (hora.Substring(0, 2) != txt_hora1.Text || hora.Substring(3) != txt_hora2.Text)
             {
                 if (txt_hora1.TextLength == 0)
@@ -131,108 +134,126 @@ namespace AppEscala
             if (descAntiga != txt_desc.Text) foiAlterado = true;
             if (qntAntiga != cmb_quant.SelectedIndex) foiAlterado = true;
 
-            if (foiAlterado == true) 
+            if (foiAlterado == true)
             {
                 Item selectedItem = (Item)cmb_igrejas.SelectedItem;
                 int id_igreja = selectedItem.Value;
                 int idMissa = id_missa.Value;
-                MissasC dadosNovaMissa = new MissasC {Id = idMissa, Data = data_nova, Horario = hora_nova, Id_igreja = id_igreja, Qnt_acolitos = cmb_quant.SelectedIndex, Descricao = txt_desc.Text  
+                //MissasC dadosNovaMissa = new MissasC {
+                //    Id = idMissa,
+                //    Data = data_nova,
+                //    Horario = hora_nova,
+                //    Id_igreja = id_igreja,
+                //    Qnt_acolitos = cmb_quant.SelectedIndex,
+                //    Descricao = txt_desc.Text  
+                //};
+                //db.UpdateMissa(id_missa, dadosNovaMissa);
+
+                // Atualize também a tabela nova:
+                MissaClasse dadosNovaMissaNova = new MissaClasse
+                {
+                    Id = idMissa,
+                    Id_igreja = id_igreja,
+                    Data = dtp_missa.Value.Date.AddHours(int.Parse(txt_hora1.Text)).AddMinutes(int.Parse(txt_hora2.Text)),
+                    Descricao = txt_desc.Text,
+                    Qnt_acolitos = cmb_quant.SelectedIndex
                 };
-                db.UpdateMissa(id_missa, dadosNovaMissa);
+                db.UpdateMissaNova(id_missa, dadosNovaMissaNova);
+
                 MessageBox.Show("A missa foi editada");
-                DialogResult = DialogResult.OK; // Define o resultado do diálogo
+                DialogResult = DialogResult.OK;
                 this.Close();
             }
-        //        try
-        //        {
-        //        int conn_atv = 0;
-        //        Conexao = new MySqlConnection(data_source);
-        //        MySqlCommand cmd = new MySqlCommand();
-        //        cmd.Connection = Conexao;
+            //        try
+            //        {
+            //        int conn_atv = 0;
+            //        Conexao = new MySqlConnection(data_source);
+            //        MySqlCommand cmd = new MySqlCommand();
+            //        cmd.Connection = Conexao;
 
-        //        if (igreja != cmb_igrejas.SelectedItem.ToString() && cmb_igrejas.SelectedItem.ToString() != null)
-        //        {
-                    
-        //            cmd.CommandText = "UPDATE missas SET id_igreja = " +
-        //                    "(SELECT id FROM igreja WHERE nome = @igreja_nova) " +
-        //                    "WHERE id = @id_missa";
-        //            cmd.Parameters.Clear();
-        //            cmd.Parameters.AddWithValue("@igreja_nova", cmb_igrejas.SelectedItem);
-        //            cmd.Parameters.AddWithValue("@id_missa", id_missa);
+            //        if (igreja != cmb_igrejas.SelectedItem.ToString() && cmb_igrejas.SelectedItem.ToString() != null)
+            //        {
 
-        //            Conexao.Open();
-        //            conn_atv = 1;
-        //            cmd.ExecuteNonQuery();
-        //            MessageBox.Show($"Igreja Atualizada");
-        //        }
+            //            cmd.CommandText = "UPDATE missas SET id_igreja = " +
+            //                    "(SELECT id FROM igreja WHERE nome = @igreja_nova) " +
+            //                    "WHERE id = @id_missa";
+            //            cmd.Parameters.Clear();
+            //            cmd.Parameters.AddWithValue("@igreja_nova", cmb_igrejas.SelectedItem);
+            //            cmd.Parameters.AddWithValue("@id_missa", id_missa);
 
-        //        if (hora.Substring(0, 2) != txt_hora1.Text || hora.Substring(3) != txt_hora2.Text)
-        //        {
-        //            if (txt_hora1.TextLength == 0)
-        //            {
-        //                txt_hora1.Text = "00";
-        //            }
-        //            if (txt_hora2.TextLength == 0)
-        //            {
-        //                txt_hora2.Text = "00";
-        //            }
-        //            hora_nova = txt_hora1.Text + ":" + txt_hora2.Text;
-                    
-        //            cmd.CommandText = "UPDATE missas SET horario = @horario_novo " +
-        //                "WHERE id = @id_missa";
-        //            cmd.Parameters.Clear();
-        //            cmd.Parameters.AddWithValue("@horario_novo", hora_nova);
-        //            cmd.Parameters.AddWithValue("@id_missa", id_missa);
-        //            if(conn_atv == 0)
-        //            {
-        //            Conexao.Open();
-        //             conn_atv = 1;
-        //            }
-        //            cmd.ExecuteNonQuery();
-        //            MessageBox.Show($"Hora Atualizada");
-        //        }
-            
+            //            Conexao.Open();
+            //            conn_atv = 1;
+            //            cmd.ExecuteNonQuery();
+            //            MessageBox.Show($"Igreja Atualizada");
+            //        }
 
-        //        if(dataConvertida != dtp_missa.Value)
-        //        {
-        //            string data_nova = dtp_missa.Value.ToString();
-                    
-        //            cmd.CommandText = "UPDATE missas SET data = @data_nova " +
-        //                "WHERE id = @id_missa";
-        //            cmd.Parameters.Clear();
-        //            cmd.Parameters.AddWithValue("@data_nova", data_nova);
-        //            cmd.Parameters.AddWithValue("@id_missa", id_missa);
-        //            if(conn_atv == 0)
-        //            {
-        //                Conexao.Open();
-        //                conn_atv = 1;
-        //            }
-        //            cmd.ExecuteNonQuery();
-        //            MessageBox.Show($"Data Atualizada");
-        //        }
-        //        if (conn_atv == 0) 
-        //        {
-        //            MessageBox.Show($"Você não alterou nenhuma informação!");
-        //            return;
-        //        }
-        //    }
-        //    catch (MySqlException ex)
-        //    {
-        //        MessageBox.Show($"Erro MySQL: {ex.Message}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show($"Erro geral: {ex.Message}");
-        //    }
-        //    finally
-        //    {
-        //        if (Conexao != null && Conexao.State == ConnectionState.Open)
-        //        {
-        //            Conexao.Close();
-        //        }
-        //    }
+            //        if (hora.Substring(0, 2) != txt_hora1.Text || hora.Substring(3) != txt_hora2.Text)
+            //        {
+            //            if (txt_hora1.TextLength == 0)
+            //            {
+            //                txt_hora1.Text = "00";
+            //            }
+            //            if (txt_hora2.TextLength == 0)
+            //            {
+            //                txt_hora2.Text = "00";
+            //            }
+            //            hora_nova = txt_hora1.Text + ":" + txt_hora2.Text;
+
+            //            cmd.CommandText = "UPDATE missas SET horario = @horario_novo " +
+            //                "WHERE id = @id_missa";
+            //            cmd.Parameters.Clear();
+            //            cmd.Parameters.AddWithValue("@horario_novo", hora_nova);
+            //            cmd.Parameters.AddWithValue("@id_missa", id_missa);
+            //            if(conn_atv == 0)
+            //            {
+            //            Conexao.Open();
+            //             conn_atv = 1;
+            //            }
+            //            cmd.ExecuteNonQuery();
+            //            MessageBox.Show($"Hora Atualizada");
+            //        }
+
+
+            //        if(dataConvertida != dtp_missa.Value)
+            //        {
+            //            string data_nova = dtp_missa.Value.ToString();
+
+            //            cmd.CommandText = "UPDATE missas SET data = @data_nova " +
+            //                "WHERE id = @id_missa";
+            //            cmd.Parameters.Clear();
+            //            cmd.Parameters.AddWithValue("@data_nova", data_nova);
+            //            cmd.Parameters.AddWithValue("@id_missa", id_missa);
+            //            if(conn_atv == 0)
+            //            {
+            //                Conexao.Open();
+            //                conn_atv = 1;
+            //            }
+            //            cmd.ExecuteNonQuery();
+            //            MessageBox.Show($"Data Atualizada");
+            //        }
+            //        if (conn_atv == 0) 
+            //        {
+            //            MessageBox.Show($"Você não alterou nenhuma informação!");
+            //            return;
+            //        }
+            //    }
+            //    catch (MySqlException ex)
+            //    {
+            //        MessageBox.Show($"Erro MySQL: {ex.Message}");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show($"Erro geral: {ex.Message}");
+            //    }
+            //    finally
+            //    {
+            //        if (Conexao != null && Conexao.State == ConnectionState.Open)
+            //        {
+            //            Conexao.Close();
+            //        }
+            //    }
         }
 
-       
+        
     }
 }

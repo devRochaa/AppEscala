@@ -53,17 +53,16 @@ namespace AppEscala
 
         private void ApagarMissasAntigas()
         {
-            var listaMissas = db.SelectAllMissas();
+            var listaMissas = db.SelectAllMissasNova();
 
             foreach (var missa in listaMissas) //apagar missa que passaram da data atual
             {
                 DateTime dataAtual = DateTime.Now;
-                string dataMissa_String = missa.Data;
-                DateTime dataMissa = DateTime.Parse(dataMissa_String);
-                if (dataAtual > dataMissa)
+                
+                if (dataAtual > missa.Data)
                 {
-                    db.DeleteMissa(missa.idMissa);
-                    MessageBox.Show($"Missas do dia {dataMissa} foram retiradas do banco.");
+                    db.DeleteMissaNova(missa.idMissa);
+                    MessageBox.Show($"Missas do dia {missa.Data.ToString()} foram retiradas do banco.");
                 }
             }
 
@@ -164,14 +163,7 @@ namespace AppEscala
                 return;
             }
 
-            MissasC novaMissa = new MissasC()
-            {
-                Id_igreja = idIgrejaSelecionada,
-                Data = data,
-                Horario = hora,
-                Descricao = txt_desc.Text,
-                Qnt_acolitos = qnt_acolitos
-            };
+            
             MissaClasse newMissa = new MissaClasse()
             {
                 Id_igreja = idIgrejaSelecionada,
@@ -179,7 +171,6 @@ namespace AppEscala
                 Descricao = txt_desc.Text,
                 Qnt_acolitos = qnt_acolitos
             };
-            db.InsertMissa(novaMissa);
             db.InsertMissaNova(newMissa);
             MessageBox.Show("Missa Adicionada!");
             carregar_missas();
@@ -203,7 +194,7 @@ namespace AppEscala
         private void btn_excluir_Click(object sender, EventArgs e)
         {
             if (!id_selecionado.HasValue)
-            {
+            { id_selecionado = 0;
                 MessageBox.Show("Selecione uma missa antes");
                 return;
             }
@@ -215,7 +206,7 @@ namespace AppEscala
                 MessageBox.Show("Você escolheu Não!");
                 return;
             }
-            db.DeleteMissa(id_selecionado.Value);
+            db.DeleteMissaNova(id_selecionado.Value);
             carregar_missas();
 
         }

@@ -116,7 +116,6 @@ namespace AppEscala
                     .SetTextAlignment(TextAlignment.RIGHT)
                     .SetBackgroundColor(ColorConstants.WHITE)
                     .Add(new Paragraph(" ")));
-                tabela.SetSkipFirstHeader(false);
                 tabela.AddHeaderCell(new Cell()
                     .SetFont(fonteNegrito)
                     .SetFontSize(10)
@@ -252,10 +251,10 @@ namespace AppEscala
                 return dias[indexDia];
             }
 
-            public static string SelecionarAcolitos(int dia, string diaS, int turno, int qntAc)
+            public static string SelecionarAcolitos(int dia, string diaSemana, int turno, int qntAc)
             {
                 dia = dia + 1;
-                var lista = db.SelecionarAcolitoDia(dia, diaS, turno);
+                var lista = db.SelecionarAcolitoDia(dia, diaSemana, turno);
                 string acolitosQpodem = "";
                 int indice = lista.Count;
                 if (lista.Count >= qntAc)
@@ -278,7 +277,7 @@ namespace AppEscala
 
                     lstIndexAcolitos.Add(indexRand);
                     string strLista = string.Join(", ", lstIndexAcolitos);
-                    //MessageBox.Show($"indice: {indice} qntAC:{qntAc} randNUm: {indexRand} listaRNome : {lista[indexRand].Nome} acolitos: {acolitosQpodem} listaIndex:{strLista} ");
+                    MessageBox.Show($"indice: {indice} qntAC:{qntAc} randNUm: {indexRand} listaRNome : {lista[indexRand].Nome} acolitos: {acolitosQpodem} listaIndex:{strLista} ");
 
                     if (indice == 1 || i + 1 == indice)
                     {
@@ -324,47 +323,57 @@ namespace AppEscala
                 var listaMissa = db.SelectAllMissasNova();
                 var relProdutos = new List<Produtos>();
 
+                // HashSet global para controlar acólitos já usados em toda a escala
+                HashSet<string> acolitosUsados = new();
 
                 foreach (var missa in listaMissa)
                 {
                     int turno = HorarioParaTurno(missa.Data);
-
-
-                    //DateTime dataConvertida = DateTime.Parse(missa.Data);
-                    //int diaSemanaNum = (int)dataConvertida.DayOfWeek;
                     int diaSemanaNum = (int)missa.Data.DayOfWeek;
                     string diaConvertido = ConverterData(diaSemanaNum);
-                    string acolitos = SelecionarAcolitos(diaSemanaNum, missa.Data.Date.ToString(), turno, missa.Qnt_acolitos);
-                    System.Diagnostics.Debug.WriteLine(missa.Data.ToString());
 
-                    bool isDataRepetida = false;
+                    // Busca todos disponíveis para o dia/turno
+                    var listaDisponiveis = db.SelecionarAcolitoDia(diaSemanaNum + 1, missa.Data.Date.ToString(), turno)
+                        .Select(a => a.Nome)
+                        .ToList();
 
-                    foreach (Produtos p in relProdutos)
+                    // Remove os já usados globalmente
+                    var disponiveisParaEscalar = listaDisponiveis
+                        .Where(nome => !acolitosUsados.Contains(nome))
+                        .ToList();
+
+                    // Se não houver mais disponíveis suficientes, reinicia o ciclo (permitindo repetição)
+                    if (disponiveisParaEscalar.Count < missa.Qnt_acolitos)
                     {
-                        string dataJunta = missa.Data.Day.ToString() + "-" + diaConvertido;
-                        if (p.data == dataJunta)
-                        {
-                            isDataRepetida = true;
-                        }
-
+                        acolitosUsados.Clear();
+                        disponiveisParaEscalar = listaDisponiveis;
                     }
 
-                    if (isDataRepetida == true)
+                    // Seleciona aleatoriamente os acólitos para a missa
+                    Random rand = new();
+                    var selecionados = disponiveisParaEscalar
+                        .OrderBy(x => rand.Next())
+                        .Take(missa.Qnt_acolitos)
+                        .ToList();
+
+                    // Adiciona os selecionados ao HashSet global
+                    foreach (var nome in selecionados)
+                        acolitosUsados.Add(nome);
+
+                    string acolitos = string.Join("/ ", selecionados);
+
+                    int dia = missa.Data.Day;
+                    bool isDataRepetida = relProdutos.Any(p => p.data == dia + "-" + diaConvertido);
+
+                    if (isDataRepetida)
                     {
                         relProdutos.Add(new Produtos("", missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
                     }
                     else
                     {
-                        relProdutos.Add(new Produtos(missa.Data.Day + "-" + diaConvertido, missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
+                        relProdutos.Add(new Produtos(dia + "-" + diaConvertido, missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
                     }
-
                 }
-
-
-                //instanciar um objeto Lista de produtos
-
-
-                //relProdutos.Add(new Produtos("02-6ª.Feira", "19h30", "Daniel/Gabriel/João/Felipe", "", "Matriz"));
 
                 return relProdutos;
             }
