@@ -1,601 +1,527 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-using AppEscala.Models;
-using Microsoft.Win32;
-using SQLite;
-using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using AppEscala.AppDatabase;
+using AppEscala.Models.Entities;
+using AppEscala.Models.Enums;
+using Microsoft.EntityFrameworkCore;
 
-namespace AppEscala.Helpers
+namespace AppEscala.Helpers;
+
+public sealed class Database
 {
-    public class Database
+    private AppDbContext? db;
+
+    public void Initialize()
     {
-        SQLiteConnection db;
-        public void Initialize()
+        db = new AppDbContext();
+        db.Database.EnsureCreated();
+        EnsureSchema();
+    }
+
+    private void EnsureSchema()
+    {
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS Acolitos (
+                Id INTEGER NOT NULL CONSTRAINT PK_Acolitos PRIMARY KEY AUTOINCREMENT,
+                Nome TEXT NOT NULL
+            );
+            """);
+
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS AcolitoDisponibilidade (
+                Id INTEGER NOT NULL CONSTRAINT PK_AcolitoDisponibilidade PRIMARY KEY AUTOINCREMENT,
+                AcolitoId INTEGER NOT NULL,
+                Turno TEXT NOT NULL,
+                DiaDaSemana INTEGER NOT NULL
+            );
+            """);
+
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS AcolitoCompromissos (
+                Id INTEGER NOT NULL CONSTRAINT PK_AcolitoCompromissos PRIMARY KEY AUTOINCREMENT,
+                Id_acolitos INTEGER NOT NULL,
+                Dia TEXT NOT NULL,
+                Motivo TEXT NOT NULL DEFAULT ''
+            );
+            """);
+
+        EnsureMotivoColumn();
+
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS Igrejas (
+                Id INTEGER NOT NULL CONSTRAINT PK_Igrejas PRIMARY KEY AUTOINCREMENT,
+                Nome TEXT NOT NULL
+            );
+            """);
+
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS Missas (
+                Id INTEGER NOT NULL CONSTRAINT PK_Missas PRIMARY KEY AUTOINCREMENT,
+                IgrejaId INTEGER NOT NULL,
+                Data TEXT NOT NULL,
+                Descricao TEXT NOT NULL,
+                QntAcolitos INTEGER NOT NULL
+            );
+            """);
+    }
+
+    private AppDbContext Context
+    {
+        get
         {
-            try
-            {
-                this.db = new SQLiteConnection(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "data.db"));
-                this.db.CreateTable<Acolitos>();
-                this.db.CreateTable<Dia>();
-                this.db.CreateTable<Dias_semanas>();
-                this.db.CreateTable<Turno>();
-                this.db.CreateTable<Disponibilidade>();
-                this.db.CreateTable<Igreja>();
-                //this.db.CreateTable<MissasC>();
-                this.db.CreateTable<MissaClasse>();
+            if (db is null)
+                Initialize();
 
-                this.db.BeginTransaction();
-                try
-                {
-                    string[] dias_da_semana = { "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo" };
-                    foreach (string dia in dias_da_semana)
-                    {
-                        // Verifica se o dia já existe antes de inserir
-                        var diaExistente = this.db.Table<Dias_semanas>().FirstOrDefault(d => d.Nome == dia);
-                        if (diaExistente == null)
-                        {
-                            Dias_semanas novoDia = new Dias_semanas { Nome = dia };
-                            this.db.Insert(novoDia);
-                        }
-
-                    }
-
-                    string[] turnos = { "Manhã", "Tarde", "Noite", "-----" };
-                    foreach (string turno in turnos)
-                    {
-                        var turnoExistente = this.db.Table<Turno>().FirstOrDefault(t => t.Nome == turno);
-                        if (turnoExistente == null)
-                        {
-                            Turno novoTurno = new Turno { Nome = turno };
-                            this.db.Insert(novoTurno);
-                        }
-                    }
-
-                    this.db.Commit();
-                }
-                catch
-                {
-                    this.db.Rollback();
-                    throw;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro ao inicializar o banco de dados: " + ex.ToString());
-            }
-        }
-        public int InsertAcolito(Acolitos AcolitoNome)
-        {
-            try
-            {
-                this.db.Insert(AcolitoNome); // Insere o registro
-                return AcolitoNome.Id; // Retorna o ID correto
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao inserir igreja: " + ex.Message);
-            }
-        }
-
-
-        //public void InsertDisponibilidade(int id,)
-        public void InsertDisponibilidade(Disponibilidade dados_d)
-        {
-            try
-            {
-                this.db.Insert(dados_d);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao inserir igreja: " + ex.Message);
-            }
-        }
-
-        public void InsertDias(Dia dados_dia)
-        {
-            try
-            {
-                this.db.Insert(dados_dia);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao inserir igreja: " + ex.Message);
-            }
-        }
-
-        public void DeleteDias(int id_acolito, string dia)
-        {
-            try
-            {
-                var registro = this.db.Table<Dia>().FirstOrDefault(diaZ => diaZ.dia == dia && diaZ.Id_acolitos == id_acolito);
-                if (registro != null)
-                {
-                    this.db.Delete(registro);
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-
-        public void InsertIgreja(Igreja dados_igreja)
-        {
-            try
-            {
-                this.db.Insert(dados_igreja);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao inserir igreja: " + ex.Message);
-            }
-        }
-        public TableQuery<Igreja> SelectAllIgreja()
-        {
-            return this.db.Table<Igreja>();
-        }
-        public List<Acolitos> SelectAllAcolitos()
-        {
-            try
-            {
-                string comando = "SELECT Nome FROM Acolitos;";
-                return this.db.Query<Acolitos>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-        public void UpdateIgrejas(int id, Igreja DadosAtualizados)
-        {
-            try
-            {
-                var registro = this.db.Find<Igreja>(id);
-                if (registro != null)
-                {
-
-                    registro.nome = DadosAtualizados.nome;
-                    this.db.Update(registro);
-
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
-            }
-        }
-        public void DeleteIgrejas(int id)
-        {
-            try
-            {
-                var registro = this.db.Find<Igreja>(id);
-                if (registro != null)
-                {
-                    this.db.Delete(registro);
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao excluir igreja: " + ex.Message);
-            }
-        }
-
-        public Igreja SelectTeste()
-        {
-            try
-            {
-                string comando = "SELECT nome FROM igreja WHERE id = 1;";
-                return this.db.Query<Igreja>(comando).FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-        public class AcolitoDisponibilidade
-        {
-            public string Nome { get; set; }
-            public string DiaSemana { get; set; }
-            public string Turno { get; set; }
-            public int IdDiaSemana { get; set; }
-            public int Id_acolito { get; set; }
-            public int Id_Turno { get; set; }
-        }
-        public List<AcolitoDisponibilidade> ListaUserAcolitos()
-        {
-            try
-            {
-                string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
-                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito 
-                    FROM Acolitos AS a 
-                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
-                    INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
-                    INNER JOIN Turno AS t ON d.Id_turno = t.Id ORDER BY a.Id";
-                return this.db.Query<AcolitoDisponibilidade>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-
-        public List<AcolitoDisponibilidade> BuscarUserAcolitos(string inputNome)
-        {
-            try
-            {
-                string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
-                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito 
-                    FROM Acolitos AS a 
-                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
-                    INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
-                    INNER JOIN Turno AS t ON d.Id_turno = t.Id WHERE a.Nome LIKE '%" + inputNome + "%' ORDER BY a.Id";
-                return this.db.Query<AcolitoDisponibilidade>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-
-        public List<AcolitoDisponibilidade> Acolitos_Dias(int? id)
-        {
-            try
-            {
-                string comando = @"SELECT a.Nome AS Nome, s.Nome AS DiaSemana, t.Nome AS Turno 
-                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito, t.Id AS Id_Turno
-                    FROM Acolitos AS a 
-                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
-                    INNER JOIN Dias_semanas AS s ON d.IdDiaSemana = s.Id 
-                    INNER JOIN Turno AS t ON d.Id_turno = t.Id WHERE a.Id = " + id + ";";
-                return this.db.Query<AcolitoDisponibilidade>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-
-        public bool UpdateTurnoAcolito(int? id, int id_dia, int id_turno, int novo_id)
-        {
-            try
-            {
-                string comando = "SELECT * FROM Disponibilidade WHERE Id_acolitos = " + id + " AND IdDiaSemana = " + id_dia + " AND Id_Turno = " + id_turno + ";";
-                Disponibilidade registro = this.db.Query<Disponibilidade>(comando).FirstOrDefault(); ;
-                if (registro != null)
-                {
-                    registro.Id_turno = novo_id;
-                    this.db.Update(registro);
-                    return true;
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao atualizar acolito: " + ex.Message);
-            }
-        }
-
-        public TableQuery<Dias_semanas> SelectDiasSemana()
-        {
-            try
-            {
-                return this.db.Table<Dias_semanas>();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
-            }
-        }
-
-        public TableQuery<Turno> SelectTurnos()
-        {
-            try
-            {
-                return this.db.Table<Turno>();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
-            }
-        }
-
-        public List<Dia> SelectDiasAcolito(int? id)
-        {
-            try
-            {
-                string comando = "SELECT * FROM Dia WHERE Id_Acolitos = " + id;
-                return this.db.Query<Dia>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-            
-        }
-
-        public void UpdateDias(int? id, string diaAntes, string diaNovo)
-        {
-            try
-            {
-
-                var registro = db.Table<Dia>().FirstOrDefault(x => x.Id_acolitos == id && x.dia == diaAntes);
-                if (registro != null)
-                {
-
-                    registro.dia = diaNovo;
-                    this.db.Update(registro);
-
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
-            }
-        }
-
-        //public void InsertMissa(MissasC dadosMissa)
-        //{
-        //    try
-        //    {
-        //        this.db.Insert(dadosMissa);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Erro ao inserir igreja: " + ex.Message);
-        //    }
-        //}
-
-        //public class MissasDadosCompletos
-        //{
-        //    public string Data { get; set; }
-        //    public string Horario { get; set; }
-        //    public string Igreja { get; set; }
-        //    public int idMissa { get; set; }
-        //    public string Descricao { get; set; }
-        //    public int Qnt_acolitos { get; set; }
-        //    public int Id_igreja { get; set; }
-        //}
-
-        //public List<MissasDadosCompletos> SelectAllMissas()
-        //{
-        //    try
-        //    {
-        //        string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissasC m " +
-        //        "INNER JOIN Igreja i ON m.Id_igreja = i.id;";
-        //        return this.db.Query<MissasDadosCompletos>(comando);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Erro ao executar consulta: " + ex.Message);
-        //    }
-
-        //}
-        //public MissasDadosCompletos SelectMissa(int? id)
-        //{
-
-        //    try
-        //    {
-        //        string comando = "SELECT m.Data AS Data, m.Horario AS Horario, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissasC m " +
-        //        "INNER JOIN Igreja i ON m.Id_igreja = i.id WHERE m.Id = " + id;
-        //        return this.db.Query<MissasDadosCompletos>(comando).FirstOrDefault();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Erro ao executar consulta: " + ex.Message);
-        //    }
-
-        //}
-
-        //public void DeleteMissa(int idMissa)
-        //{
-        //    try
-        //    {
-        //        var registro = this.db.Find<MissasC>(idMissa);
-        //        if (registro != null)
-        //        {
-        //            this.db.Delete(registro);
-        //        }
-        //        else
-        //        {
-        //            throw new Exception("Registro não encontrado.");
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Erro ao excluir igreja: " + ex.Message);
-        //    }
-        //}
-
-        //public void UpdateMissa(int? id, MissasC dadosMissa)
-        //{
-        //    try
-        //    {
-                
-        //        if (dadosMissa != null)
-        //        {
-        //            this.db.Update(dadosMissa);
-        //        }
-        //        else
-        //        {
-        //            throw new Exception("Registro não encontrado.");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Erro ao atualizar igreja: " + ex.Message);
-        //    }
-        //}
-
-        public List<AcolitoDisponibilidade> SelecionarAcolitoPorDias(int[] diasNum)
-        {
-            try
-            {
-                int indices = diasNum.Length;
-
-                string comando = @"SELECT a.Nome AS Nome, t.Id AS Id_Turno 
-                    , d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito
-                    FROM Acolitos AS a 
-                    INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos 
-                    INNER JOIN Turno AS t ON d.Id_turno = t.Id ";
-
-
-                foreach (int dia in diasNum)
-                {
-                    if (indices > 1)
-                    {
-                        comando += "WHERE d.IdDiaSemana = " + dia + " OR ";
-                    }
-                    if (indices == 1)
-                    {
-                        comando += "WHERE d.IdDiaSemana = " + dia;
-                    }
-                    indices--;
-                }
-
-                return this.db.Query<AcolitoDisponibilidade>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-
-        public List<AcolitoDisponibilidade> SelecionarAcolitoDia(int dia, string diaQnaoPode, int turno)
-        {
-            try
-            {
-                string comando = @"SELECT a.Nome AS Nome, t.Id AS Id_Turno, d.IdDiaSemana AS IdDiaSemana, a.Id AS Id_acolito
-                                   FROM Acolitos AS a
-                                   INNER JOIN Disponibilidade AS d ON a.id = d.Id_acolitos
-                                   INNER JOIN Turno AS t ON d.Id_turno = t.Id
-                                   LEFT JOIN Dia ON Dia.Id_acolitos = a.id AND Dia.dia = '" +diaQnaoPode + @"' 
-                                   WHERE d.IdDiaSemana = " + dia + " AND Dia.Id_acolitos IS NULL AND d.Id_turno = " + turno + ";";
-
-                return this.db.Query<AcolitoDisponibilidade>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-        }
-
-        public void InsertMissaNova(MissaClasse dadosMissa)
-        {
-            try
-            {
-                this.db.Insert(dadosMissa);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao inserir igreja: " + ex.Message);
-            }
-        }
-
-        public class MissaNovaDadosCompletos
-        {
-            public DateTime Data { get; set; }
-            public string Igreja { get; set; }
-            public int idMissa { get; set; }
-            public string Descricao { get; set; }
-            public int Qnt_acolitos { get; set; }
-            public int Id_igreja { get; set; }
-        }
-        public MissaNovaDadosCompletos SelectMissaNova(int? id)
-        {
-
-            try
-            {
-                string comando = "SELECT m.Data AS Data, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissaClasse m " +
-                "INNER JOIN Igreja i ON m.Id_igreja = i.id WHERE m.Id = " + id;
-                return this.db.Query<MissaNovaDadosCompletos>(comando).FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-
-        }
-
-        public void UpdateMissaNova(int? id, MissaClasse dadosMissa)
-        {
-            try
-            {
-                if (dadosMissa != null)
-                {
-                    this.db.Update(dadosMissa);
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao atualizar igreja: " + ex.Message);
-            }
-        }
-
-        public void DeleteMissaNova(int idMissa)
-        {
-            try
-            {
-                var registro = this.db.Find<MissaClasse>(idMissa);
-                if (registro != null)
-                {
-                    this.db.Delete(registro);
-                }
-                else
-                {
-                    throw new Exception("Registro não encontrado.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao excluir igreja: " + ex.Message);
-            }
-        }
-
-        public List<MissaNovaDadosCompletos> SelectAllMissasNova()
-        {
-            try
-            {
-                string comando = "SELECT m.Data AS Data, i.nome as Igreja, m.Id AS idMissa, m.Descricao AS Descricao, m.Qnt_acolitos AS Qnt_acolitos, i.Id AS Id_igreja from MissaClasse m " +
-                "INNER JOIN Igreja i ON m.Id_igreja = i.id ORDER by m.Data ASC;";
-                return this.db.Query<MissaNovaDadosCompletos>(comando);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao executar consulta: " + ex.Message);
-            }
-
+            return db!;
         }
     }
+
+    public int InsertAcolito(AcolitoEntity acolito)
+    {
+        Context.Set<AcolitoEntity>().Add(acolito);
+        Context.SaveChanges();
+        return acolito.Id;
+    }
+
+    public void InsertDisponibilidade(AcolitoDisponibilidadeEntity dados)
+    {
+        if (dados.Turno == Turno.None)
+            return;
+
+        Context.Set<AcolitoDisponibilidadeEntity>().Add(dados);
+        Context.SaveChanges();
+    }
+
+    public void InsertDias(AcolitoCompromissosEntity dados)
+    {
+        Context.Set<AcolitoCompromissosEntity>().Add(dados);
+        Context.SaveChanges();
+    }
+
+    public void DeleteDias(int idAcolito, string dia)
+    {
+        var registro = SelectDiasAcolito(idAcolito)
+            .FirstOrDefault(d => d.dia == dia);
+
+        if (registro is null)
+            throw new InvalidOperationException("Registro nao encontrado.");
+
+        Context.Set<AcolitoCompromissosEntity>().Remove(registro);
+        Context.SaveChanges();
+    }
+
+    public void InsertIgreja(IgrejaEntity dadosIgreja)
+    {
+        Context.Set<IgrejaEntity>().Add(dadosIgreja);
+        Context.SaveChanges();
+    }
+
+    public List<IgrejaEntity> SelectAllIgreja()
+        => Context.Set<IgrejaEntity>()
+            .AsNoTracking()
+            .OrderBy(i => i.Nome)
+            .ToList();
+
+    public List<AcolitoEntity> SelectAllAcolitos()
+        => Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .OrderBy(a => a.Nome)
+            .ToList();
+
+    public void UpdateAcolito(int? id, string nome)
+    {
+        if (id is null)
+            return;
+
+        var registro = Context.Set<AcolitoEntity>().Find(id.Value)
+            ?? throw new InvalidOperationException("Acolito nao encontrado.");
+
+        registro.Nome = nome;
+        Context.SaveChanges();
+    }
+
+    public void DeleteAcolito(int? id)
+    {
+        if (id is null)
+            return;
+
+        var registro = Context.Set<AcolitoEntity>().Find(id.Value)
+            ?? throw new InvalidOperationException("Acolito nao encontrado.");
+
+        var disponibilidades = Context.Set<AcolitoDisponibilidadeEntity>()
+            .Where(d => d.AcolitoId == id.Value)
+            .ToList();
+        var compromissos = Context.Set<AcolitoCompromissosEntity>()
+            .Where(d => d.Id_acolitos == id.Value)
+            .ToList();
+
+        Context.Set<AcolitoDisponibilidadeEntity>().RemoveRange(disponibilidades);
+        Context.Set<AcolitoCompromissosEntity>().RemoveRange(compromissos);
+        Context.Set<AcolitoEntity>().Remove(registro);
+        Context.SaveChanges();
+    }
+
+    public void UpdateIgrejas(int id, IgrejaEntity dadosAtualizados)
+    {
+        var registro = Context.Set<IgrejaEntity>().Find(id)
+            ?? throw new InvalidOperationException("Registro nao encontrado.");
+
+        registro.Nome = dadosAtualizados.Nome;
+        Context.SaveChanges();
+    }
+
+    public void DeleteIgrejas(int id)
+    {
+        var registro = Context.Set<IgrejaEntity>().Find(id)
+            ?? throw new InvalidOperationException("Registro nao encontrado.");
+
+        Context.Set<IgrejaEntity>().Remove(registro);
+        Context.SaveChanges();
+    }
+
+    public List<AcolitoDisponibilidade> ListaUserAcolitos()
+        => QueryAcolitosDisponibilidade().ToList();
+
+    public List<AcolitoDisponibilidade> BuscarUserAcolitos(string inputNome)
+        => QueryAcolitosDisponibilidade()
+            .Where(a => a.Nome.Contains(inputNome, StringComparison.CurrentCultureIgnoreCase))
+            .ToList();
+
+    public List<AcolitoDisponibilidade> Acolitos_Dias(int? id)
+        => QueryAcolitosDisponibilidade()
+            .Where(a => a.Id_acolito == id)
+            .ToList();
+
+    public bool UpdateTurnoAcolito(int? id, int idDia, int idTurno, int novoId)
+    {
+        if (id is null)
+            return false;
+
+        var diaSemana = DiaSemanaFromLegacyId(idDia);
+        var turnoAntigo = TurnoFromLegacyId(idTurno);
+        var registro = Context.Set<AcolitoDisponibilidadeEntity>()
+            .FirstOrDefault(d => d.AcolitoId == id.Value && d.DiaDaSemana == diaSemana && d.Turno == turnoAntigo);
+
+        if (registro is null)
+            throw new InvalidOperationException("Registro nao encontrado.");
+
+        registro.Turno = TurnoFromLegacyId(novoId);
+        Context.SaveChanges();
+        return true;
+    }
+
+    public bool SalvarTurnoAcolito(int? id, int idDia, int idTurnoAntigo, int idTurnoNovo)
+    {
+        if (id is null || idDia <= 0 || idTurnoNovo <= 0)
+            return false;
+
+        var diaSemana = DiaSemanaFromLegacyId(idDia);
+        var novoTurno = TurnoFromLegacyId(idTurnoNovo);
+
+        if (novoTurno == Turno.None)
+            return false;
+
+        if (idTurnoAntigo > 0)
+        {
+            var turnoAntigo = TurnoFromLegacyId(idTurnoAntigo);
+            var registro = Context.Set<AcolitoDisponibilidadeEntity>()
+                .FirstOrDefault(d => d.AcolitoId == id.Value && d.DiaDaSemana == diaSemana && d.Turno == turnoAntigo);
+
+            if (registro is null)
+                return false;
+
+            registro.Turno = novoTurno;
+            Context.SaveChanges();
+            return true;
+        }
+
+        bool jaExiste = Context.Set<AcolitoDisponibilidadeEntity>()
+            .Any(d => d.AcolitoId == id.Value && d.DiaDaSemana == diaSemana && d.Turno == novoTurno);
+
+        if (jaExiste)
+            return false;
+
+        Context.Set<AcolitoDisponibilidadeEntity>().Add(new AcolitoDisponibilidadeEntity
+        {
+            AcolitoId = id.Value,
+            DiaDaSemana = diaSemana,
+            Turno = novoTurno
+        });
+        Context.SaveChanges();
+        return true;
+    }
+
+    public void SetDisponibilidadesAcolito(int? id, IEnumerable<(int Dia, int Turno)> disponibilidades)
+    {
+        if (id is null)
+            return;
+
+        var registros = Context.Set<AcolitoDisponibilidadeEntity>()
+            .Where(d => d.AcolitoId == id.Value)
+            .ToList();
+
+        Context.Set<AcolitoDisponibilidadeEntity>().RemoveRange(registros);
+
+        foreach (var disponibilidade in disponibilidades.Distinct())
+        {
+            var turno = TurnoFromLegacyId(disponibilidade.Turno);
+            if (turno == Turno.None)
+                continue;
+
+            Context.Set<AcolitoDisponibilidadeEntity>().Add(new AcolitoDisponibilidadeEntity
+            {
+                AcolitoId = id.Value,
+                DiaDaSemana = DiaSemanaFromLegacyId(disponibilidade.Dia),
+                Turno = turno
+            });
+        }
+
+        Context.SaveChanges();
+    }
+
+    public List<DiaSemanaItem> SelectDiasSemana()
+        => new()
+        {
+            new DiaSemanaItem(1, "Segunda"),
+            new DiaSemanaItem(2, "Terca"),
+            new DiaSemanaItem(3, "Quarta"),
+            new DiaSemanaItem(4, "Quinta"),
+            new DiaSemanaItem(5, "Sexta"),
+            new DiaSemanaItem(6, "Sabado"),
+            new DiaSemanaItem(7, "Domingo")
+        };
+
+    public List<TurnoItem> SelectTurnos()
+        => new()
+        {
+            new TurnoItem(1, "Manha"),
+            new TurnoItem(2, "Tarde"),
+            new TurnoItem(3, "Noite")
+        };
+
+    public List<AcolitoCompromissosEntity> SelectDiasAcolito(int? id)
+    {
+        if (id is null)
+            return [];
+
+        return Context.Set<AcolitoCompromissosEntity>()
+            .AsNoTracking()
+            .Where(d => d.Id_acolitos == id.Value)
+            .OrderBy(d => d.Dia)
+            .ToList();
+    }
+
+    public void UpdateDias(int? id, string diaAntes, string diaNovo)
+        => UpdateDias(id, diaAntes, diaNovo, null);
+
+    public void UpdateDias(int? id, string diaAntes, string diaNovo, string? motivo)
+    {
+        if (id is null)
+            return;
+
+        var registro = SelectDiasAcolito(id)
+            .FirstOrDefault(x => x.dia == diaAntes)
+            ?? throw new InvalidOperationException("Registro nao encontrado.");
+
+        Context.Attach(registro);
+        registro.dia = diaNovo;
+        if (motivo is not null)
+            registro.Motivo = motivo;
+        Context.SaveChanges();
+    }
+
+    private void EnsureMotivoColumn()
+    {
+        var columns = Context.Database
+            .SqlQueryRaw<string>("SELECT name AS Value FROM pragma_table_info('AcolitoCompromissos')")
+            .ToList();
+
+        if (columns.Contains("Motivo", StringComparer.OrdinalIgnoreCase))
+            return;
+
+        Context.Database.ExecuteSqlRaw("ALTER TABLE AcolitoCompromissos ADD COLUMN Motivo TEXT NOT NULL DEFAULT ''");
+    }
+
+    public void InsertMissaNova(MissaEntity dadosMissa)
+    {
+        Context.Set<MissaEntity>().Add(dadosMissa);
+        Context.SaveChanges();
+    }
+
+    public MissaNovaDadosCompletos SelectMissaNova(int? id)
+        => SelectAllMissasNova()
+            .FirstOrDefault(m => m.idMissa == id)
+            ?? throw new InvalidOperationException("Missa nao encontrada.");
+
+    public void UpdateMissaNova(int? id, MissaEntity dadosMissa)
+    {
+        if (id is null)
+            return;
+
+        var registro = Context.Set<MissaEntity>().Find(id.Value)
+            ?? throw new InvalidOperationException("Missa nao encontrada.");
+
+        registro.IgrejaId = dadosMissa.IgrejaId;
+        registro.Data = dadosMissa.Data;
+        registro.Descricao = dadosMissa.Descricao;
+        registro.QntAcolitos = dadosMissa.QntAcolitos;
+        Context.SaveChanges();
+    }
+
+    public void DeleteMissaNova(int idMissa)
+    {
+        var registro = Context.Set<MissaEntity>().Find(idMissa)
+            ?? throw new InvalidOperationException("Missa nao encontrada.");
+
+        Context.Set<MissaEntity>().Remove(registro);
+        Context.SaveChanges();
+    }
+
+    public List<MissaNovaDadosCompletos> SelectAllMissasNova()
+        => Context.Set<MissaEntity>()
+            .Include(m => m.Igreja)
+            .AsNoTracking()
+            .OrderBy(m => m.Data)
+            .Select(m => new MissaNovaDadosCompletos
+            {
+                Data = m.Data,
+                Igreja = m.Igreja != null ? m.Igreja.Nome : string.Empty,
+                idMissa = m.Id,
+                Descricao = m.Descricao,
+                Qnt_acolitos = m.QntAcolitos,
+                Id_igreja = m.IgrejaId
+            })
+            .ToList();
+
+    public List<AcolitoDisponibilidade> SelecionarAcolitoPorDias(int[] diasNum)
+    {
+        var dias = diasNum.Select(DiaSemanaFromLegacyId).ToHashSet();
+        return QueryAcolitosDisponibilidade()
+            .Where(a => dias.Contains(DiaSemanaFromLegacyId(a.IdDiaSemana)))
+            .ToList();
+    }
+
+    public List<AcolitoDisponibilidade> SelecionarAcolitoDia(int dia, string diaQnaoPode, int turno)
+    {
+        var diaNaoPode = NormalizarData(diaQnaoPode);
+        var compromissos = Context.Set<AcolitoCompromissosEntity>()
+            .AsNoTracking()
+            .ToList()
+            .Where(d => d.dia == diaNaoPode)
+            .Select(d => d.Id_acolitos)
+            .ToHashSet();
+
+        return QueryAcolitosDisponibilidade()
+            .Where(a => a.IdDiaSemana == dia && a.Id_Turno == turno && !compromissos.Contains(a.Id_acolito))
+            .ToList();
+    }
+
+    public AcolitoEntity? SelectAcolito(int? id)
+    {
+        if (id is null)
+            return null;
+
+        return Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .FirstOrDefault(a => a.Id == id.Value);
+    }
+
+    private IEnumerable<AcolitoDisponibilidade> QueryAcolitosDisponibilidade()
+    {
+        var disponibilidades = Context.Set<AcolitoDisponibilidadeEntity>()
+            .Include(d => d.Acolito)
+            .AsNoTracking()
+            .OrderBy(d => d.AcolitoId)
+            .ThenBy(d => d.DiaDaSemana)
+            .ThenBy(d => d.Turno)
+            .ToList();
+
+        var resultado = disponibilidades
+            .Select(d => new AcolitoDisponibilidade
+            {
+                Nome = d.Acolito != null ? d.Acolito.Nome : string.Empty,
+                DiaSemana = DiaSemanaNome(d.DiaDaSemana),
+                Turno = TurnoNome(d.Turno),
+                IdDiaSemana = d.IdDiaSemana,
+                Id_acolito = d.AcolitoId,
+                Id_Turno = (int)d.Turno
+            })
+            .ToList();
+
+        var idsComDisponibilidade = resultado.Select(a => a.Id_acolito).ToHashSet();
+        var acolitosSemDisponibilidade = Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .Where(a => !idsComDisponibilidade.Contains(a.Id))
+            .OrderBy(a => a.Nome)
+            .Select(a => new AcolitoDisponibilidade
+            {
+                Nome = a.Nome,
+                Id_acolito = a.Id
+            })
+            .ToList();
+
+        resultado.AddRange(acolitosSemDisponibilidade);
+        return resultado
+            .OrderBy(a => a.Id_acolito)
+            .ThenBy(a => a.IdDiaSemana)
+            .ThenBy(a => a.Id_Turno)
+            .ToList();
+    }
+
+    private static DayOfWeek DiaSemanaFromLegacyId(int id)
+        => id == 7 ? DayOfWeek.Sunday : (DayOfWeek)id;
+
+    private static string NormalizarData(string data)
+    {
+        if (DateTime.TryParse(data, out var dateTime))
+            return dateTime.ToString("dd/MM/yyyy");
+
+        return data;
+    }
+
+    private static Turno TurnoFromLegacyId(int id)
+        => Enum.IsDefined(typeof(Turno), id) ? (Turno)id : Turno.None;
+
+    private static string DiaSemanaNome(DayOfWeek day)
+        => day switch
+        {
+            DayOfWeek.Monday => "Segunda",
+            DayOfWeek.Tuesday => "Terca",
+            DayOfWeek.Wednesday => "Quarta",
+            DayOfWeek.Thursday => "Quinta",
+            DayOfWeek.Friday => "Sexta",
+            DayOfWeek.Saturday => "Sabado",
+            DayOfWeek.Sunday => "Domingo",
+            _ => string.Empty
+        };
+
+    private static string TurnoNome(Turno turno)
+        => turno switch
+        {
+            Turno.Morning => "Manha",
+            Turno.Afternoon => "Tarde",
+            Turno.Night => "Noite",
+            _ => string.Empty
+        };
+
+    public sealed class AcolitoDisponibilidade
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string DiaSemana { get; set; } = string.Empty;
+        public string Turno { get; set; } = string.Empty;
+        public int IdDiaSemana { get; set; }
+        public int Id_acolito { get; set; }
+        public int Id_Turno { get; set; }
+    }
+
+    public sealed class MissaNovaDadosCompletos
+    {
+        public DateTime Data { get; set; }
+        public string Igreja { get; set; } = string.Empty;
+        public int idMissa { get; set; }
+        public string Descricao { get; set; } = string.Empty;
+        public int Qnt_acolitos { get; set; }
+        public int Id_igreja { get; set; }
+    }
+
+    public sealed record DiaSemanaItem(int Id, string Nome);
+    public sealed record TurnoItem(int Id, string Nome);
 }

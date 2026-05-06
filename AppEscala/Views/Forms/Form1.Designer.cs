@@ -55,7 +55,7 @@ namespace AppEscala
             nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
             panel1 = new Panel();
             userControl11 = new UserControl1();
-            userControl21 = new UserControl2();
+            userControl21 = new AdicionarAcolitoView();
             userAcolitos = new userAcolitos();
             missas1 = new Missas();
             sidebar.SuspendLayout();
@@ -368,6 +368,9 @@ namespace AppEscala
             // 
             // userControl11
             // 
+            userControl11.BackColor = Color.FromArgb(246, 248, 251);
+            userControl11.Font = new Font("Segoe UI", 10F);
+            userControl11.ForeColor = Color.FromArgb(30, 41, 59);
             userControl11.Location = new Point(30, 37);
             userControl11.Name = "userControl11";
             userControl11.Size = new Size(746, 472);
@@ -375,6 +378,11 @@ namespace AppEscala
             // 
             // userControl21
             // 
+            userControl21.AutoScroll = true;
+            userControl21.AutoScrollMinSize = new Size(0, 634);
+            userControl21.BackColor = Color.FromArgb(246, 248, 251);
+            userControl21.Font = new Font("Segoe UI", 10F);
+            userControl21.ForeColor = Color.FromArgb(30, 41, 59);
             userControl21.Location = new Point(30, 37);
             userControl21.Name = "userControl21";
             userControl21.Size = new Size(743, 472);
@@ -383,6 +391,10 @@ namespace AppEscala
             // 
             // userAcolitos
             // 
+            userAcolitos.BackColor = Color.FromArgb(246, 248, 251);
+            userAcolitos.Font = new Font("Segoe UI", 10F);
+            userAcolitos.ForeColor = Color.FromArgb(30, 41, 59);
+            userAcolitos.ImeMode = ImeMode.KatakanaHalf;
             userAcolitos.Location = new Point(30, 37);
             userAcolitos.Name = "userAcolitos";
             userAcolitos.Size = new Size(746, 472);
@@ -390,6 +402,9 @@ namespace AppEscala
             // 
             // missas1
             // 
+            missas1.BackColor = Color.FromArgb(246, 248, 251);
+            missas1.Font = new Font("Segoe UI", 10F);
+            missas1.ForeColor = Color.FromArgb(30, 41, 59);
             missas1.Location = new Point(30, 37);
             missas1.Name = "missas1";
             missas1.RightToLeft = RightToLeft.No;
@@ -402,10 +417,10 @@ namespace AppEscala
             ClientSize = new Size(776, 505);
             Controls.Add(sidebar);
             Controls.Add(panel1);
+            Controls.Add(userControl21);
             Controls.Add(missas1);
             Controls.Add(userAcolitos);
             Controls.Add(userControl11);
-            Controls.Add(userControl21);
             FormBorderStyle = FormBorderStyle.None;
             IsMdiContainer = true;
             Name = "form_menu";
@@ -452,7 +467,7 @@ namespace AppEscala
         private Panel pnInfo;
         private Button button3;
         private UserControl1 userControl11;
-        private UserControl2 userControl21;
+        private AdicionarAcolitoView userControl21;
         private userAcolitos userAcolitos;
         private Missas missas1;
     }
