@@ -4,32 +4,34 @@ using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf.Canvas.Parser.Data;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace AppEscala
 {
     public partial class UserControl1 : UserControl
     {
         private static readonly Database db = new();
+        private readonly Button btnOficializarEscala = new();
+        private readonly Button btnImportarPdf = new();
+        private readonly Button btnImportarJson = new();
+        private readonly Label lblCaminhoPdf = new();
+        private readonly TextBox txtCaminhoPdf = new();
+        private readonly Button btnSelecionarPdf = new();
 
         public UserControl1()
         {
             InitializeComponent();
             ConfigurarInterface();
             db.Initialize();
-        }
-
-        private void UserControl1_Load(object sender, EventArgs e)
-        {
-            AjustarLayout();
-            for (int i = 0; i < 10; i++)
-            {
-                cmb_diasSemana.Items.Add(i);
-            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -40,6 +42,114 @@ namespace AppEscala
         private void btnGerarPdf_Click(object sender, EventArgs e)
         {
             GerarPdf();
+        }
+
+        private void btnSelecionarPdf_Click(object? sender, EventArgs e)
+        {
+            string caminhoAtual = txtCaminhoPdf.Text.Trim();
+            string? diretorioAtual = System.IO.Path.GetDirectoryName(caminhoAtual);
+
+            using SaveFileDialog dialog = new()
+            {
+                Title = "Salvar escala em PDF",
+                Filter = "Arquivos PDF (*.pdf)|*.pdf",
+                FileName = string.IsNullOrWhiteSpace(caminhoAtual)
+                    ? ObterNomePadraoArquivoEscala()
+                    : System.IO.Path.GetFileName(caminhoAtual),
+                InitialDirectory = !string.IsNullOrWhiteSpace(diretorioAtual) && Directory.Exists(diretorioAtual)
+                    ? diretorioAtual
+                    : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                AddExtension = true,
+                DefaultExt = "pdf",
+                OverwritePrompt = true
+            };
+
+            if (dialog.ShowDialog(this) == DialogResult.OK)
+                txtCaminhoPdf.Text = dialog.FileName;
+        }
+
+        private void btnImportarPdf_Click(object? sender, EventArgs e)
+        {
+            using OpenFileDialog dialog = new()
+            {
+                Title = "Importar PDF da escala",
+                Filter = "Arquivos PDF (*.pdf)|*.pdf"
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            try
+            {
+                ImportarPdfEscala(dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Não foi possível importar o PDF: {ex.Message}");
+            }
+        }
+
+        private void btnImportarJson_Click(object? sender, EventArgs e)
+        {
+            using OpenFileDialog dialog = new()
+            {
+                Title = "Importar JSON da escala",
+                Filter = "Arquivos JSON (*.json)|*.json"
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            try
+            {
+                ImportarJsonEscala(dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Não foi possível importar o JSON: {ex.Message}");
+            }
+        }
+
+        private void btnOficializarEscala_Click(object? sender, EventArgs e)
+        {
+            bool existeLinhaSemIds = dgvEscala.Rows
+                .Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow)
+                .Any(row => !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")) && row.Tag is not List<int>);
+
+            if (existeLinhaSemIds)
+            {
+                MessageBox.Show("Há linhas editadas ou adicionadas manualmente. Gere a escala novamente antes de oficializar.");
+                return;
+            }
+
+            var idsPorMissa = dgvEscala.Rows
+                .Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow)
+                .Select(row => row.Tag as List<int>)
+                .Where(ids => ids is not null && ids.Count > 0)
+                .Select(ids => ids!.Distinct().ToList())
+                .ToList();
+
+            if (idsPorMissa.Count == 0)
+            {
+                MessageBox.Show("Gere a escala antes de oficializar.");
+                return;
+            }
+
+            int totalServicos = idsPorMissa.Sum(ids => ids.Count);
+            DialogResult resultado = MessageBox.Show(
+                $"Oficializar esta escala e somar {totalServicos} serviço(s) aos acólitos escalados?",
+                "Oficializar escala",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (resultado != DialogResult.Yes)
+                return;
+
+            db.IncrementarMissasServidas(idsPorMissa.SelectMany(ids => ids));
+            btnOficializarEscala.Enabled = false;
+            MessageBox.Show("Escala oficializada e missas servidas atualizadas.");
         }
 
         private void btnAdicionarLinha_Click(object sender, EventArgs e)
@@ -71,6 +181,14 @@ namespace AppEscala
                 return;
 
             AbrirSeletorData(e.RowIndex, e.ColumnIndex);
+        }
+
+        private void dgvEscala_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || dgvEscala.Columns[e.ColumnIndex].Name != "acolitos")
+                return;
+
+            dgvEscala.Rows[e.RowIndex].Tag = null;
         }
 
         private void AbrirSeletorData(int rowIndex, int columnIndex)
@@ -141,8 +259,20 @@ namespace AppEscala
 
         private void GerarPdf()
         {
-            var arquivo = @"C:\dados\recibo.pdf";
-            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arquivo)!);
+            string arquivo = txtCaminhoPdf.Text.Trim();
+            if (string.IsNullOrWhiteSpace(arquivo))
+            {
+                MessageBox.Show("Informe onde o PDF deve ser salvo.");
+                return;
+            }
+
+            if (!string.Equals(System.IO.Path.GetExtension(arquivo), ".pdf", StringComparison.OrdinalIgnoreCase))
+                arquivo = System.IO.Path.ChangeExtension(arquivo, ".pdf");
+
+            var produtos = ObterProdutosDoGrid();
+            string? diretorio = System.IO.Path.GetDirectoryName(arquivo);
+            if (!string.IsNullOrWhiteSpace(diretorio))
+                Directory.CreateDirectory(diretorio);
 
             using (PdfWriter wPdf = new PdfWriter(arquivo, new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0)))
             {
@@ -167,7 +297,7 @@ namespace AppEscala
 
                 Table tabela = CriarTabelaEscala(fonte, fonteNegrito);
 
-                foreach (Produtos prod in ObterProdutosDoGrid())
+                foreach (Produtos prod in produtos)
                 {
                     AdicionarLinhaEscala(tabela, prod, fonte);
                 }
@@ -177,18 +307,287 @@ namespace AppEscala
                 document.Close();
                 pdfDocument.Close();
 
-                MessageBox.Show("Arquivo PDF gerado em " + arquivo);
+                string? jsonPath = null;
+                if (AppSettings.Load().GerarJsonAoGerarPdf)
+                {
+                    jsonPath = System.IO.Path.ChangeExtension(arquivo, ".json");
+                    ExportarJsonEscala(jsonPath, produtos);
+                }
+
+                string mensagem = $"Arquivo PDF gerado em {arquivo}";
+                if (jsonPath is not null)
+                    mensagem += $"\nJSON gerado em {jsonPath}";
+
+                MessageBox.Show(mensagem);
             }
         }
 
         private void CarregarGridEscala()
         {
             dgvEscala.Rows.Clear();
+            btnOficializarEscala.Enabled = true;
 
             foreach (Produtos prod in Produtos.GetListaProdutos())
             {
-                dgvEscala.Rows.Add(prod.data, prod.horario, prod.acolitos, prod.evento, prod.local, false);
+                int rowIndex = dgvEscala.Rows.Add(prod.data, prod.horario, prod.acolitos, prod.evento, prod.local, false);
+                dgvEscala.Rows[rowIndex].Tag = prod.acolitoIds;
             }
+        }
+
+        private static void ExportarJsonEscala(string caminhoJson, List<Produtos> produtos)
+        {
+            var arquivo = new EscalaJson(
+                1,
+                DateTime.Now,
+                produtos.Select(p => new EscalaJsonLinha(
+                    p.data,
+                    p.horario,
+                    p.acolitos,
+                    p.evento,
+                    p.local,
+                    p.destacar,
+                    p.acolitoIds)).ToList());
+
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            File.WriteAllText(caminhoJson, JsonSerializer.Serialize(arquivo, options));
+        }
+
+        private void ImportarJsonEscala(string caminhoJson)
+        {
+            var arquivo = JsonSerializer.Deserialize<EscalaJson>(File.ReadAllText(caminhoJson))
+                ?? throw new InvalidOperationException("JSON inválido.");
+
+            dgvEscala.Rows.Clear();
+            foreach (var linha in arquivo.Linhas)
+            {
+                int rowIndex = dgvEscala.Rows.Add(
+                    linha.Data,
+                    linha.Horario,
+                    linha.Acolitos,
+                    linha.Evento,
+                    linha.Local,
+                    linha.Destacar);
+
+                dgvEscala.Rows[rowIndex].Tag = linha.AcolitoIds.Distinct().ToList();
+            }
+
+            btnOficializarEscala.Enabled = arquivo.Linhas.Any(l => l.AcolitoIds.Count > 0);
+            MessageBox.Show("JSON importado com sucesso.");
+        }
+
+        private void ImportarPdfEscala(string caminhoPdf)
+        {
+            var produtos = LerProdutosDoPdf(caminhoPdf);
+            if (produtos.Count == 0)
+            {
+                MessageBox.Show("Nenhuma linha de escala foi encontrada no PDF.");
+                return;
+            }
+
+            var acolitosPorNome = db.SelectAllAcolitos()
+                .GroupBy(a => NormalizarNome(a.Nome))
+                .ToDictionary(g => g.Key, g => g.First().Id);
+
+            dgvEscala.Rows.Clear();
+            List<string> nomesNaoEncontrados = [];
+
+            foreach (var produto in produtos)
+            {
+                var vinculo = ResolverAcolitosImportados(produto.acolitos, acolitosPorNome);
+                foreach (var nome in vinculo.NomesNaoEncontrados)
+                    nomesNaoEncontrados.Add(nome);
+
+                int rowIndex = dgvEscala.Rows.Add(produto.data, produto.horario, produto.acolitos, produto.evento, produto.local, false);
+                dgvEscala.Rows[rowIndex].Tag = vinculo.TodosReconhecidos ? vinculo.Ids : null;
+            }
+
+            btnOficializarEscala.Enabled = nomesNaoEncontrados.Count == 0;
+
+            if (nomesNaoEncontrados.Count > 0)
+            {
+                string nomes = string.Join(", ", nomesNaoEncontrados.Distinct());
+                MessageBox.Show($"PDF importado, mas estes acólitos não foram encontrados no cadastro: {nomes}");
+                return;
+            }
+
+            MessageBox.Show("PDF importado com sucesso.");
+        }
+
+        private static List<Produtos> LerProdutosDoPdf(string caminhoPdf)
+        {
+            using PdfReader reader = new(caminhoPdf);
+            using PdfDocument pdf = new(reader);
+            List<PdfTextChunk> chunks = [];
+
+            for (int i = 1; i <= pdf.GetNumberOfPages(); i++)
+            {
+                var listener = new PositionalTextExtractionStrategy();
+                var processor = new PdfCanvasProcessor(listener);
+                processor.ProcessPageContent(pdf.GetPage(i));
+                chunks.AddRange(listener.Chunks);
+            }
+
+            return ExtrairProdutosDosChunks(chunks);
+        }
+
+        private static List<Produtos> ExtrairProdutosDosChunks(List<PdfTextChunk> chunks)
+        {
+            List<Produtos> produtos = [];
+            var linhas = chunks
+                .Where(c => !string.IsNullOrWhiteSpace(c.Text))
+                .Where(c => c.Y < 760)
+                .GroupBy(c => Math.Round(c.Y / 8) * 8)
+                .OrderByDescending(g => g.Key)
+                .Select(g => g.OrderBy(c => c.X).ToList())
+                .ToList();
+
+            foreach (var linha in linhas)
+            {
+                var colunas = new string[5];
+
+                foreach (var chunk in linha)
+                {
+                    int coluna = ObterColunaPdf(chunk.X);
+                    if (coluna < 0)
+                        continue;
+
+                    colunas[coluna] = string.IsNullOrWhiteSpace(colunas[coluna])
+                        ? chunk.Text.Trim()
+                        : $"{colunas[coluna]} {chunk.Text.Trim()}";
+                }
+
+                if (colunas.All(string.IsNullOrWhiteSpace))
+                    continue;
+
+                if (EhCabecalhoOuTitulo(colunas))
+                    continue;
+
+                string data = (colunas[0] ?? string.Empty).Trim();
+                string horario = NormalizarHorarioImportado((colunas[1] ?? string.Empty).Trim());
+                string acolitos = (colunas[2] ?? string.Empty).Trim();
+                string evento = (colunas[3] ?? string.Empty).Trim();
+                string local = (colunas[4] ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(horario)
+                    && string.IsNullOrWhiteSpace(acolitos)
+                    && string.IsNullOrWhiteSpace(evento)
+                    && string.IsNullOrWhiteSpace(local))
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(horario) && !EhHorarioEscala(horario))
+                    continue;
+
+                produtos.Add(new Produtos(data, horario, acolitos, evento, local));
+            }
+
+            return produtos;
+        }
+
+        private static int ObterColunaPdf(float x)
+        {
+            if (x < 100)
+                return 0;
+            if (x < 150)
+                return 1;
+            if (x < 360)
+                return 2;
+            if (x < 430)
+                return 3;
+            if (x < 560)
+                return 4;
+
+            return -1;
+        }
+
+        private static bool EhCabecalhoOuTitulo(string[] colunas)
+        {
+            string texto = string.Join(" ", colunas).Trim();
+            return texto.StartsWith("ESCALA DE", StringComparison.OrdinalIgnoreCase)
+                || texto.Contains("DATA", StringComparison.OrdinalIgnoreCase)
+                || texto.Contains("HORÁRIO", StringComparison.OrdinalIgnoreCase)
+                || texto.Equals("LOCAL", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool EhDataEscala(string texto)
+            => Regex.IsMatch(texto, @"^\d{2}\s*-\s*");
+
+        private static bool EhHorarioEscala(string texto)
+            => TimeSpan.TryParse(texto, out _)
+                || Regex.IsMatch(texto, @"^\d{1,2}h(s|\d{2})?$", RegexOptions.IgnoreCase);
+
+        private static string NormalizarHorarioImportado(string texto)
+        {
+            if (TimeSpan.TryParse(texto, out var time))
+                return time.ToString(@"hh\:mm");
+
+            var match = Regex.Match(texto, @"^(?<h>\d{1,2})h(?<m>\d{2})?$", RegexOptions.IgnoreCase);
+            if (!match.Success)
+                return texto;
+
+            int hora = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+            int minuto = match.Groups["m"].Success ? int.Parse(match.Groups["m"].Value, CultureInfo.InvariantCulture) : 0;
+            return new TimeSpan(hora, minuto, 0).ToString(@"hh\:mm");
+        }
+
+        private static (bool TodosReconhecidos, List<int> Ids, List<string> NomesNaoEncontrados) ResolverAcolitosImportados(
+            string textoAcolitos,
+            Dictionary<string, int> acolitosPorNome)
+        {
+            List<int> ids = [];
+            List<string> naoEncontrados = [];
+            var nomes = textoAcolitos
+                .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(nome => !string.IsNullOrWhiteSpace(nome))
+                .ToList();
+
+            foreach (var nome in nomes)
+            {
+                if (acolitosPorNome.TryGetValue(NormalizarNome(nome), out int id))
+                    ids.Add(id);
+                else
+                    naoEncontrados.Add(nome);
+            }
+
+            return (nomes.Count > 0 && naoEncontrados.Count == 0, ids, naoEncontrados);
+        }
+
+        private static string NormalizarNome(string nome)
+            => Regex.Replace(nome.Trim(), @"\s+", " ").ToUpperInvariant();
+
+        private sealed record EscalaJson(int Versao, DateTime GeradoEm, List<EscalaJsonLinha> Linhas);
+
+        private sealed record EscalaJsonLinha(
+            string Data,
+            string Horario,
+            string Acolitos,
+            string Evento,
+            string Local,
+            bool Destacar,
+            List<int> AcolitoIds);
+
+        private sealed record PdfTextChunk(string Text, float X, float Y);
+
+        private sealed class PositionalTextExtractionStrategy : IEventListener
+        {
+            public List<PdfTextChunk> Chunks { get; } = [];
+
+            public void EventOccurred(IEventData data, EventType type)
+            {
+                if (type != EventType.RENDER_TEXT || data is not TextRenderInfo renderInfo)
+                    return;
+
+                string text = renderInfo.GetText();
+                if (string.IsNullOrWhiteSpace(text))
+                    return;
+
+                var start = renderInfo.GetBaseline().GetStartPoint();
+                Chunks.Add(new PdfTextChunk(text, start.Get(Vector.I1), start.Get(Vector.I2)));
+            }
+
+            public ICollection<EventType>? GetSupportedEvents()
+                => [EventType.RENDER_TEXT];
         }
 
         private List<Produtos> ObterProdutosDoGrid()
@@ -219,7 +618,8 @@ namespace AppEscala
                     continue;
                 }
 
-                produtos.Add(new Produtos(data, horario, acolitos, evento, local, destacar));
+                var acolitoIds = row.Tag is List<int> ids ? ids.ToList() : new List<int>();
+                produtos.Add(new Produtos(data, horario, acolitos, evento, local, destacar, acolitoIds));
             }
 
             return produtos;
@@ -307,9 +707,10 @@ namespace AppEscala
             public string evento { get; set; }
             public string local { get; set; }
             public bool destacar { get; set; }
+            public List<int> acolitoIds { get; set; }
 
 
-            public Produtos(string data, string horario, string acolitos, string evento, string local, bool destacar = false)
+            public Produtos(string data, string horario, string acolitos, string evento, string local, bool destacar = false, List<int>? acolitoIds = null)
             {
                 this.data = data;
                 this.horario = horario;
@@ -317,6 +718,7 @@ namespace AppEscala
                 this.evento = evento;
                 this.local = local;
                 this.destacar = destacar;
+                this.acolitoIds = acolitoIds ?? [];
             }
 
             public string EncaixarAcolitos(string data, string horario, int quant)
@@ -336,46 +738,16 @@ namespace AppEscala
 
             public static string SelecionarAcolitos(int dia, string diaSemana, int turno, int qntAc)
             {
-                var lista = db.SelecionarAcolitoDia(dia, diaSemana, turno);
-                string acolitosQpodem = "";
-                int quantidade = Math.Min(lista.Count, qntAc);
-                Random randNum = new();
+                var candidatos = ObterCandidatosDisponiveis(dia, diaSemana, turno);
+                var selecionados = SelecionarAcolitosParaMissa(
+                    candidatos,
+                    new Dictionary<int, DateTime>(),
+                    new HashSet<int>(),
+                    qntAc,
+                    DateTime.Today,
+                    new Random());
 
-                List<int> lstIndexAcolitos = new List<int>();
-
-                for (int i = 0; i < quantidade; i++)
-                {
-                    int indexRand;
-
-                    do
-                    {
-                        indexRand = randNum.Next(lista.Count);
-                    } while (lstIndexAcolitos.Contains(indexRand));
-
-                    lstIndexAcolitos.Add(indexRand);
-
-                    if (quantidade == 1 || i + 1 == quantidade)
-                    {
-                        acolitosQpodem += lista[indexRand].Nome;
-                        break;
-                    }
-
-                    if (i == 0)
-                    {
-                        acolitosQpodem += lista[indexRand].Nome + "/ ";
-                    }
-                    else
-                    {
-                        if (quantidade > 1)
-                        {
-                            acolitosQpodem += lista[indexRand].Nome + "/ ";
-                        }
-                    }
-
-
-                }
-
-                return acolitosQpodem;
+                return string.Join("/ ", selecionados.Select(a => a.Nome));
             }
 
             public static int HorarioParaTurno(DateTime horario)
@@ -400,7 +772,8 @@ namespace AppEscala
                 var listaMissa = db.SelectAllMissasNova();
                 var relProdutos = new List<Produtos>();
 
-                Dictionary<string, DateTime> ultimaEscalaPorAcolito = new();
+                Dictionary<int, DateTime> ultimaEscalaPorAcolito = new();
+                HashSet<int> acolitosJaNaEscala = [];
 
                 Random rand = new();
 
@@ -411,54 +784,121 @@ namespace AppEscala
                     string diaConvertido = ConverterData(diaSemanaNum);
                     int diaSemanaId = DiaSemanaParaId(missa.Data.DayOfWeek);
 
-                    var listaDisponiveis = db.SelecionarAcolitoDia(diaSemanaId, missa.Data.ToString("dd/MM/yyyy"), turno)
-                        .Select(a => a.Nome)
-                        .Distinct()
-                        .ToList();
+                    var listaDisponiveis = ObterCandidatosDisponiveis(diaSemanaId, missa.Data.ToString("dd/MM/yyyy"), turno);
 
-                    var selecionados = SelecionarPorPrioridadeUltimaEscala(
+                    var selecionados = SelecionarAcolitosParaMissa(
                         listaDisponiveis,
                         ultimaEscalaPorAcolito,
+                        acolitosJaNaEscala,
                         missa.Qnt_acolitos,
                         missa.Data,
                         rand);
 
-                    string acolitos = string.Join("/ ", selecionados);
+                    string acolitos = string.Join("/ ", selecionados.Select(a => a.Nome));
+                    var acolitoIds = selecionados.Select(a => a.Id).ToList();
 
                     string dataFormatada = FormatarDataEscala(missa.Data, diaConvertido);
                     bool isDataRepetida = relProdutos.Any(p => p.data == dataFormatada);
 
                     if (isDataRepetida)
                     {
-                        relProdutos.Add(new Produtos("", missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
+                        relProdutos.Add(new Produtos("", missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja, acolitoIds: acolitoIds));
                     }
                     else
                     {
-                        relProdutos.Add(new Produtos(dataFormatada, missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja));
+                        relProdutos.Add(new Produtos(dataFormatada, missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja, acolitoIds: acolitoIds));
                     }
                 }
 
                 return relProdutos;
             }
 
-            private static List<string> SelecionarPorPrioridadeUltimaEscala(
-                List<string> listaDisponiveis,
-                Dictionary<string, DateTime> ultimaEscalaPorAcolito,
+            private static List<AcolitoEscala> ObterCandidatosDisponiveis(int diaSemanaId, string data, int turno)
+                => db.SelecionarAcolitoDia(diaSemanaId, data, turno)
+                    .GroupBy(a => a.Id_acolito)
+                    .Select(g =>
+                    {
+                        var item = g.First();
+                        return new AcolitoEscala(
+                            item.Id_acolito,
+                            item.Nome,
+                            item.PadrinhoId,
+                            item.MissasAcompanhadasNecessarias,
+                            item.MissasServidas);
+                    })
+                    .ToList();
+
+            private static List<AcolitoEscala> SelecionarAcolitosParaMissa(
+                List<AcolitoEscala> listaDisponiveis,
+                Dictionary<int, DateTime> ultimaEscalaPorAcolito,
+                HashSet<int> acolitosJaNaEscala,
                 int quantidade,
                 DateTime dataMissa,
                 Random rand)
             {
-                var selecionados = listaDisponiveis
-                    .OrderBy(nome => ultimaEscalaPorAcolito.ContainsKey(nome) ? 1 : 0)
-                    .ThenBy(nome => ultimaEscalaPorAcolito.GetValueOrDefault(nome))
+                var candidatosPorId = listaDisponiveis.ToDictionary(a => a.Id);
+                HashSet<int> selecionadosIds = [];
+                HashSet<int> padrinhosUsadosComAfilhado = [];
+                List<AcolitoEscala> selecionados = [];
+
+                var paresAcompanhamento = listaDisponiveis
+                    .Where(a => a.PrecisaAcompanhamento
+                        && a.PadrinhoId is not null
+                        && candidatosPorId.ContainsKey(a.PadrinhoId.Value))
+                    .OrderBy(a => acolitosJaNaEscala.Contains(a.Id) ? 1 : 0)
+                    .ThenBy(a => ultimaEscalaPorAcolito.GetValueOrDefault(a.Id, DateTime.MinValue))
                     .ThenBy(_ => rand.Next())
-                    .Take(quantidade)
                     .ToList();
 
-                foreach (var nome in selecionados)
-                    ultimaEscalaPorAcolito[nome] = dataMissa;
+                foreach (var afilhado in paresAcompanhamento)
+                {
+                    int padrinhoId = afilhado.PadrinhoId!.Value;
+                    if (selecionados.Count + 2 > quantidade)
+                        break;
+
+                    if (selecionadosIds.Contains(afilhado.Id)
+                        || selecionadosIds.Contains(padrinhoId)
+                        || padrinhosUsadosComAfilhado.Contains(padrinhoId))
+                    {
+                        continue;
+                    }
+
+                    selecionados.Add(afilhado);
+                    selecionados.Add(candidatosPorId[padrinhoId]);
+                    selecionadosIds.Add(afilhado.Id);
+                    selecionadosIds.Add(padrinhoId);
+                    padrinhosUsadosComAfilhado.Add(padrinhoId);
+                }
+
+                var restantes = listaDisponiveis
+                    .Where(a => !selecionadosIds.Contains(a.Id))
+                    .Where(a => !a.PrecisaAcompanhamento)
+                    .OrderBy(a => acolitosJaNaEscala.Contains(a.Id) ? 1 : 0)
+                    .ThenBy(a => ultimaEscalaPorAcolito.GetValueOrDefault(a.Id, DateTime.MinValue))
+                    .ThenBy(_ => rand.Next())
+                    .Take(Math.Max(0, quantidade - selecionados.Count))
+                    .ToList();
+
+                selecionados.AddRange(restantes);
+
+                foreach (var acolito in selecionados)
+                {
+                    ultimaEscalaPorAcolito[acolito.Id] = dataMissa;
+                    acolitosJaNaEscala.Add(acolito.Id);
+                }
 
                 return selecionados;
+            }
+
+            private sealed record AcolitoEscala(
+                int Id,
+                string Nome,
+                int? PadrinhoId,
+                int MissasAcompanhadasNecessarias,
+                int MissasServidas)
+            {
+                public bool PrecisaAcompanhamento =>
+                    PadrinhoId is not null && MissasServidas < MissasAcompanhadasNecessarias;
             }
 
             public static string FormatarDataEscala(DateTime data, string diaConvertido)
@@ -482,15 +922,47 @@ namespace AppEscala
             btnGerarPdf.Text = "Gerar PDF";
             btnGerarPdf.PrimaryColor = UiTheme.Primary;
             btnGerarPdf.TextColor = System.Drawing.Color.White;
+            lblCaminhoPdf.Text = "Salvar PDF em";
+            lblCaminhoPdf.ForeColor = UiTheme.Text;
+            lblCaminhoPdf.AutoSize = true;
+            Controls.Add(lblCaminhoPdf);
+            txtCaminhoPdf.Text = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                ObterNomePadraoArquivoEscala());
+            txtCaminhoPdf.BorderStyle = BorderStyle.FixedSingle;
+            Controls.Add(txtCaminhoPdf);
+            btnSelecionarPdf.Text = "...";
+            btnSelecionarPdf.BackColor = UiTheme.Surface;
+            btnSelecionarPdf.ForeColor = UiTheme.Text;
+            btnSelecionarPdf.Click += btnSelecionarPdf_Click;
+            Controls.Add(btnSelecionarPdf);
+            btnImportarPdf.Text = "Importar PDF";
+            btnImportarPdf.Size = new Size(140, 36);
+            btnImportarPdf.BackColor = UiTheme.Surface;
+            btnImportarPdf.ForeColor = UiTheme.Text;
+            btnImportarPdf.Click += btnImportarPdf_Click;
+            Controls.Add(btnImportarPdf);
+            btnImportarJson.Text = "Importar JSON";
+            btnImportarJson.Size = new Size(140, 36);
+            btnImportarJson.BackColor = UiTheme.Surface;
+            btnImportarJson.ForeColor = UiTheme.Text;
+            btnImportarJson.Click += btnImportarJson_Click;
+            Controls.Add(btnImportarJson);
             btnAdicionarLinha.Text = "+";
             btnRemoverLinha.Text = "-";
+            btnOficializarEscala.Text = "Oficializar escala";
+            btnOficializarEscala.Size = new Size(160, 36);
+            btnOficializarEscala.BackColor = UiTheme.Surface;
+            btnOficializarEscala.ForeColor = UiTheme.Text;
+            btnOficializarEscala.Click += btnOficializarEscala_Click;
+            Controls.Add(btnOficializarEscala);
             btnAdicionarLinha.BackColor = UiTheme.Surface;
             btnRemoverLinha.BackColor = UiTheme.Surface;
             btnAdicionarLinha.ForeColor = UiTheme.Text;
             btnRemoverLinha.ForeColor = UiTheme.Text;
-            cmb_diasSemana.DropDownStyle = ComboBoxStyle.DropDownList;
             ConfigurarGridEscala();
             Resize += (_, _) => AjustarLayout();
+            AjustarLayout();
         }
 
         private void ConfigurarGridEscala()
@@ -508,6 +980,8 @@ namespace AppEscala
             dgvEscala.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvEscala.RowHeadersVisible = false;
             dgvEscala.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvEscala.CellValueChanged -= dgvEscala_CellValueChanged;
+            dgvEscala.CellValueChanged += dgvEscala_CellValueChanged;
 
             dgvEscala.Columns.Add(CriarColunaTexto("data", "DATA", 95, DataGridViewAutoSizeColumnMode.AllCells));
             dgvEscala.Columns.Add(CriarColunaTexto("horario", "HORÁRIO", 80, DataGridViewAutoSizeColumnMode.AllCells));
@@ -540,22 +1014,47 @@ namespace AppEscala
                 SortMode = DataGridViewColumnSortMode.NotSortable
             };
 
+        private static string ObterNomePadraoArquivoEscala()
+        {
+            string mes = DateTime.Now.ToString("MMMM", new CultureInfo("pt-BR"));
+            mes = char.ToUpper(mes[0], new CultureInfo("pt-BR")) + mes[1..];
+            return $"ESCALA DE ACÓLITOS_{mes}_{DateTime.Now.Year}.pdf";
+        }
+
         private void AjustarLayout()
         {
             const int margin = 32;
+            const int gap = 12;
             skyLabel1.Location = new System.Drawing.Point(margin, 28);
-            cmb_diasSemana.Location = new System.Drawing.Point(margin, 92);
-            cmb_diasSemana.Size = new Size(220, 32);
-            button1.Location = new System.Drawing.Point(margin, 152);
+
+            int caminhoTop = 76;
+            lblCaminhoPdf.Location = new System.Drawing.Point(margin, caminhoTop);
+            btnSelecionarPdf.Size = new Size(42, 28);
+            btnSelecionarPdf.Location = new System.Drawing.Point(Width - margin - btnSelecionarPdf.Width, caminhoTop + 24);
+            txtCaminhoPdf.Location = new System.Drawing.Point(margin, caminhoTop + 25);
+            txtCaminhoPdf.Size = new Size(Math.Max(240, btnSelecionarPdf.Left - margin - gap), 28);
+
+            int primaryTop = 142;
+            button1.Location = new System.Drawing.Point(margin, primaryTop);
             button1.Size = new Size(220, 42);
-            btnGerarPdf.Location = new System.Drawing.Point(button1.Right + 12, 152);
+            btnGerarPdf.Location = new System.Drawing.Point(button1.Right + gap, primaryTop);
             btnGerarPdf.Size = new Size(160, 42);
+
+            int secondaryTop = 196;
+            btnImportarPdf.Location = new System.Drawing.Point(margin, secondaryTop);
+            btnImportarPdf.Size = new Size(140, 36);
+            btnImportarJson.Location = new System.Drawing.Point(btnImportarPdf.Right + gap, secondaryTop);
+            btnImportarJson.Size = new Size(140, 36);
+            btnOficializarEscala.Location = new System.Drawing.Point(btnImportarJson.Right + gap, secondaryTop);
+            btnOficializarEscala.Size = new Size(160, 36);
+
             btnRemoverLinha.Size = new Size(36, 30);
-            btnRemoverLinha.Location = new System.Drawing.Point(Width - margin - btnRemoverLinha.Width, 210);
+            btnRemoverLinha.Location = new System.Drawing.Point(Width - margin - btnRemoverLinha.Width, secondaryTop + 3);
             btnAdicionarLinha.Size = new Size(36, 30);
-            btnAdicionarLinha.Location = new System.Drawing.Point(btnRemoverLinha.Left - btnAdicionarLinha.Width - 8, 210);
-            dgvEscala.Location = new System.Drawing.Point(margin, 248);
-            dgvEscala.Size = new Size(Math.Max(320, Width - (margin * 2)), Math.Max(120, Height - 280));
+            btnAdicionarLinha.Location = new System.Drawing.Point(btnRemoverLinha.Left - btnAdicionarLinha.Width - 8, secondaryTop + 3);
+
+            dgvEscala.Location = new System.Drawing.Point(margin, 252);
+            dgvEscala.Size = new Size(Math.Max(320, Width - (margin * 2)), Math.Max(120, Height - 284));
         }
     }
 }

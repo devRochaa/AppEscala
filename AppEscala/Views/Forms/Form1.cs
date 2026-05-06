@@ -24,6 +24,9 @@ namespace AppEscala
         private readonly Label lblIgrejasVazio = new();
         private readonly Database database = new();
         private readonly Panel sidebarFooterSpacer = new();
+        private readonly Panel pnConfiguracoesSistema = new();
+        private readonly Button btnConfiguracoesSistema = new();
+        private readonly ConfiguracoesView configuracoesView = new();
         private readonly Dictionary<Button, string> sidebarButtonTexts = new();
         private const int SidebarExpandedWidth = 190;
         private const int SidebarCollapsedWidth = 52;
@@ -343,6 +346,7 @@ namespace AppEscala
             button7.Text = "     Missas";
             button3.Text = "     Escalas";
             button2.Text = "      Igrejas";
+            btnConfiguracoesSistema.Text = "      Configurações";
             button8.Text = "     Sair";
 
             sidebarButtonTexts.Clear();
@@ -351,10 +355,13 @@ namespace AppEscala
             sidebarButtonTexts[button7] = "Missas";
             sidebarButtonTexts[button3] = "Escalas";
             sidebarButtonTexts[button2] = "Igrejas";
+            sidebarButtonTexts[btnConfiguracoesSistema] = "Configurações";
             sidebarButtonTexts[button8] = "Sair";
             AtribuirIconesSidebar();
 
-            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, button8 })
+            ConfigurarAbaConfiguracoes();
+
+            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, btnConfiguracoesSistema, button8 })
                 UiTheme.StyleSidebarButton(button);
 
             button2.Enabled = true;
@@ -365,6 +372,7 @@ namespace AppEscala
             CriarTelaIgrejas();
             Controls.Add(menuPanel);
             Controls.Add(igrejasPanel);
+            Controls.Add(configuracoesView);
 
             Resize += (_, _) => AjustarLayout();
         }
@@ -382,10 +390,10 @@ namespace AppEscala
             int contentWidth = Math.Max(320, ClientSize.Width - contentX);
             int contentHeight = Math.Max(260, ClientSize.Height - contentY);
 
-            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, userControl11, userControl21, userAcolitos, missas1 })
+            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, configuracoesView, userControl11, userControl21, userAcolitos, missas1 })
                 tela.Bounds = new System.Drawing.Rectangle(contentX, contentY, contentWidth, contentHeight);
 
-            foreach (Panel panel in new[] { panel3, panel2, pnEscala, pnInfo, pnConfig, pnLogout })
+            foreach (Panel panel in new[] { panel3, panel2, pnEscala, pnInfo, pnConfig, pnConfiguracoesSistema, pnLogout })
             {
                 panel.Width = sidebar.Width;
                 panel.Height = SidebarItemHeight;
@@ -405,10 +413,10 @@ namespace AppEscala
 
         private void ExibirTela(Control telaAtiva, Button botaoAtivo, string titulo)
         {
-            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, userControl11, userControl21, userAcolitos, missas1 })
+            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, configuracoesView, userControl11, userControl21, userAcolitos, missas1 })
                 tela.Hide();
 
-            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, button8 })
+            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, btnConfiguracoesSistema, button8 })
                 UiTheme.StyleSidebarButton(button);
 
             UiTheme.StyleSidebarButton(botaoAtivo, active: true);
@@ -430,6 +438,7 @@ namespace AppEscala
             button7.Image = CriarIconeSvg("missa.svg");
             button3.Image = CriarIconeSvg("escala.svg");
             button2.Image = CriarIconeSvg("igreja.svg");
+            btnConfiguracoesSistema.Image = CriarIconeSvg("config.svg");
             button8.Image = CriarIconeSvg("sair.svg");
         }
 
@@ -451,9 +460,40 @@ namespace AppEscala
 
         private int CalcularAlturaEspacadorSidebar()
         {
-            int itensAntesDoRodape = 5;
-            int alturaUsada = sidebar.Padding.Top + (itensAntesDoRodape * SidebarItemHeight) + SidebarItemHeight;
+            const int itensAntesDoRodape = 5;
+            const int itensNoRodape = 2;
+            int alturaUsada = sidebar.Padding.Top + ((itensAntesDoRodape + itensNoRodape) * SidebarItemHeight);
             return Math.Max(0, sidebar.Height - alturaUsada);
+        }
+
+        private void ConfigurarAbaConfiguracoes()
+        {
+            if (!sidebar.Controls.Contains(pnConfiguracoesSistema))
+                sidebar.Controls.Add(pnConfiguracoesSistema);
+
+            if (!sidebar.Controls.Contains(sidebarFooterSpacer))
+                sidebar.Controls.Add(sidebarFooterSpacer);
+
+            sidebar.Controls.SetChildIndex(sidebarFooterSpacer, 5);
+            sidebar.Controls.SetChildIndex(pnConfiguracoesSistema, 6);
+            sidebar.Controls.SetChildIndex(pnLogout, 7);
+
+            pnConfiguracoesSistema.Margin = Padding.Empty;
+            pnConfiguracoesSistema.BackColor = UiTheme.Sidebar;
+            pnConfiguracoesSistema.Controls.Clear();
+            pnConfiguracoesSistema.Controls.Add(btnConfiguracoesSistema);
+
+            btnConfiguracoesSistema.BackColor = UiTheme.Sidebar;
+            btnConfiguracoesSistema.ForeColor = System.Drawing.Color.White;
+            btnConfiguracoesSistema.ImageAlign = ContentAlignment.MiddleLeft;
+            btnConfiguracoesSistema.TextAlign = ContentAlignment.MiddleLeft;
+            btnConfiguracoesSistema.Click -= btnConfiguracoesSistema_Click;
+            btnConfiguracoesSistema.Click += btnConfiguracoesSistema_Click;
+        }
+
+        private void btnConfiguracoesSistema_Click(object? sender, EventArgs e)
+        {
+            ExibirTela(configuracoesView, btnConfiguracoesSistema, "CONFIGURAÇÕES");
         }
 
         private static Bitmap CriarIconeSvg(string nomeArquivo)

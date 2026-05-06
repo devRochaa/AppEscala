@@ -15,6 +15,9 @@ public partial class AdicionarAcolitoView : UserControl
     private readonly Button btnRemoverData = new();
     private readonly Button btnVoltar = new();
     private readonly TextBox txtMotivoData = new();
+    private readonly ComboBox cmbPadrinho = new();
+    private readonly NumericUpDown numMissasNecessarias = new();
+    private readonly Label lblMissasAcompanhadas = new();
     private readonly Dictionary<(DayOfWeek Dia, Turno Turno), CheckBox> disponibilidadeChecks = new();
 
     public AdicionarAcolitoView()
@@ -24,6 +27,7 @@ public partial class AdicionarAcolitoView : UserControl
         db = new Database();
         db.Initialize();
         dateTimePicker1.Value = DateTime.Today;
+        CarregarPadrinhos();
     }
 
     private readonly Database db;
@@ -46,10 +50,10 @@ public partial class AdicionarAcolitoView : UserControl
             DiasDisponiveis.Remove(dia);
     }
 
-    List<(string Data, string Motivo)> datas = new();
+    List<(DateOnly Data, string Motivo)> datas = new();
     private void button1_Click(object sender, EventArgs e)
     {
-        string data = dateTimePicker1.Value.ToString("dd/MM/yyyy");
+        DateOnly data = DateOnly.FromDateTime(dateTimePicker1.Value.Date);
 
         foreach (var cadastrada in datas)
         {
@@ -62,7 +66,7 @@ public partial class AdicionarAcolitoView : UserControl
 
         string motivo = txtMotivoData.Text.Trim();
         datas.Add((data, motivo));
-        dgvDatasIndisponiveis.Rows.Add(data, ObterNomeDiaSemana(dateTimePicker1.Value), motivo);
+        dgvDatasIndisponiveis.Rows.Add(FormatarData(data), ObterNomeDiaSemana(dateTimePicker1.Value), motivo);
         txtMotivoData.Clear();
     }
 
@@ -75,12 +79,12 @@ public partial class AdicionarAcolitoView : UserControl
     }
     private void AddDias(int Id)
     {
-        foreach (var data in datas)
+        foreach (var data in ObterDatasIndisponiveisParaSalvar())
         {
             AcolitoCompromissosEntity dados_dia = new()
             {
                 Id_acolitos = Id,
-                dia = data.Data,
+                Dia = data.Data,
                 Motivo = data.Motivo
             };
             db.InsertDias(dados_dia);
@@ -148,8 +152,23 @@ public partial class AdicionarAcolitoView : UserControl
 
         AtualizarDiasDisponiveisPelosChecks();
 
-        AcolitoEntity novoAcolito = new AcolitoEntity { Nome = txtNome.Text.Trim() };
-        int id_inserido = db.InsertAcolito(novoAcolito);
+        AcolitoEntity novoAcolito = new()
+        {
+            Nome = txtNome.Text.Trim(),
+            PadrinhoId = ObterPadrinhoSelecionadoId(),
+            MissasAcompanhadasNecessarias = (int)numMissasNecessarias.Value,
+            MissasServidas = 0
+        };
+        int id_inserido;
+        try
+        {
+            id_inserido = db.InsertAcolito(novoAcolito);
+        }
+        catch (InvalidOperationException ex)
+        {
+            MessageBox.Show(ex.Message);
+            return;
+        }
         if (DiasDisponiveis.Count != 0)
         {
             AdicionarDisponibilidades(id_inserido);
@@ -165,6 +184,8 @@ public partial class AdicionarAcolitoView : UserControl
         dgvDatasIndisponiveis.Rows.Clear();
         datas.Clear();
         DiasDisponiveis.Clear();
+        cmbPadrinho.SelectedIndex = 0;
+        numMissasNecessarias.Value = 0;
         check_semana.Checked = false;
         check_fimDsmn.Checked = false;
         foreach (var checkBox in disponibilidadeChecks.Values)
@@ -243,6 +264,9 @@ public partial class AdicionarAcolitoView : UserControl
         label3.Text = "Dias em que não pode servir";
         txtNome.PlaceholderText = "Nome completo";
         txtMotivoData.PlaceholderText = "Motivo opcional";
+        cmbPadrinho.DropDownStyle = ComboBoxStyle.DropDownList;
+        numMissasNecessarias.Minimum = 0;
+        numMissasNecessarias.Maximum = 1000;
         button1.Text = "+";
         button2.Text = "Salvar acólito";
         btnVoltar.Text = "Voltar";
@@ -285,18 +309,29 @@ public partial class AdicionarAcolitoView : UserControl
             Text = "Dias em que pode servir",
             Font = new Font("Segoe UI Semibold", 13F, FontStyle.Bold),
             ForeColor = UiTheme.Text,
-            Location = new Point(20, 92)
+            Location = new Point(20, 148)
         };
 
-        Label descricao = new()
+        Label lblPadrinho = new()
         {
             AutoSize = true,
-            Text = "Marque os períodos em que o acólito costuma estar disponível.",
-            ForeColor = UiTheme.MutedText,
-            Location = new Point(20, 122)
+            Text = "Padrinho",
+            ForeColor = UiTheme.Text,
+            Location = new Point(20, 82)
         };
 
-        panelSemana.Location = new Point(20, 158);
+        cmbPadrinho.Location = new Point(20, 104);
+        cmbPadrinho.Size = new Size(208, 32);
+
+        lblMissasAcompanhadas.AutoSize = true;
+        lblMissasAcompanhadas.Text = "Missas acomp.";
+        lblMissasAcompanhadas.ForeColor = UiTheme.Text;
+        lblMissasAcompanhadas.Location = new Point(240, 82);
+
+        numMissasNecessarias.Location = new Point(240, 104);
+        numMissasNecessarias.Size = new Size(96, 32);
+
+        panelSemana.Location = new Point(20, 178);
         panelSemana.Size = new Size(456, 170);
         CriarGrupoDias(panelSemana, new[]
         {
@@ -307,7 +342,7 @@ public partial class AdicionarAcolitoView : UserControl
             (DayOfWeek.Friday, "Sexta")
         });
 
-        panelFimSemana.Location = new Point(20, 328);
+        panelFimSemana.Location = new Point(20, 348);
         panelFimSemana.Size = new Size(456, 70);
         CriarGrupoDias(panelFimSemana, new[]
         {
@@ -318,7 +353,7 @@ public partial class AdicionarAcolitoView : UserControl
         Button btnMarcarSemana = new()
         {
             Text = "Marcar semana",
-            Location = new Point(20, 402),
+            Location = new Point(20, 416),
             Size = new Size(140, 34)
         };
         btnMarcarSemana.Click += (_, _) => AlternarChecksGrupo([DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday]);
@@ -326,12 +361,12 @@ public partial class AdicionarAcolitoView : UserControl
         Button btnMarcarFimSemana = new()
         {
             Text = "Marcar final de semana",
-            Location = new Point(172, 402),
+            Location = new Point(172, 416),
             Size = new Size(170, 34)
         };
         btnMarcarFimSemana.Click += (_, _) => AlternarChecksGrupo([DayOfWeek.Saturday, DayOfWeek.Sunday]);
 
-        panelDisponibilidade.Controls.AddRange(new Control[] { label2, txtNome, titulo, descricao, panelSemana, panelFimSemana, btnMarcarSemana, btnMarcarFimSemana });
+        panelDisponibilidade.Controls.AddRange(new Control[] { label2, txtNome, lblPadrinho, cmbPadrinho, lblMissasAcompanhadas, numMissasNecessarias, titulo, panelSemana, panelFimSemana, btnMarcarSemana, btnMarcarFimSemana });
         Controls.Add(panelDisponibilidade);
     }
 
@@ -341,10 +376,10 @@ public partial class AdicionarAcolitoView : UserControl
         int index = 0;
         foreach (var dia in dias)
         {
-            Panel row = new()
-            {
-                Location = new Point(0, y),
-                    Size = new Size(442, 26),
+                Panel row = new()
+                {
+                    Location = new Point(0, y),
+                    Size = new Size(442, 24),
                 BackColor = index % 2 == 0 ? Color.FromArgb(248, 250, 252) : Color.White
             };
 
@@ -361,7 +396,7 @@ public partial class AdicionarAcolitoView : UserControl
             CriarCheckTurno(row, dia.Dia, Turno.Afternoon, "", 258, 5);
             CriarCheckTurno(row, dia.Dia, Turno.Night, "", 348, 5);
             parent.Controls.Add(row);
-                y += 34;
+                y += 32;
             index++;
         }
     }
@@ -425,8 +460,8 @@ public partial class AdicionarAcolitoView : UserControl
             return;
 
         string? data = dgvDatasIndisponiveis.CurrentRow.Cells["data"].Value?.ToString();
-        if (data is not null)
-            datas.RemoveAll(item => item.Data == data);
+        if (TryParseData(data, out var dataParsed))
+            datas.RemoveAll(item => item.Data == dataParsed);
 
         dgvDatasIndisponiveis.Rows.RemoveAt(dgvDatasIndisponiveis.CurrentRow.Index);
     }
@@ -434,8 +469,8 @@ public partial class AdicionarAcolitoView : UserControl
     private void RemoverDataNaLinha(int rowIndex)
     {
         string? data = dgvDatasIndisponiveis.Rows[rowIndex].Cells["data"].Value?.ToString();
-        if (data is not null)
-            datas.RemoveAll(item => item.Data == data);
+        if (TryParseData(data, out var dataParsed))
+            datas.RemoveAll(item => item.Data == dataParsed);
 
         dgvDatasIndisponiveis.Rows.RemoveAt(rowIndex);
     }
@@ -554,6 +589,48 @@ public partial class AdicionarAcolitoView : UserControl
         return dias[(int)data.DayOfWeek];
     }
 
+    private IEnumerable<(DateOnly Data, string Motivo)> ObterDatasIndisponiveisParaSalvar()
+    {
+        Dictionary<DateOnly, string> resultado = [];
+
+        foreach (var item in datas)
+            resultado[item.Data] = item.Motivo;
+
+        foreach (DataGridViewRow row in dgvDatasIndisponiveis.Rows)
+        {
+            if (row.IsNewRow)
+                continue;
+
+            string? dataTexto = row.Cells["data"].Value?.ToString();
+            if (!TryParseData(dataTexto, out var data))
+                continue;
+
+            resultado[data] = row.Cells["motivo"].Value?.ToString()?.Trim() ?? string.Empty;
+        }
+
+        return resultado
+            .OrderBy(item => item.Key)
+            .Select(item => (item.Key, item.Value));
+    }
+
+    private static string FormatarData(DateOnly data)
+        => data.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"));
+
+    private static bool TryParseData(string? texto, out DateOnly data)
+    {
+        if (DateOnly.TryParse(texto, System.Globalization.CultureInfo.GetCultureInfo("pt-BR"), System.Globalization.DateTimeStyles.None, out data))
+            return true;
+
+        if (DateTime.TryParse(texto, System.Globalization.CultureInfo.GetCultureInfo("pt-BR"), System.Globalization.DateTimeStyles.None, out var dateTime))
+        {
+            data = DateOnly.FromDateTime(dateTime);
+            return true;
+        }
+
+        data = default;
+        return false;
+    }
+
     private void AjustarLayout()
     {
         const int margin = 32;
@@ -573,15 +650,15 @@ public partial class AdicionarAcolitoView : UserControl
         AjustarPainelDados(leftWidth);
 
         panelDisponibilidade.Location = new Point(margin, topPanels);
-        panelDisponibilidade.Size = new Size(leftWidth, 446);
+        panelDisponibilidade.Size = new Size(leftWidth, 468);
         AjustarPainelDisponibilidade(leftWidth);
 
         panelIndisponibilidade.Location = new Point(margin + leftWidth + gap, topPanels);
-        panelIndisponibilidade.Size = new Size(rightWidth, 446);
+        panelIndisponibilidade.Size = new Size(rightWidth, 468);
         AjustarPainelIndisponibilidade(rightWidth);
 
         int contentBottom = Math.Max(panelDisponibilidade.Bottom, panelIndisponibilidade.Bottom);
-        AutoScrollMinSize = new Size(0, contentBottom + 32);
+        AutoScrollMinSize = new Size(0, contentBottom + 8);
     }
 
     private void AjustarPainelDados(int panelWidth)
@@ -592,6 +669,9 @@ public partial class AdicionarAcolitoView : UserControl
     private void AjustarPainelDisponibilidade(int panelWidth)
     {
         int innerWidth = Math.Max(320, panelWidth - 40);
+        cmbPadrinho.Size = new Size(Math.Min(220, Math.Max(180, innerWidth * 58 / 100)), 32);
+        numMissasNecessarias.Location = new Point(Math.Min(cmbPadrinho.Right + 12, panelWidth - 136), 104);
+        lblMissasAcompanhadas.Location = new Point(numMissasNecessarias.Left, 82);
         AjustarGrupoDias(panelSemana, innerWidth);
         AjustarGrupoDias(panelFimSemana, innerWidth);
     }
@@ -648,5 +728,24 @@ public partial class AdicionarAcolitoView : UserControl
         dgvDatasIndisponiveis.Size = new Size(innerWidth, Math.Min(230, Math.Max(170, panelIndisponibilidade.Height - 220)));
         btnRemoverData.Location = new Point(20, dgvDatasIndisponiveis.Bottom + 16);
         btnRemoverData.Size = new Size(112, 34);
+    }
+
+    private void CarregarPadrinhos()
+    {
+        cmbPadrinho.Items.Clear();
+        cmbPadrinho.Items.Add(new PadrinhoItem("", null));
+
+        foreach (var acolito in db.SelectAllAcolitos())
+            cmbPadrinho.Items.Add(new PadrinhoItem(acolito.Nome, acolito.Id));
+
+        cmbPadrinho.SelectedIndex = 0;
+    }
+
+    private int? ObterPadrinhoSelecionadoId()
+        => cmbPadrinho.SelectedItem is PadrinhoItem item ? item.Id : null;
+
+    private sealed record PadrinhoItem(string Nome, int? Id)
+    {
+        public override string ToString() => Nome;
     }
 }

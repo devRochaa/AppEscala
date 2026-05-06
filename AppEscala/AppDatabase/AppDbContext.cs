@@ -5,6 +5,9 @@ namespace AppEscala.AppDatabase;
 
 public class AppDbContext : DbContext
 {
+    public static string DatabasePath
+        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "appescala.db");
+
     public AppDbContext()
     {
     }
@@ -19,9 +22,7 @@ public class AppDbContext : DbContext
         if (optionsBuilder.IsConfigured)
             return;
 
-        string folder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        string dbPath = Path.Combine(folder, "appescala.db");
-        optionsBuilder.UseSqlite($"Data Source={dbPath}");
+        optionsBuilder.UseSqlite($"Data Source={DatabasePath}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

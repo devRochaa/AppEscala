@@ -21,9 +21,14 @@ public sealed class Database
         Context.Database.ExecuteSqlRaw("""
             CREATE TABLE IF NOT EXISTS Acolitos (
                 Id INTEGER NOT NULL CONSTRAINT PK_Acolitos PRIMARY KEY AUTOINCREMENT,
-                Nome TEXT NOT NULL
+                Nome TEXT NOT NULL,
+                PadrinhoId INTEGER NULL,
+                MissasAcompanhadasNecessarias INTEGER NOT NULL DEFAULT 0,
+                MissasServidas INTEGER NOT NULL DEFAULT 0
             );
             """);
+        EnsureAcolitoColumns();
+        EnsureAcolitoNomeUnicoIndex();
 
         Context.Database.ExecuteSqlRaw("""
             CREATE TABLE IF NOT EXISTS AcolitoDisponibilidade (
@@ -76,6 +81,8 @@ public sealed class Database
 
     public int InsertAcolito(AcolitoEntity acolito)
     {
+        acolito.Nome = NormalizarNomeAcolito(acolito.Nome);
+        ValidarNomeAcolitoUnico(acolito.Nome, null);
         Context.Set<AcolitoEntity>().Add(acolito);
         Context.SaveChanges();
         return acolito.Id;
@@ -122,6 +129,7 @@ public sealed class Database
 
     public List<AcolitoEntity> SelectAllAcolitos()
         => Context.Set<AcolitoEntity>()
+            .Include(a => a.Padrinho)
             .AsNoTracking()
             .OrderBy(a => a.Nome)
             .ToList();
@@ -131,10 +139,42 @@ public sealed class Database
         if (id is null)
             return;
 
+        nome = NormalizarNomeAcolito(nome);
+        ValidarNomeAcolitoUnico(nome, id.Value);
+
         var registro = Context.Set<AcolitoEntity>().Find(id.Value)
             ?? throw new InvalidOperationException("Acolito nao encontrado.");
 
         registro.Nome = nome;
+        Context.SaveChanges();
+    }
+
+    public void UpdateAcolito(
+        int? id,
+        string nome,
+        int? padrinhoId,
+        int missasAcompanhadasNecessarias,
+        int missasServidas)
+    {
+        if (id is null)
+            return;
+
+        nome = NormalizarNomeAcolito(nome);
+        ValidarNomeAcolitoUnico(nome, id.Value);
+
+        if (padrinhoId == id.Value)
+            throw new InvalidOperationException("O acólito não pode ser padrinho dele mesmo.");
+
+        if (padrinhoId is not null && CriariaCicloDePadrinhos(id.Value, padrinhoId.Value))
+            throw new InvalidOperationException("Essa relação criaria um ciclo de padrinhos.");
+
+        var registro = Context.Set<AcolitoEntity>().Find(id.Value)
+            ?? throw new InvalidOperationException("Acolito nao encontrado.");
+
+        registro.Nome = nome;
+        registro.PadrinhoId = padrinhoId;
+        registro.MissasAcompanhadasNecessarias = Math.Max(0, missasAcompanhadasNecessarias);
+        registro.MissasServidas = Math.Max(0, missasServidas);
         Context.SaveChanges();
     }
 
@@ -152,6 +192,12 @@ public sealed class Database
         var compromissos = Context.Set<AcolitoCompromissosEntity>()
             .Where(d => d.Id_acolitos == id.Value)
             .ToList();
+        var afilhados = Context.Set<AcolitoEntity>()
+            .Where(a => a.PadrinhoId == id.Value)
+            .ToList();
+
+        foreach (var afilhado in afilhados)
+            afilhado.PadrinhoId = null;
 
         Context.Set<AcolitoDisponibilidadeEntity>().RemoveRange(disponibilidades);
         Context.Set<AcolitoCompromissosEntity>().RemoveRange(compromissos);
@@ -420,14 +466,43 @@ public sealed class Database
             return null;
 
         return Context.Set<AcolitoEntity>()
+            .Include(a => a.Padrinho)
             .AsNoTracking()
             .FirstOrDefault(a => a.Id == id.Value);
+    }
+
+    public AcolitoEntity? SelectAcolitoPorNome(string nome)
+    {
+        string nomeNormalizado = NormalizarNomeAcolito(nome);
+        return Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .FirstOrDefault(a => a.Nome.ToUpper() == nomeNormalizado.ToUpper());
+    }
+
+    public void IncrementarMissasServidas(IEnumerable<int> acolitoIds)
+    {
+        var incrementosPorId = acolitoIds
+            .GroupBy(id => id)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        if (incrementosPorId.Count == 0)
+            return;
+
+        var acolitos = Context.Set<AcolitoEntity>()
+            .Where(a => incrementosPorId.Keys.Contains(a.Id))
+            .ToList();
+
+        foreach (var acolito in acolitos)
+            acolito.MissasServidas += incrementosPorId[acolito.Id];
+
+        Context.SaveChanges();
     }
 
     private IEnumerable<AcolitoDisponibilidade> QueryAcolitosDisponibilidade()
     {
         var disponibilidades = Context.Set<AcolitoDisponibilidadeEntity>()
             .Include(d => d.Acolito)
+            .ThenInclude(a => a!.Padrinho)
             .AsNoTracking()
             .OrderBy(d => d.AcolitoId)
             .ThenBy(d => d.DiaDaSemana)
@@ -438,6 +513,10 @@ public sealed class Database
             .Select(d => new AcolitoDisponibilidade
             {
                 Nome = d.Acolito != null ? d.Acolito.Nome : string.Empty,
+                PadrinhoId = d.Acolito?.PadrinhoId,
+                NomePadrinho = d.Acolito?.Padrinho?.Nome ?? string.Empty,
+                MissasAcompanhadasNecessarias = d.Acolito?.MissasAcompanhadasNecessarias ?? 0,
+                MissasServidas = d.Acolito?.MissasServidas ?? 0,
                 DiaSemana = DiaSemanaNome(d.DiaDaSemana),
                 Turno = TurnoNome(d.Turno),
                 IdDiaSemana = d.IdDiaSemana,
@@ -454,7 +533,11 @@ public sealed class Database
             .Select(a => new AcolitoDisponibilidade
             {
                 Nome = a.Nome,
-                Id_acolito = a.Id
+                Id_acolito = a.Id,
+                PadrinhoId = a.PadrinhoId,
+                NomePadrinho = a.Padrinho != null ? a.Padrinho.Nome : string.Empty,
+                MissasAcompanhadasNecessarias = a.MissasAcompanhadasNecessarias,
+                MissasServidas = a.MissasServidas
             })
             .ToList();
 
@@ -479,6 +562,90 @@ public sealed class Database
 
     private static Turno TurnoFromLegacyId(int id)
         => Enum.IsDefined(typeof(Turno), id) ? (Turno)id : Turno.None;
+
+    private void EnsureAcolitoColumns()
+    {
+        EnsureColumn("Acolitos", "PadrinhoId", "INTEGER NULL");
+        EnsureColumn("Acolitos", "MissasAcompanhadasNecessarias", "INTEGER NOT NULL DEFAULT 0");
+        EnsureColumn("Acolitos", "MissasServidas", "INTEGER NOT NULL DEFAULT 0");
+    }
+
+    private void EnsureAcolitoNomeUnicoIndex()
+    {
+        var duplicados = Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .GroupBy(a => a.Nome.ToUpper())
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicados.Count > 0)
+            throw new InvalidOperationException("Existem acólitos com nomes duplicados. Corrija os cadastros antes de continuar.");
+
+        Context.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_Acolitos_Nome_Unico ON Acolitos (Nome COLLATE NOCASE)");
+    }
+
+    private void ValidarNomeAcolitoUnico(string nome, int? ignorarId)
+    {
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new InvalidOperationException("O nome do acólito não pode ficar vazio.");
+
+        bool existe = Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .Any(a => a.Nome.ToUpper() == nome.ToUpper() && (ignorarId == null || a.Id != ignorarId.Value));
+
+        if (existe)
+            throw new InvalidOperationException("Já existe um acólito cadastrado com esse nome.");
+    }
+
+    private static string NormalizarNomeAcolito(string nome)
+        => nome.Trim();
+
+    private void EnsureColumn(string tableName, string columnName, string definition)
+    {
+        ValidarIdentificadorSql(tableName);
+        ValidarIdentificadorSql(columnName);
+
+        string pragmaSql = $"SELECT name AS Value FROM pragma_table_info('{tableName}')";
+        var columns = Context.Database
+            .SqlQueryRaw<string>(pragmaSql)
+            .ToList();
+
+        if (columns.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            return;
+
+        string alterSql = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {definition}";
+        Context.Database.ExecuteSqlRaw(alterSql);
+    }
+
+    private static void ValidarIdentificadorSql(string identifier)
+    {
+        if (identifier.Any(c => !char.IsLetterOrDigit(c) && c != '_'))
+            throw new InvalidOperationException("Identificador SQL invalido.");
+    }
+
+    private bool CriariaCicloDePadrinhos(int acolitoId, int padrinhoId)
+    {
+        int? atual = padrinhoId;
+        HashSet<int> visitados = [];
+
+        while (atual is not null)
+        {
+            if (atual == acolitoId)
+                return true;
+
+            if (!visitados.Add(atual.Value))
+                return true;
+
+            atual = Context.Set<AcolitoEntity>()
+                .AsNoTracking()
+                .Where(a => a.Id == atual.Value)
+                .Select(a => a.PadrinhoId)
+                .FirstOrDefault();
+        }
+
+        return false;
+    }
 
     private static string DiaSemanaNome(DayOfWeek day)
         => day switch
@@ -505,6 +672,11 @@ public sealed class Database
     public sealed class AcolitoDisponibilidade
     {
         public string Nome { get; set; } = string.Empty;
+        public int? PadrinhoId { get; set; }
+        public string NomePadrinho { get; set; } = string.Empty;
+        public int MissasAcompanhadasNecessarias { get; set; }
+        public int MissasServidas { get; set; }
+        public bool PrecisaAcompanhamento => PadrinhoId is not null && MissasServidas < MissasAcompanhadasNecessarias;
         public string DiaSemana { get; set; } = string.Empty;
         public string Turno { get; set; } = string.Empty;
         public int IdDiaSemana { get; set; }

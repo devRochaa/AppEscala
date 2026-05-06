@@ -30,7 +30,6 @@
         {
             skyLabel1 = new ReaLTaiizor.Controls.SkyLabel();
             button1 = new ReaLTaiizor.Controls.HopeRoundButton();
-            cmb_diasSemana = new ComboBox();
             dgvEscala = new DataGridView();
             btnGerarPdf = new ReaLTaiizor.Controls.HopeRoundButton();
             btnAdicionarLinha = new Button();
@@ -69,6 +68,15 @@
             button1.WarningColor = Color.FromArgb(230, 162, 60);
             button1.Click += button1_Click;
             // 
+            // dgvEscala
+            // 
+            dgvEscala.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvEscala.Location = new Point(32, 210);
+            dgvEscala.Name = "dgvEscala";
+            dgvEscala.Size = new Size(577, 140);
+            dgvEscala.TabIndex = 4;
+            dgvEscala.CellDoubleClick += dgvEscala_CellDoubleClick;
+            // 
             // btnGerarPdf
             // 
             btnGerarPdf.BorderColor = Color.FromArgb(220, 223, 230);
@@ -88,25 +96,6 @@
             btnGerarPdf.TextColor = Color.White;
             btnGerarPdf.WarningColor = Color.FromArgb(230, 162, 60);
             btnGerarPdf.Click += btnGerarPdf_Click;
-            // 
-            // cmb_diasSemana
-            // 
-            cmb_diasSemana.FormattingEnabled = true;
-            cmb_diasSemana.Location = new Point(253, 126);
-            cmb_diasSemana.Name = "cmb_diasSemana";
-            cmb_diasSemana.Size = new Size(121, 23);
-            cmb_diasSemana.TabIndex = 2;
-            // 
-            // dgvEscala
-            // 
-            dgvEscala.AllowUserToAddRows = true;
-            dgvEscala.AllowUserToDeleteRows = true;
-            dgvEscala.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvEscala.Location = new Point(32, 210);
-            dgvEscala.Name = "dgvEscala";
-            dgvEscala.Size = new Size(577, 140);
-            dgvEscala.TabIndex = 4;
-            dgvEscala.CellDoubleClick += dgvEscala_CellDoubleClick;
             // 
             // btnAdicionarLinha
             // 
@@ -138,12 +127,10 @@
             Controls.Add(btnAdicionarLinha);
             Controls.Add(dgvEscala);
             Controls.Add(btnGerarPdf);
-            Controls.Add(cmb_diasSemana);
             Controls.Add(button1);
             Controls.Add(skyLabel1);
             Name = "UserControl1";
             Size = new Size(641, 383);
-            Load += UserControl1_Load;
             ((System.ComponentModel.ISupportInitialize)dgvEscala).EndInit();
             ResumeLayout(false);
             PerformLayout();
@@ -153,7 +140,6 @@
 
         private ReaLTaiizor.Controls.SkyLabel skyLabel1;
         private ReaLTaiizor.Controls.HopeRoundButton button1;
-        private ComboBox cmb_diasSemana;
         private DataGridView dgvEscala;
         private ReaLTaiizor.Controls.HopeRoundButton btnGerarPdf;
         private Button btnAdicionarLinha;
