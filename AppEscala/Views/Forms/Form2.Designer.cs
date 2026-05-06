@@ -30,14 +30,14 @@
         {
             airButton1 = new ReaLTaiizor.Controls.AirButton();
             panel_dom = new Panel();
-            check_domN = new CheckBox();
+            Sunday_Night = new CheckBox();
             label2 = new Label();
-            check_domT = new CheckBox();
-            check_domM = new CheckBox();
+            Sunday_Afternoon = new CheckBox();
+            Sunday_Morning = new CheckBox();
             panel_sab = new Panel();
-            check_sabN = new CheckBox();
-            check_sabT = new CheckBox();
-            check_sabM = new CheckBox();
+            Saturday_Night = new CheckBox();
+            Saturday_Afternoon = new CheckBox();
+            Saturday_Morning = new CheckBox();
             label1 = new Label();
             ou = new Label();
             label3 = new Label();
@@ -45,9 +45,11 @@
             label5 = new Label();
             panel3 = new Panel();
             check_tds = new CheckBox();
+            panel_days = new Panel();
             panel_dom.SuspendLayout();
             panel_sab.SuspendLayout();
             panel3.SuspendLayout();
+            panel_days.SuspendLayout();
             SuspendLayout();
             // 
             // airButton1
@@ -67,25 +69,25 @@
             // panel_dom
             // 
             panel_dom.BorderStyle = BorderStyle.FixedSingle;
-            panel_dom.Controls.Add(check_domN);
+            panel_dom.Controls.Add(Sunday_Night);
             panel_dom.Controls.Add(label2);
-            panel_dom.Controls.Add(check_domT);
-            panel_dom.Controls.Add(check_domM);
-            panel_dom.Location = new Point(153, 22);
+            panel_dom.Controls.Add(Sunday_Afternoon);
+            panel_dom.Controls.Add(Sunday_Morning);
+            panel_dom.Location = new Point(145, 12);
             panel_dom.Name = "panel_dom";
             panel_dom.Size = new Size(124, 157);
             panel_dom.TabIndex = 12;
             // 
-            // check_domN
+            // Sunday_Night
             // 
-            check_domN.AutoSize = true;
-            check_domN.Location = new Point(32, 99);
-            check_domN.Name = "check_domN";
-            check_domN.Size = new Size(55, 19);
-            check_domN.TabIndex = 19;
-            check_domN.Text = "Noite";
-            check_domN.UseVisualStyleBackColor = true;
-            check_domN.CheckedChanged += check_domN_CheckedChanged;
+            Sunday_Night.AutoSize = true;
+            Sunday_Night.Location = new Point(32, 99);
+            Sunday_Night.Name = "Sunday_Night";
+            Sunday_Night.Size = new Size(55, 19);
+            Sunday_Night.TabIndex = 19;
+            Sunday_Night.Text = "Noite";
+            Sunday_Night.UseVisualStyleBackColor = true;
+            Sunday_Night.CheckedChanged += CheckTurno_CheckedChanged;
             // 
             // label2
             // 
@@ -96,74 +98,73 @@
             label2.Size = new Size(82, 21);
             label2.TabIndex = 13;
             label2.Text = "Domingo";
-            label2.Click += label2_Click;
             // 
-            // check_domT
+            // Sunday_Afternoon
             // 
-            check_domT.AutoSize = true;
-            check_domT.Location = new Point(32, 82);
-            check_domT.Name = "check_domT";
-            check_domT.Size = new Size(54, 19);
-            check_domT.TabIndex = 18;
-            check_domT.Text = "Tarde";
-            check_domT.UseVisualStyleBackColor = true;
-            check_domT.CheckedChanged += check_domT_CheckedChanged;
+            Sunday_Afternoon.AutoSize = true;
+            Sunday_Afternoon.Location = new Point(32, 82);
+            Sunday_Afternoon.Name = "Sunday_Afternoon";
+            Sunday_Afternoon.Size = new Size(55, 19);
+            Sunday_Afternoon.TabIndex = 18;
+            Sunday_Afternoon.Text = "Tarde";
+            Sunday_Afternoon.UseVisualStyleBackColor = true;
+            Sunday_Afternoon.CheckedChanged += CheckTurno_CheckedChanged;
             // 
-            // check_domM
+            // Sunday_Morning
             // 
-            check_domM.AutoSize = true;
-            check_domM.Location = new Point(32, 65);
-            check_domM.Name = "check_domM";
-            check_domM.Size = new Size(63, 19);
-            check_domM.TabIndex = 17;
-            check_domM.Text = "Manhã";
-            check_domM.UseVisualStyleBackColor = true;
-            check_domM.CheckedChanged += check_domM_CheckedChanged;
+            Sunday_Morning.AutoSize = true;
+            Sunday_Morning.Location = new Point(32, 65);
+            Sunday_Morning.Name = "Sunday_Morning";
+            Sunday_Morning.Size = new Size(63, 19);
+            Sunday_Morning.TabIndex = 17;
+            Sunday_Morning.Text = "Manhã";
+            Sunday_Morning.UseVisualStyleBackColor = true;
+            Sunday_Morning.CheckedChanged += CheckTurno_CheckedChanged;
             // 
             // panel_sab
             // 
             panel_sab.BorderStyle = BorderStyle.FixedSingle;
-            panel_sab.Controls.Add(check_sabN);
-            panel_sab.Controls.Add(check_sabT);
-            panel_sab.Controls.Add(check_sabM);
+            panel_sab.Controls.Add(Saturday_Night);
+            panel_sab.Controls.Add(Saturday_Afternoon);
+            panel_sab.Controls.Add(Saturday_Morning);
             panel_sab.Controls.Add(label1);
-            panel_sab.Location = new Point(11, 22);
+            panel_sab.Location = new Point(3, 12);
             panel_sab.Name = "panel_sab";
             panel_sab.Size = new Size(124, 157);
             panel_sab.TabIndex = 14;
             // 
-            // check_sabN
+            // Saturday_Night
             // 
-            check_sabN.AutoSize = true;
-            check_sabN.Location = new Point(34, 99);
-            check_sabN.Name = "check_sabN";
-            check_sabN.Size = new Size(55, 19);
-            check_sabN.TabIndex = 16;
-            check_sabN.Text = "Noite";
-            check_sabN.UseVisualStyleBackColor = true;
-            check_sabN.CheckedChanged += check_sabN_CheckedChanged;
+            Saturday_Night.AutoSize = true;
+            Saturday_Night.Location = new Point(34, 99);
+            Saturday_Night.Name = "Saturday_Night";
+            Saturday_Night.Size = new Size(55, 19);
+            Saturday_Night.TabIndex = 16;
+            Saturday_Night.Text = "Noite";
+            Saturday_Night.UseVisualStyleBackColor = true;
+            Saturday_Night.CheckedChanged += CheckTurno_CheckedChanged;
             // 
-            // check_sabT
+            // Saturday_Afternoon
             // 
-            check_sabT.AutoSize = true;
-            check_sabT.Location = new Point(34, 82);
-            check_sabT.Name = "check_sabT";
-            check_sabT.Size = new Size(54, 19);
-            check_sabT.TabIndex = 15;
-            check_sabT.Text = "Tarde";
-            check_sabT.UseVisualStyleBackColor = true;
-            check_sabT.CheckedChanged += check_sabT_CheckedChanged;
+            Saturday_Afternoon.AutoSize = true;
+            Saturday_Afternoon.Location = new Point(34, 82);
+            Saturday_Afternoon.Name = "Saturday_Afternoon";
+            Saturday_Afternoon.Size = new Size(55, 19);
+            Saturday_Afternoon.TabIndex = 15;
+            Saturday_Afternoon.Text = "Tarde";
+            Saturday_Afternoon.UseVisualStyleBackColor = true;
+            Saturday_Afternoon.CheckedChanged += CheckTurno_CheckedChanged;
             // 
-            // check_sabM
+            // Saturday_Morning
             // 
-            check_sabM.AutoSize = true;
-            check_sabM.Location = new Point(34, 65);
-            check_sabM.Name = "check_sabM";
-            check_sabM.Size = new Size(63, 19);
-            check_sabM.TabIndex = 14;
-            check_sabM.Text = "Manhã";
-            check_sabM.UseVisualStyleBackColor = true;
-            check_sabM.CheckedChanged += check_sabM_CheckedChanged;
+            Saturday_Morning.AutoSize = true;
+            Saturday_Morning.Location = new Point(34, 65);
+            Saturday_Morning.Name = "Saturday_Morning";
+            Saturday_Morning.Size = new Size(63, 19);
+            Saturday_Morning.TabIndex = 14;
+            Saturday_Morning.Text = "Manhã";
+            Saturday_Morning.UseVisualStyleBackColor = true;
+            Saturday_Morning.CheckedChanged += CheckTurno_CheckedChanged;
             // 
             // label1
             // 
@@ -236,26 +237,34 @@
             check_tds.UseVisualStyleBackColor = true;
             check_tds.CheckedChanged += check_tds_CheckedChanged;
             // 
+            // panel_days
+            // 
+            panel_days.Controls.Add(panel_sab);
+            panel_days.Controls.Add(panel_dom);
+            panel_days.Location = new Point(12, 22);
+            panel_days.Name = "panel_days";
+            panel_days.Size = new Size(276, 176);
+            panel_days.TabIndex = 20;
+            // 
             // form_fimDsmn
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(611, 290);
+            Controls.Add(panel_days);
             Controls.Add(panel3);
             Controls.Add(ou);
-            Controls.Add(panel_sab);
-            Controls.Add(panel_dom);
             Controls.Add(airButton1);
             Name = "form_fimDsmn";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Form2";
-            Load += Form2_Load;
             panel_dom.ResumeLayout(false);
             panel_dom.PerformLayout();
             panel_sab.ResumeLayout(false);
             panel_sab.PerformLayout();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
+            panel_days.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -271,12 +280,13 @@
         private Label label4;
         private Label label5;
         private Panel panel3;
-        private CheckBox check_sabN;
-        private CheckBox check_sabT;
-        private CheckBox check_sabM;
-        private CheckBox check_domN;
-        private CheckBox check_domT;
-        private CheckBox check_domM;
+        private CheckBox Saturday_Night;
+        private CheckBox Saturday_Afternoon;
+        private CheckBox Saturday_Morning;
+        private CheckBox Sunday_Night;
+        private CheckBox Sunday_Afternoon;
+        private CheckBox Sunday_Morning;
         private CheckBox check_tds;
+        private Panel panel_days;
     }
 }

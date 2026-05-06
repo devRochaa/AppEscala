@@ -1,6 +1,6 @@
 ﻿namespace AppEscala
 {
-    partial class UserControl2
+    partial class AdicionarAcolitoView
     {
         /// <summary> 
         /// Variável de designer necessária.
@@ -137,7 +137,7 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
-            // UserControl2
+            // AdicionarAcolitoView
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -151,7 +151,7 @@
             Controls.Add(label2);
             Controls.Add(txtNome);
             Controls.Add(label1);
-            Name = "UserControl2";
+            Name = "AdicionarAcolitoView";
             Size = new Size(746, 472);
             Load += UserControl2_Load;
             ResumeLayout(false);

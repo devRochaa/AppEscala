@@ -9,10 +9,16 @@ namespace AppEscala
     public partial class userAcolitos : UserControl
     {
         
-        private Database db;
+        private readonly Database db = new();
+        private readonly Button btn_adicionar = new();
+
+        public event EventHandler? AdicionarAcolitoRequested;
+
         public userAcolitos()
         {
+            db.Initialize();
             InitializeComponent();
+            ConfigurarInterface();
 
             dgv_acolitos.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
         }
@@ -20,8 +26,7 @@ namespace AppEscala
 
         private void acolitos_Load(object sender, EventArgs e)
         {
-            db = new Database();
-            db.Initialize();
+            AjustarLayout();
             Carregar_Acolitos();
 
         }
@@ -143,7 +148,6 @@ namespace AppEscala
                 i++;
             }
         }
-        int id_acolito_selecionado = 0;
         int? selecionado = null;
 
 
@@ -166,13 +170,17 @@ namespace AppEscala
         }
         private void ChamarEdicao()
         {
+            if (selecionado is null)
+            {
+                MessageBox.Show("Primeiramente selecione um acólito.");
+                return;
+            }
             
             form_editarAcolito form_edit = new form_editarAcolito();
             form_edit.id_acolito = selecionado;
             if (form_edit.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
             {
-                bool editado = form_edit.atualizou;
-                if (editado) { Carregar_Acolitos(); }
+                Carregar_Acolitos();
                 // Obtém o dado da propriedade
 
                 //string mensagem = string.Join(", ", seg);
@@ -208,6 +216,49 @@ namespace AppEscala
                 MessageBox.Show("Primeiramente Selecione um acólito."); return;
             }
             ChamarEdicao();
+        }
+
+        private void ConfigurarInterface()
+        {
+            Controls.Add(btn_adicionar);
+            UiTheme.Apply(this);
+            UiTheme.StyleTitle(label1);
+            label1.Text = "Acólitos";
+            label2.Text = "Pesquisar";
+            txtPesquisa.PlaceholderText = "Digite o nome do acólito";
+            btn_buscar.Text = "Buscar";
+            btn_adicionar.Text = "Adicionar acólito";
+            btn_adicionar.Click += (_, _) => AdicionarAcolitoRequested?.Invoke(this, EventArgs.Empty);
+            btn_edit.Text = "Editar selecionado";
+            txt_aviso.ForeColor = UiTheme.MutedText;
+
+            dgv_acolitos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txtPesquisa.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            btn_buscar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btn_adicionar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btn_edit.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            Resize += (_, _) => AjustarLayout();
+        }
+
+        private void AjustarLayout()
+        {
+            const int margin = 28;
+            int width = Math.Max(320, Width - margin * 2);
+
+            label1.Location = new Point(margin, 24);
+            label2.Location = new Point(margin, 76);
+            txtPesquisa.Location = new Point(margin + 82, 71);
+            txtPesquisa.Width = Math.Max(180, width - 328);
+            btn_buscar.Location = new Point(margin + width - 234, 70);
+            btn_buscar.Size = new Size(88, 32);
+            btn_adicionar.Location = new Point(margin + width - 136, 70);
+            btn_adicionar.Size = new Size(136, 32);
+
+            dgv_acolitos.Location = new Point(margin, 120);
+            dgv_acolitos.Size = new Size(width, Math.Max(180, Height - 188));
+            btn_edit.Location = new Point(margin + width - 160, Height - 52);
+            btn_edit.Size = new Size(160, 36);
+            txt_aviso.Location = new Point(margin, 130);
         }
     }
 }

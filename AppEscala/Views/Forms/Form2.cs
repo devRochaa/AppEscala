@@ -1,25 +1,28 @@
-﻿namespace AppEscala
+using AppEscala.Models.DTOs;
+using AppEscala.Models.Enums;
+using AppEscala.Helpers;
+
+namespace AppEscala
 {
     public partial class form_fimDsmn : Form
     {
-        public string Dado { get; set; }
+        private Dictionary<DayOfWeek, TurnosDisponiveisDto> DiasDisponiveis = new();
         public form_fimDsmn()
         {
             InitializeComponent();
+            UiTheme.Apply(this);
+            WireTurnoHandlers(panel_days);
+            foreach (var day in Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>())
+            {
+                if (day != DayOfWeek.Saturday && day != DayOfWeek.Sunday)
+                    continue;
+                DiasDisponiveis[day] = new TurnosDisponiveisDto();
+            }
         }
 
-        public int[] sab = new int[3];
-        public int[] dom = new int[3];
-        public int tds; 
-        private void Form2_Load(object sender, EventArgs e)
-        {
+        public Dictionary<DayOfWeek, TurnosDisponiveisDto> GetDiasDisponiveis() =>
+            DiasDisponiveis;
 
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void airButton1_Click(object sender, EventArgs e)
         {
@@ -28,76 +31,70 @@
             this.Close();
         }
 
-        private void check_sabM_CheckedChanged(object sender, EventArgs e)
+        private void CheckTurno_CheckedChanged(object? sender, EventArgs e)
         {
-            sab[0] = 0;
-            if (check_sabM.Checked)
-            {
-                sab[0] = 1;
-            }
-        }
+            if (sender is not CheckBox checkBox)
+                return;
 
+            var rawValue = checkBox.Tag?.ToString() ?? checkBox.Name;
+            var parts = rawValue.Split('_');
 
-        private void check_sabT_CheckedChanged(object sender, EventArgs e)
-        {
-            sab[1] = 0;
-            if (check_sabT.Checked)
-            {
-                sab[1] = 1;
-            }
-        }
+            if (parts.Length != 2)
+                return;
 
-        private void check_sabN_CheckedChanged(object sender, EventArgs e)
-        {
-            sab[2] = 0;
-            if (check_sabN.Checked)
-            {
-                sab[2] = 1;
-            }
-        }
-        private void check_domM_CheckedChanged(object sender, EventArgs e)
-        {
-            dom[0] = 0;
-            if (check_domM.Checked)
-            {
-                dom[0] = 1;
-            }
-        }
+            if (!Enum.TryParse(parts[0], out DayOfWeek day))
+                return;
 
-        private void check_domT_CheckedChanged(object sender, EventArgs e)
-        {
-            dom[1] = 0;
-            if (check_domT.Checked)
-            {
-                dom[1] = 1;
-            }
-        }
+            if (!Enum.TryParse(parts[1], out Turno turno))
+                return;
 
-        private void check_domN_CheckedChanged(object sender, EventArgs e)
-        {
-            dom[2] = 0;
-            if (check_domN.Checked)
+            var diaDto = DiasDisponiveis.FirstOrDefault(d => d.Key == day);
+
+            if (diaDto.Value == null)
+                return;
+
+            switch (turno)
             {
-                dom[2] = 1;
+                case Turno.Morning:
+                    diaDto.Value.Morning = checkBox.Checked;
+                    break;
+                case Turno.Afternoon:
+                    diaDto.Value.Afternoon = checkBox.Checked;
+                    break;
+                case Turno.Night:
+                    diaDto.Value.Night = checkBox.Checked;
+                    break;
             }
         }
 
         private void check_tds_CheckedChanged(object sender, EventArgs e)
         {
             bool isChecked = check_tds.Checked;
-            foreach (Control ctrl in panel_sab.Controls)
+
+            foreach (var checkBox in GetTurnoCheckBoxes(panel_days))
             {
-                if (ctrl is CheckBox checkBox)
-                {
-                    checkBox.Checked = isChecked;
-                }
+                checkBox.Checked = isChecked;
             }
-            foreach (Control ctrl in panel_dom.Controls)
+        }
+
+        private void WireTurnoHandlers(Control parent)
+        {
+            foreach (var checkBox in GetTurnoCheckBoxes(parent))
             {
-                if (ctrl is CheckBox checkBox)
-                {
-                    checkBox.Checked = isChecked;
-                }
+                checkBox.CheckedChanged -= CheckTurno_CheckedChanged;
+                checkBox.CheckedChanged += CheckTurno_CheckedChanged;
+            }
+        }
+
+        private static IEnumerable<CheckBox> GetTurnoCheckBoxes(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is CheckBox checkBox)
+                    yield return checkBox;
+
+                foreach (var child in GetTurnoCheckBoxes(control))
+                    yield return child;
             }
         }
     }
