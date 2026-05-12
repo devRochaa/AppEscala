@@ -41,9 +41,11 @@
             coluna4 = new DataGridViewTextBoxColumn();
             Descricao = new DataGridViewTextBoxColumn();
             Qnt_Acolitos = new DataGridViewTextBoxColumn();
+            Ativo = new DataGridViewCheckBoxColumn();
             btn_recarregarIgrejas = new Button();
             btn_editar = new Button();
             btn_excluir = new Button();
+            chk_mostrarInativas = new CheckBox();
             txt_desc = new RichTextBox();
             label2 = new Label();
             label3 = new Label();
@@ -119,14 +121,15 @@
             dgv_missas.AllowUserToDeleteRows = false;
             dgv_missas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv_missas.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgv_missas.Columns.AddRange(new DataGridViewColumn[] { coluna1, coluna2, coluna3, coluna4, Descricao, Qnt_Acolitos });
+            dgv_missas.Columns.AddRange(new DataGridViewColumn[] { coluna1, coluna2, coluna3, coluna4, Descricao, Qnt_Acolitos, Ativo });
             dgv_missas.Location = new Point(431, 52);
             dgv_missas.Name = "dgv_missas";
-            dgv_missas.ReadOnly = true;
             dgv_missas.Size = new Size(288, 397);
             dgv_missas.TabIndex = 9;
             dgv_missas.CellClick += dgv_missas_CellClick;
             dgv_missas.CellContentClick += dgv_missas_CellContentClick;
+            dgv_missas.CellValueChanged += dgv_missas_CellValueChanged;
+            dgv_missas.CurrentCellDirtyStateChanged += dgv_missas_CurrentCellDirtyStateChanged;
             dgv_missas.CellMouseDoubleClick += dgv_missas_CellMouseDoubleClick;
             // 
             // coluna1
@@ -175,6 +178,13 @@
             Qnt_Acolitos.ReadOnly = true;
             Qnt_Acolitos.Width = 52;
             // 
+            // Ativo
+            // 
+            Ativo.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            Ativo.HeaderText = "Ativo";
+            Ativo.Name = "Ativo";
+            Ativo.Width = 40;
+            // 
             // btn_recarregarIgrejas
             // 
             btn_recarregarIgrejas.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -208,6 +218,17 @@
             btn_excluir.Text = "Excluir";
             btn_excluir.UseVisualStyleBackColor = true;
             btn_excluir.Click += btn_excluir_Click;
+            // 
+            // chk_mostrarInativas
+            // 
+            chk_mostrarInativas.AutoSize = true;
+            chk_mostrarInativas.Location = new Point(431, 25);
+            chk_mostrarInativas.Name = "chk_mostrarInativas";
+            chk_mostrarInativas.Size = new Size(141, 19);
+            chk_mostrarInativas.TabIndex = 19;
+            chk_mostrarInativas.Text = "Mostrar inativas";
+            chk_mostrarInativas.UseVisualStyleBackColor = true;
+            chk_mostrarInativas.CheckedChanged += chk_mostrarInativas_CheckedChanged;
             // 
             // txt_desc
             // 
@@ -261,6 +282,7 @@
             Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(txt_desc);
+            Controls.Add(chk_mostrarInativas);
             Controls.Add(btn_excluir);
             Controls.Add(btn_editar);
             Controls.Add(btn_recarregarIgrejas);
@@ -291,6 +313,7 @@
         private Button btn_recarregarIgrejas;
         private Button btn_editar;
         private Button btn_excluir;
+        private CheckBox chk_mostrarInativas;
         private RichTextBox txt_desc;
         private Label label2;
         private Label label3;
@@ -303,5 +326,6 @@
         private DataGridViewTextBoxColumn coluna4;
         private DataGridViewTextBoxColumn Descricao;
         private DataGridViewTextBoxColumn Qnt_Acolitos;
+        private DataGridViewCheckBoxColumn Ativo;
     }
 }

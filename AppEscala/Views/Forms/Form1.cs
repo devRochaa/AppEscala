@@ -31,17 +31,23 @@ namespace AppEscala
         private const int SidebarExpandedWidth = 190;
         private const int SidebarCollapsedWidth = 52;
         private const int SidebarItemHeight = 52;
-        private const int SidebarAnimationStep = 20;
-        private bool sidebarCollapsing;
 
         public form_menu(AppDbContext db)
         {
             InitializeComponent();
+            AplicarIconeAplicativo();
             db.Database.EnsureCreated();
             database.Initialize();
             ModernizarInterface();
             userAcolitos.AdicionarAcolitoRequested += (_, _) => ExibirTela(userControl21, subMenu1, "NOVO ACOLITO");
             userControl21.VoltarRequested += (_, _) => ExibirTela(userAcolitos, subMenu1, "ACOLITOS");
+        }
+
+        private void AplicarIconeAplicativo()
+        {
+            Icon? appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (appIcon is not null)
+                Icon = appIcon;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -204,32 +210,29 @@ namespace AppEscala
 
         }
         bool sidebarExpand = true;
-        private void timerSideBarTransition_Tick(object sender, EventArgs e)
+        private void SidebarTransitionDesativada_Tick(object sender, EventArgs e)
         {
             if (sidebarExpand)
             {
                 //velocidade em que a barra horizontal vai fechar
-                sidebar.Width = Math.Max(SidebarCollapsedWidth, sidebar.Width - SidebarAnimationStep);
+                sidebar.Width = SidebarCollapsedWidth;
                 //regula o quanto que o sidebar(barra lateral preta) vai fechar 
                 if (sidebar.Width <= SidebarCollapsedWidth)
                 {
 
-                    timerSideBarTransition.Stop();
                     sidebarExpand = false;
                     sidebar.Width = SidebarCollapsedWidth;
-                    sidebarCollapsing = false;
                     //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
                 }
             }
             else
             {
                 //velocidade em que a barra horizontal vai abrir
-                sidebar.Width = Math.Min(SidebarExpandedWidth, sidebar.Width + SidebarAnimationStep);
+                sidebar.Width = SidebarExpandedWidth;
                 //regula o quanto que o sidebar(barra lateral preta) vai abrir 
                 if (sidebar.Width >= SidebarExpandedWidth)
                 {
                     sidebarExpand = true;
-                    timerSideBarTransition.Stop();
                     sidebar.Width = SidebarExpandedWidth;
                     //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
                 }
@@ -240,12 +243,9 @@ namespace AppEscala
         //
         private void btnHam_Click(object sender, EventArgs e)
         {
-            if (timerSideBarTransition.Enabled)
-                return;
-
-            sidebarCollapsing = sidebarExpand;
-            AplicarEstadoSidebar();
-            timerSideBarTransition.Start();
+            sidebarExpand = !sidebarExpand;
+            sidebar.Width = sidebarExpand ? SidebarExpandedWidth : SidebarCollapsedWidth;
+            AjustarLayout();
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
@@ -321,8 +321,6 @@ namespace AppEscala
             btnHam.Size = new Size(32, 32);
             btnHam.Location = new System.Drawing.Point(16, 12);
             btnHam.Cursor = Cursors.Hand;
-            timerSideBarTransition.Interval = 10;
-
             sidebar.BackColor = UiTheme.Sidebar;
             sidebar.Padding = new Padding(0, 18, 0, 0);
             sidebar.Width = SidebarExpandedWidth;
@@ -381,6 +379,7 @@ namespace AppEscala
         {
             panel1.Width = ClientSize.Width;
             nightControlBox1.Location = new System.Drawing.Point(ClientSize.Width - nightControlBox1.Width - 8, 10);
+            label1.Location = new System.Drawing.Point(60, 18);
 
             sidebar.Location = new System.Drawing.Point(0, panel1.Height);
             sidebar.Height = ClientSize.Height - panel1.Height;
@@ -444,7 +443,7 @@ namespace AppEscala
 
         private void AplicarEstadoSidebar()
         {
-            bool fechado = sidebarCollapsing || !sidebarExpand || sidebar.Width <= SidebarCollapsedWidth + 8;
+            bool fechado = !sidebarExpand || sidebar.Width <= SidebarCollapsedWidth + 8;
 
             foreach (var item in sidebarButtonTexts)
             {

@@ -36,8 +36,8 @@ namespace AppEscala
 
             foreach (var missa in listaMissas)
             {
-                if (DateTime.Now > missa.Data)
-                    db.DeleteMissaNova(missa.idMissa);
+                if (missa.Ativo && DateTime.Now > missa.Data)
+                    db.SetMissaAtiva(missa.idMissa, false);
             }
         }
 
@@ -45,6 +45,8 @@ namespace AppEscala
         {
             ApagarMissasAntigas();
             var listaMissas = db.SelectAllMissasNova();
+            if (!chk_mostrarInativas.Checked)
+                listaMissas = listaMissas.Where(missa => missa.Ativo).ToList();
 
             dgv_missas.Rows.Clear();
             foreach (var missa in listaMissas)
@@ -56,6 +58,7 @@ namespace AppEscala
                 dgv_missas.Rows[rowIndex].Cells[3].Value = missa.idMissa;
                 dgv_missas.Rows[rowIndex].Cells[4].Value = missa.Descricao;
                 dgv_missas.Rows[rowIndex].Cells[5].Value = missa.Qnt_acolitos;
+            dgv_missas.Rows[rowIndex].Cells[6].Value = missa.Ativo;
             }
         }
 
@@ -144,13 +147,13 @@ namespace AppEscala
                 return;
             }
 
-            DialogResult result = MessageBox.Show($"Tem certeza que deseja apagar a missa do dia {data_selecionada}", "Atenção",
+            DialogResult result = MessageBox.Show($"Tem certeza que deseja inativar a missa do dia {data_selecionada}?", "Atenção",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.No)
                 return;
 
-            db.DeleteMissaNova(id_selecionado.Value);
+            db.SetMissaAtiva(id_selecionado.Value, false);
             id_selecionado = null;
             data_selecionada = string.Empty;
             carregar_missas();
@@ -167,6 +170,35 @@ namespace AppEscala
 
             id_selecionado = Convert.ToInt32(selectedRow.Cells[3].Value);
             data_selecionada = selectedRow.Cells[0].Value?.ToString() ?? string.Empty;
+        }
+
+        private void dgv_missas_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
+        {
+            if (dgv_missas.IsCurrentCellDirty)
+                dgv_missas.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+
+        private void dgv_missas_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex != 6)
+                return;
+
+            var row = dgv_missas.Rows[e.RowIndex];
+            if (row.Cells[3].Value is null)
+                return;
+
+            int idMissa = Convert.ToInt32(row.Cells[3].Value);
+            bool ativo = row.Cells[6].Value is bool value && value;
+            db.SetMissaAtiva(idMissa, ativo);
+            if (!ativo && !chk_mostrarInativas.Checked)
+                carregar_missas();
+        }
+
+        private void chk_mostrarInativas_CheckedChanged(object sender, EventArgs e)
+        {
+            id_selecionado = null;
+            data_selecionada = string.Empty;
+            carregar_missas();
         }
 
         private void btn_editar_Click(object sender, EventArgs e)
@@ -216,15 +248,33 @@ namespace AppEscala
             btn_AddIgreja.Text = "+";
             btn_recarregarIgrejas.Text = "Atualizar";
             btnAdd.Text = "Adicionar missa";
+            btn_excluir.Text = "Inativar";
+            chk_mostrarInativas.Text = "Mostrar inativas";
+            chk_mostrarInativas.Checked = false;
+            ConfigurarBotaoInativar();
 
             cmb_igrejas.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             dateTimePicker1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             listBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             btnAdd.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             dgv_missas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgv_missas.ReadOnly = false;
+            foreach (DataGridViewColumn column in dgv_missas.Columns)
+                column.ReadOnly = column.Name != "Ativo";
             btn_editar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btn_excluir.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            chk_mostrarInativas.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             Resize += (_, _) => AjustarLayout();
+        }
+
+        private void ConfigurarBotaoInativar()
+        {
+            btn_excluir.BackColor = Color.FromArgb(220, 38, 38);
+            btn_excluir.ForeColor = Color.White;
+            btn_excluir.FlatStyle = FlatStyle.Flat;
+            btn_excluir.FlatAppearance.BorderColor = Color.FromArgb(185, 28, 28);
+            btn_excluir.FlatAppearance.BorderSize = 1;
+            btn_excluir.UseVisualStyleBackColor = false;
         }
 
         private void AjustarLayout()
@@ -259,6 +309,8 @@ namespace AppEscala
 
             btnAdd.Location = new Point(margin, Height - 58);
             btnAdd.Size = new Size(leftWidth, 38);
+
+            chk_mostrarInativas.Location = new Point(rightX, 30);
 
             btn_excluir.Location = new Point(rightX + rightWidth - 176, 24);
             btn_excluir.Size = new Size(82, 32);

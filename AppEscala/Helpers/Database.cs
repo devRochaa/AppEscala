@@ -5,12 +5,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AppEscala.Helpers;
 
-public sealed class Database
+public sealed class Database : IDisposable
 {
+    private static readonly object InstancesLock = new();
+    private static readonly List<WeakReference<Database>> Instances = [];
     private AppDbContext? db;
+    private bool disposed;
+
+    public Database()
+    {
+        lock (InstancesLock)
+            Instances.Add(new WeakReference<Database>(this));
+    }
 
     public void Initialize()
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        db?.Dispose();
         db = new AppDbContext();
         db.Database.EnsureCreated();
         EnsureSchema();
@@ -63,20 +74,51 @@ public sealed class Database
                 IgrejaId INTEGER NOT NULL,
                 Data TEXT NOT NULL,
                 Descricao TEXT NOT NULL,
-                QntAcolitos INTEGER NOT NULL
+                QntAcolitos INTEGER NOT NULL,
+                Ativo INTEGER NOT NULL DEFAULT 1
             );
             """);
+        EnsureColumn("Missas", "Ativo", "INTEGER NOT NULL DEFAULT 1");
     }
 
     private AppDbContext Context
     {
         get
         {
+            ObjectDisposedException.ThrowIf(disposed, this);
+
             if (db is null)
                 Initialize();
 
             return db!;
         }
+    }
+
+    public static void DisposeAll()
+    {
+        lock (InstancesLock)
+        {
+            foreach (var reference in Instances.ToList())
+            {
+                if (reference.TryGetTarget(out var database))
+                    database.CloseContext();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+            return;
+
+        CloseContext();
+        disposed = true;
+    }
+
+    private void CloseContext()
+    {
+        db?.Dispose();
+        db = null;
     }
 
     public int InsertAcolito(AcolitoEntity acolito)
@@ -409,15 +451,35 @@ public sealed class Database
         registro.Data = dadosMissa.Data;
         registro.Descricao = dadosMissa.Descricao;
         registro.QntAcolitos = dadosMissa.QntAcolitos;
+        registro.Ativo = dadosMissa.Ativo;
         Context.SaveChanges();
     }
 
     public void DeleteMissaNova(int idMissa)
+        => SetMissaAtiva(idMissa, false);
+
+    public void SetMissaAtiva(int idMissa, bool ativo)
     {
         var registro = Context.Set<MissaEntity>().Find(idMissa)
             ?? throw new InvalidOperationException("Missa nao encontrada.");
 
-        Context.Set<MissaEntity>().Remove(registro);
+        registro.Ativo = ativo;
+        Context.SaveChanges();
+    }
+
+    public void InativarMissas(IEnumerable<int> missaIds)
+    {
+        var ids = missaIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return;
+
+        var missas = Context.Set<MissaEntity>()
+            .Where(m => ids.Contains(m.Id))
+            .ToList();
+
+        foreach (var missa in missas)
+            missa.Ativo = false;
+
         Context.SaveChanges();
     }
 
@@ -433,8 +495,14 @@ public sealed class Database
                 idMissa = m.Id,
                 Descricao = m.Descricao,
                 Qnt_acolitos = m.QntAcolitos,
-                Id_igreja = m.IgrejaId
+                Id_igreja = m.IgrejaId,
+                Ativo = m.Ativo
             })
+            .ToList();
+
+    public List<MissaNovaDadosCompletos> SelectMissasAtivasNova()
+        => SelectAllMissasNova()
+            .Where(m => m.Ativo)
             .ToList();
 
     public List<AcolitoDisponibilidade> SelecionarAcolitoPorDias(int[] diasNum)
@@ -692,6 +760,7 @@ public sealed class Database
         public string Descricao { get; set; } = string.Empty;
         public int Qnt_acolitos { get; set; }
         public int Id_igreja { get; set; }
+        public bool Ativo { get; set; }
     }
 
     public sealed record DiaSemanaItem(int Id, string Nome);

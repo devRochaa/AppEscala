@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual do App Escala</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --border: #dbe3ee;
+      --danger: #dc2626;
+      --ok: #15803d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 40px));
+      margin: 28px auto 56px;
+    }
+
+    h1, h2, h3 { margin: 0; line-height: 1.2; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 24px; margin-bottom: 12px; }
+    h3 { font-size: 18px; margin: 22px 0 8px; }
+    p { margin: 8px 0; }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 760px;
+    }
+
+    .intro {
+      margin-bottom: 20px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .tile {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .tile strong { display: block; margin-bottom: 4px; }
+    .muted { color: var(--muted); }
+
+    ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    li { margin: 4px 0; }
+
+    .print {
+      margin: 14px 0 18px;
+      border: 1px dashed #94a3b8;
+      border-radius: 8px;
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, .06), rgba(220, 38, 38, .04)),
+        #f8fafc;
+      color: var(--muted);
+      text-align: center;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .print img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .filename {
+      font-family: Consolas, "Courier New", monospace;
+      background: #eef2ff;
+      color: #1d4ed8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .note {
+      border-left: 4px solid var(--primary);
+      background: #eff6ff;
+      padding: 12px 14px;
+      margin: 12px 0;
+      border-radius: 6px;
+    }
+
+    .warn {
+      border-left-color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .ok {
+      border-left-color: var(--ok);
+      background: #f0fdf4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th { background: #f1f5f9; }
+
+    footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 24px;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    section, h3 {
+      scroll-margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="intro">
+    <h1>Manual do App Escala</h1>
+    <p class="subtitle">Guia simples para cadastrar acólitos, missas, gerar escalas, oficializar serviços e fazer backup dos dados.</p>
+    </div>
+
+    <section class="section" id="resumo">
+      <h2>Resumo das Regras</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Área</th>
+            <th>Regra</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="#acolitos">Acólitos</a></td>
+            <td>Cadastre nome, disponibilidade e restrições corretamente; esses dados decidem quem pode entrar em cada missa.</td>
+          </tr>
+          <tr>
+            <td><a href="#padrinhos">Padrinhos</a></td>
+            <td>Use para acólitos que ainda precisam servir acompanhados; o sistema tenta escalar padrinho e afilhado juntos e bloqueia auto-padrinho ou ciclos.</td>
+          </tr>
+          <tr>
+            <td><a href="#indisponibilidade">Indisponibilidade</a></td>
+            <td>Datas indisponíveis têm prioridade: o acólito não será escolhido naquela data, mesmo que sirva no dia da semana.</td>
+          </tr>
+          <tr>
+            <td><a href="#igrejas">Igrejas</a></td>
+            <td>A igreja precisa estar cadastrada antes da missa, pois ela aparece na escala e nos arquivos gerados.</td>
+          </tr>
+          <tr>
+            <td><a href="#missas">Missas</a></td>
+            <td>Somente missas ativas entram na geração; quantidade de acólitos, data e horário controlam a seleção.</td>
+          </tr>
+          <tr>
+            <td><a href="#missas">Missas inativas</a></td>
+            <td>Inativar tira a missa das próximas escalas sem apagar o histórico; o checkbox Ativo permite reativar quando necessário.</td>
+          </tr>
+          <tr>
+            <td><a href="#gerar-escala">Gerar escala</a></td>
+            <td>O sistema cruza missas ativas, disponibilidade, indisponibilidades, padrinhos e repetição de acólitos para montar a escala.</td>
+          </tr>
+          <tr>
+            <td><a href="#gerar-escala">Alertas</a></td>
+            <td>Se faltar acólito em alguma missa, aparece aviso e exclamação vermelha; revise antes de oficializar.</td>
+          </tr>
+          <tr>
+            <td><a href="#editar-escala">Edição manual</a></td>
+            <td>Alterar nomes manualmente pode bloquear a oficialização, porque o sistema perde a certeza de quais acólitos devem receber a contagem.</td>
+          </tr>
+          <tr>
+            <td><a href="#gerar-pdf-json">PDF e JSON</a></td>
+            <td>PDF é para impressão/compartilhamento; JSON é o arquivo mais seguro para importar a escala depois mantendo os vínculos.</td>
+          </tr>
+          <tr>
+            <td><a href="#importar-escala">Importar escala</a></td>
+            <td>Prefira JSON; ao importar PDF, nomes não encontrados no cadastro podem impedir a oficialização.</td>
+          </tr>
+          <tr>
+            <td><a href="#oficializar-escala">Oficialização</a></td>
+            <td>Depois de oficializar, o sistema soma missas servidas dos acólitos e inativa as missas daquela escala.</td>
+          </tr>
+          <tr>
+            <td><a href="#configuracoes-backup">Backup</a></td>
+            <td>Exportar guarda uma cópia dos dados; importar substitui os dados atuais e reinicia o sistema.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section" id="visao-geral">
+      <h2>Visão Geral</h2>
+      <div class="print">
+        <img src="manual-assets/tela-inicial.png" alt="Tela inicial">
+      </div>
+
+      <div class="grid">
+        <div class="tile">
+          <strong>Acólitos</strong>
+          Cadastro, edição, disponibilidade e dias em que não pode servir.
+        </div>
+        <div class="tile">
+          <strong>Missas</strong>
+          Cadastro de igreja, data, horário, descrição, quantidade e status ativo.
+        </div>
+        <div class="tile">
+          <strong>Escalas</strong>
+          Geração automática, edição manual, exportação e oficialização.
+        </div>
+        <div class="tile">
+          <strong>Configurações</strong>
+          Backup, importação e opção de gerar JSON junto com o PDF.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="acolitos">
+      <h2>Acólitos</h2>
+      <div class="print">
+        <img src="manual-assets/acolitos-listagem.png" alt="Listagem de acólitos">
+      </div>
+
+      <h3>Para que serve</h3>
+      <ul>
+        <li>Consultar todos os acólitos cadastrados.</li>
+        <li>Ver os dias e turnos em que cada acólito pode servir.</li>
+        <li>Pesquisar acólitos pelo nome.</li>
+        <li>Abrir a edição do acólito selecionado.</li>
+      </ul>
+
+      <h3>Regras principais</h3>
+      <ul>
+        <li>O nome do acólito não pode ficar vazio.</li>
+        <li>Não pode existir outro acólito com o mesmo nome.</li>
+        <li>Um acólito pode ter um padrinho para acompanhar suas primeiras missas.</li>
+      </ul>
+
+      <h3 id="padrinhos">Padrinhos</h3>
+      <ul>
+        <li>Use o padrinho quando um acólito ainda precisa servir acompanhado antes de ficar independente.</li>
+        <li>Informe quantas missas acompanhadas são necessárias no cadastro ou na edição do acólito.</li>
+        <li>Ao gerar a escala, o sistema tenta colocar o acólito junto com o padrinho quando os dois estão disponíveis.</li>
+        <li>O acólito não pode ser padrinho dele mesmo.</li>
+        <li>O sistema bloqueia ciclos, por exemplo: João é padrinho de Pedro e Pedro é padrinho de João.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="novo-acolito">
+      <h2>Novo Acólito</h2>
+      <div class="print">
+        <img src="manual-assets/acolito-cadastro.png" alt="Cadastro de acólito">
+      </div>
+
+      <h3>Como cadastrar</h3>
+      <ul>
+        <li>Informe o nome.</li>
+        <li>Selecione um padrinho, se houver.</li>
+        <li>Informe quantas missas acompanhadas são necessárias.</li>
+        <li>Marque os dias e turnos em que o acólito pode servir.</li>
+        <li id="indisponibilidade">Adicione datas específicas em que ele não pode servir, se necessário.</li>
+      </ul>
+
+      <div class="note">
+        Datas indisponíveis são usadas para impedir que o acólito seja escalado naquele dia.
+      </div>
+    </section>
+
+    <section class="section" id="editar-acolito">
+      <h2>Editar Acólito</h2>
+      <div class="print">
+        <img src="manual-assets/acolito-edicao.png" alt="Edição de acólito">
+      </div>
+
+      <h3>O que pode alterar</h3>
+      <ul>
+        <li>Nome.</li>
+        <li>Padrinho.</li>
+        <li>Quantidade de missas acompanhadas necessárias.</li>
+        <li>Dias e turnos disponíveis.</li>
+        <li>Datas em que não pode servir.</li>
+      </ul>
+
+      <h3>Acompanhamento</h3>
+      <ul>
+        <li>Se o acólito tem padrinho e ainda não completou as missas necessárias, ele precisa de acompanhamento.</li>
+        <li>Ao gerar a escala, o sistema tenta colocar o acólito junto com o padrinho quando ambos estão disponíveis.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="missas">
+      <h2>Missas</h2>
+      <div class="print">
+        <img src="manual-assets/missas-listagem.png" alt="Listagem de missas">
+      </div>
+
+      <h3>Como cadastrar</h3>
+      <ul>
+        <li>Selecione a igreja.</li>
+        <li>Escolha a data.</li>
+        <li>Selecione o horário.</li>
+        <li>Digite uma descrição, se necessário.</li>
+        <li>Escolha a quantidade de acólitos.</li>
+      </ul>
+
+      <h3>Status Ativo</h3>
+      <ul>
+        <li>Somente missas ativas entram na geração da escala.</li>
+        <li>Missas antigas são inativadas automaticamente, não apagadas.</li>
+        <li>O checkbox Ativo permite reativar ou inativar uma missa.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="editar-missa">
+      <h2>Editar Missa</h2>
+      <div class="print">
+        <img src="manual-assets/missa-edicao.png" alt="Edição de missa">
+      </div>
+
+      <h3>O que pode alterar</h3>
+      <ul>
+        <li>Igreja.</li>
+        <li>Data e horário.</li>
+        <li>Descrição.</li>
+        <li>Quantidade de acólitos.</li>
+        <li>Status da missa: ativa ou inativa.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="igrejas">
+      <h2>Igrejas</h2>
+      <div class="print">
+        <img src="manual-assets/igrejas.png" alt="Tela de igrejas">
+      </div>
+
+      <h3>Para que serve</h3>
+      <ul>
+        <li>Cadastrar igrejas usadas nas missas.</li>
+        <li>Listar igrejas existentes.</li>
+        <li>Usar a igreja cadastrada no cadastro de missas.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="gerar-escala">
+      <h2>Gerar Escala</h2>
+      <div class="print">
+        <img src="manual-assets/escala-gerada.png" alt="Escala gerada">
+      </div>
+
+      <h3>Como funciona</h3>
+      <ul>
+        <li>Clique em Gerar escala.</li>
+        <li>O sistema usa apenas missas ativas.</li>
+        <li>O sistema considera dia, horário, turno e indisponibilidades.</li>
+        <li>O sistema tenta evitar repetir os mesmos acólitos na escala.</li>
+        <li>Se um acólito precisa de acompanhamento, o sistema tenta escalar o padrinho junto.</li>
+      </ul>
+
+      <h3>Alerta de falta de acólitos</h3>
+      <ul>
+        <li>Se uma missa tiver menos acólitos que o solicitado, aparece um aviso.</li>
+        <li>A linha da missa fica marcada com uma exclamação vermelha.</li>
+        <li>O botão vermelho com exclamação permite abrir o aviso novamente.</li>
+      </ul>
+
+      <div class="note warn">
+        Quando houver alerta, revise a missa antes de oficializar a escala.
+      </div>
+    </section>
+
+    <section class="section" id="editar-escala">
+      <h2>Editar Escala Manualmente</h2>
+      <div class="print">
+        <img src="manual-assets/escala-edicao-manual.png" alt="Edição manual da escala">
+      </div>
+
+      <h3>O que pode fazer</h3>
+      <ul>
+        <li>Editar textos diretamente na grade.</li>
+        <li>Adicionar linhas.</li>
+        <li>Remover linhas.</li>
+        <li>Selecionar data com duplo clique na coluna de data.</li>
+      </ul>
+
+      <div class="note warn">
+        Se editar manualmente os nomes dos acólitos, o sistema bloqueia a oficialização para evitar somar missas servidas de forma errada.
+      </div>
+    </section>
+
+    <section class="section" id="gerar-pdf-json">
+      <h2>Gerar PDF e JSON</h2>
+      <div class="print">
+        <img src="manual-assets/escala-pdf.png" alt="Geração de PDF">
+      </div>
+
+      <h3>PDF</h3>
+      <ul>
+        <li>Escolha onde salvar o arquivo.</li>
+        <li>Clique em Gerar PDF.</li>
+        <li>O PDF usa os dados que estão na grade da escala.</li>
+      </ul>
+
+      <h3>JSON</h3>
+      <ul>
+        <li>Quando a opção estiver ativa, o sistema gera um JSON junto com o PDF.</li>
+        <li>O JSON ajuda a importar a escala novamente mantendo os vínculos dos acólitos.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="importar-escala">
+      <h2>Importar Escala</h2>
+      <div class="print">
+        <img src="manual-assets/escala-importacao.png" alt="Importação de escala">
+      </div>
+
+      <h3>Importar JSON</h3>
+      <ul>
+        <li>Use quando tiver o arquivo JSON gerado pelo próprio sistema.</li>
+        <li>É a forma mais segura de recuperar uma escala.</li>
+      </ul>
+
+      <h3>Importar PDF</h3>
+      <ul>
+        <li>O sistema tenta ler os nomes dos acólitos do PDF.</li>
+        <li>Se algum nome não existir no cadastro, a oficialização fica bloqueada.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="oficializar-escala">
+      <h2>Oficializar Escala</h2>
+      <div class="print">
+        <img src="manual-assets/escala-oficializar.png" alt="Oficializar escala">
+      </div>
+
+      <h3>O que acontece</h3>
+      <ul>
+        <li>O sistema soma missas servidas para os acólitos escalados.</li>
+        <li>As missas da escala são inativadas.</li>
+        <li>Missas inativadas não entram em uma nova geração de escala.</li>
+      </ul>
+
+      <div class="note ok">
+        Oficialize somente depois de revisar a escala final.
+      </div>
+    </section>
+
+    <section class="section" id="configuracoes-backup">
+      <h2>Configurações e Backup</h2>
+      <div class="print">
+        <img src="manual-assets/configuracoes.png" alt="Configurações e backup">
+      </div>
+
+      <h3>Exportar configurações</h3>
+      <ul>
+        <li>Cria um arquivo de backup com os dados do sistema.</li>
+        <li>Use para copiar os dados para outro computador ou guardar uma cópia de segurança.</li>
+      </ul>
+
+      <h3>Importar configurações</h3>
+      <ul>
+        <li>Substitui os dados atuais pelo arquivo escolhido.</li>
+        <li>Depois da importação, o sistema reinicia para carregar os dados importados.</li>
+      </ul>
+
+      <div class="note warn">
+        Antes de importar um backup, exporte uma cópia dos dados atuais.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Manual offline do App Escala<br>
+    <a href="https://github.com/devRochaa/">github.com/devRochaa</a>
+    ·
+    <a href="mailto:danielrocha.etec@gmail.com">danielrocha.etec@gmail.com</a>
+  </footer>
+</body>
+</html>

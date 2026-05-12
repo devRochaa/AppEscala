@@ -28,9 +28,37 @@ internal static class DatabaseBackup
         if (!string.IsNullOrWhiteSpace(directory))
             Directory.CreateDirectory(directory);
 
+        string databaseFullPath = Path.GetFullPath(DatabasePath);
+        string sourceFullPath = Path.GetFullPath(origem);
+        if (string.Equals(databaseFullPath, sourceFullPath, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("O arquivo selecionado ja e o banco de dados atual.");
+
+        string tempPath = Path.Combine(
+            directory ?? Path.GetTempPath(),
+            $"appescala_import_{Guid.NewGuid():N}.tmp");
+        string backupPath = Path.Combine(
+            directory ?? Path.GetTempPath(),
+            $"appescala_before_import_{DateTime.Now:yyyyMMdd_HHmmss}.bak");
+
+        File.Copy(origem, tempPath, overwrite: true);
+
+        Database.DisposeAll();
         SqliteConnection.ClearAllPools();
-        File.Copy(origem, DatabasePath, overwrite: true);
-        SqliteConnection.ClearAllPools();
+
+        try
+        {
+            if (File.Exists(DatabasePath))
+                File.Replace(tempPath, DatabasePath, backupPath, ignoreMetadataErrors: true);
+            else
+                File.Move(tempPath, DatabasePath);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+
+            SqliteConnection.ClearAllPools();
+        }
     }
 
     private static void ValidarBanco(string caminho)

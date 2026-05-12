@@ -26,6 +26,8 @@ namespace AppEscala
         private readonly Label lblCaminhoPdf = new();
         private readonly TextBox txtCaminhoPdf = new();
         private readonly Button btnSelecionarPdf = new();
+        private readonly Button btnAvisosEscala = new();
+        private List<AvisoEscala> avisosEscala = [];
 
         public UserControl1()
         {
@@ -115,7 +117,7 @@ namespace AppEscala
             bool existeLinhaSemIds = dgvEscala.Rows
                 .Cast<DataGridViewRow>()
                 .Where(row => !row.IsNewRow)
-                .Any(row => !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")) && row.Tag is not List<int>);
+                .Any(row => !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")) && row.Tag is not EscalaLinhaTag);
 
             if (existeLinhaSemIds)
             {
@@ -126,9 +128,9 @@ namespace AppEscala
             var idsPorMissa = dgvEscala.Rows
                 .Cast<DataGridViewRow>()
                 .Where(row => !row.IsNewRow)
-                .Select(row => row.Tag as List<int>)
-                .Where(ids => ids is not null && ids.Count > 0)
-                .Select(ids => ids!.Distinct().ToList())
+                .Select(row => row.Tag as EscalaLinhaTag)
+                .Where(tag => tag is not null && tag.AcolitoIds.Count > 0)
+                .Select(tag => tag!.AcolitoIds.Distinct().ToList())
                 .ToList();
 
             if (idsPorMissa.Count == 0)
@@ -148,8 +150,15 @@ namespace AppEscala
                 return;
 
             db.IncrementarMissasServidas(idsPorMissa.SelectMany(ids => ids));
+            var missaIds = dgvEscala.Rows
+                .Cast<DataGridViewRow>()
+                .Where(row => !row.IsNewRow)
+                .Select(row => row.Tag as EscalaLinhaTag)
+                .Where(tag => tag?.MissaId is not null)
+                .Select(tag => tag!.MissaId!.Value);
+            db.InativarMissas(missaIds);
             btnOficializarEscala.Enabled = false;
-            MessageBox.Show("Escala oficializada e missas servidas atualizadas.");
+            MessageBox.Show("Escala oficializada, missas servidas atualizadas e missas da escala inativadas.");
         }
 
         private void btnAdicionarLinha_Click(object sender, EventArgs e)
@@ -160,7 +169,7 @@ namespace AppEscala
             if (novoIndice > dgvEscala.Rows.Count)
                 novoIndice = dgvEscala.Rows.Count;
 
-            dgvEscala.Rows.Insert(novoIndice, "", "", "", "", "", false);
+            dgvEscala.Rows.Insert(novoIndice, "", "", "", "", "", "", false);
             dgvEscala.CurrentCell = dgvEscala.Rows[novoIndice].Cells["data"];
             dgvEscala.BeginEdit(true);
         }
@@ -326,12 +335,29 @@ namespace AppEscala
         {
             dgvEscala.Rows.Clear();
             btnOficializarEscala.Enabled = true;
+            avisosEscala = [];
 
             foreach (Produtos prod in Produtos.GetListaProdutos())
             {
-                int rowIndex = dgvEscala.Rows.Add(prod.data, prod.horario, prod.acolitos, prod.evento, prod.local, false);
-                dgvEscala.Rows[rowIndex].Tag = prod.acolitoIds;
+                int rowIndex = dgvEscala.Rows.Add("", prod.data, prod.horario, prod.acolitos, prod.evento, prod.local, false);
+                dgvEscala.Rows[rowIndex].Tag = new EscalaLinhaTag(prod.missaId, prod.acolitoIds);
+
+                if (prod.quantidadeSolicitada > prod.acolitoIds.Count)
+                {
+                    MarcarLinhaComAviso(rowIndex);
+                    avisosEscala.Add(new AvisoEscala(
+                        prod.dataAviso,
+                        prod.horario,
+                        prod.evento,
+                        prod.local,
+                        prod.quantidadeSolicitada,
+                        prod.acolitoIds.Count));
+                }
             }
+
+            AtualizarBotaoAvisosEscala();
+            if (avisosEscala.Count > 0)
+                ExibirAvisosEscala();
         }
 
         private static void ExportarJsonEscala(string caminhoJson, List<Produtos> produtos)
@@ -346,7 +372,9 @@ namespace AppEscala
                     p.evento,
                     p.local,
                     p.destacar,
-                    p.acolitoIds)).ToList());
+                    p.acolitoIds,
+                    p.missaId,
+                    p.quantidadeSolicitada)).ToList());
 
             var options = new JsonSerializerOptions { WriteIndented = true };
             File.WriteAllText(caminhoJson, JsonSerializer.Serialize(arquivo, options));
@@ -358,9 +386,11 @@ namespace AppEscala
                 ?? throw new InvalidOperationException("JSON inválido.");
 
             dgvEscala.Rows.Clear();
+            avisosEscala = [];
             foreach (var linha in arquivo.Linhas)
             {
                 int rowIndex = dgvEscala.Rows.Add(
+                    "",
                     linha.Data,
                     linha.Horario,
                     linha.Acolitos,
@@ -368,10 +398,12 @@ namespace AppEscala
                     linha.Local,
                     linha.Destacar);
 
-                dgvEscala.Rows[rowIndex].Tag = linha.AcolitoIds.Distinct().ToList();
+                var acolitoIds = linha.AcolitoIds?.Distinct().ToList() ?? [];
+                dgvEscala.Rows[rowIndex].Tag = new EscalaLinhaTag(linha.MissaId, acolitoIds);
             }
 
-            btnOficializarEscala.Enabled = arquivo.Linhas.Any(l => l.AcolitoIds.Count > 0);
+            btnOficializarEscala.Enabled = arquivo.Linhas.Any(l => l.AcolitoIds is not null && l.AcolitoIds.Count > 0);
+            AtualizarBotaoAvisosEscala();
             MessageBox.Show("JSON importado com sucesso.");
         }
 
@@ -389,6 +421,7 @@ namespace AppEscala
                 .ToDictionary(g => g.Key, g => g.First().Id);
 
             dgvEscala.Rows.Clear();
+            avisosEscala = [];
             List<string> nomesNaoEncontrados = [];
 
             foreach (var produto in produtos)
@@ -397,11 +430,12 @@ namespace AppEscala
                 foreach (var nome in vinculo.NomesNaoEncontrados)
                     nomesNaoEncontrados.Add(nome);
 
-                int rowIndex = dgvEscala.Rows.Add(produto.data, produto.horario, produto.acolitos, produto.evento, produto.local, false);
-                dgvEscala.Rows[rowIndex].Tag = vinculo.TodosReconhecidos ? vinculo.Ids : null;
+                int rowIndex = dgvEscala.Rows.Add("", produto.data, produto.horario, produto.acolitos, produto.evento, produto.local, false);
+                dgvEscala.Rows[rowIndex].Tag = vinculo.TodosReconhecidos ? new EscalaLinhaTag(null, vinculo.Ids) : null;
             }
 
             btnOficializarEscala.Enabled = nomesNaoEncontrados.Count == 0;
+            AtualizarBotaoAvisosEscala();
 
             if (nomesNaoEncontrados.Count > 0)
             {
@@ -565,7 +599,19 @@ namespace AppEscala
             string Evento,
             string Local,
             bool Destacar,
-            List<int> AcolitoIds);
+            List<int> AcolitoIds,
+            int? MissaId,
+            int QuantidadeSolicitada);
+
+        private sealed record EscalaLinhaTag(int? MissaId, List<int> AcolitoIds);
+
+        private sealed record AvisoEscala(
+            string Data,
+            string Horario,
+            string Evento,
+            string Local,
+            int QuantidadeSolicitada,
+            int QuantidadeSelecionada);
 
         private sealed record PdfTextChunk(string Text, float X, float Y);
 
@@ -618,8 +664,9 @@ namespace AppEscala
                     continue;
                 }
 
-                var acolitoIds = row.Tag is List<int> ids ? ids.ToList() : new List<int>();
-                produtos.Add(new Produtos(data, horario, acolitos, evento, local, destacar, acolitoIds));
+                var tag = row.Tag as EscalaLinhaTag;
+                var acolitoIds = tag?.AcolitoIds.ToList() ?? new List<int>();
+                produtos.Add(new Produtos(data, horario, acolitos, evento, local, destacar, acolitoIds, tag?.MissaId));
             }
 
             return produtos;
@@ -708,9 +755,22 @@ namespace AppEscala
             public string local { get; set; }
             public bool destacar { get; set; }
             public List<int> acolitoIds { get; set; }
+            public int? missaId { get; set; }
+            public int quantidadeSolicitada { get; set; }
+            public string dataAviso { get; set; }
 
 
-            public Produtos(string data, string horario, string acolitos, string evento, string local, bool destacar = false, List<int>? acolitoIds = null)
+            public Produtos(
+                string data,
+                string horario,
+                string acolitos,
+                string evento,
+                string local,
+                bool destacar = false,
+                List<int>? acolitoIds = null,
+                int? missaId = null,
+                int quantidadeSolicitada = 0,
+                string? dataAviso = null)
             {
                 this.data = data;
                 this.horario = horario;
@@ -719,6 +779,9 @@ namespace AppEscala
                 this.local = local;
                 this.destacar = destacar;
                 this.acolitoIds = acolitoIds ?? [];
+                this.missaId = missaId;
+                this.quantidadeSolicitada = quantidadeSolicitada;
+                this.dataAviso = dataAviso ?? data;
             }
 
             public string EncaixarAcolitos(string data, string horario, int quant)
@@ -769,7 +832,7 @@ namespace AppEscala
 
             public static List<Produtos> GetListaProdutos()
             {
-                var listaMissa = db.SelectAllMissasNova();
+                var listaMissa = db.SelectMissasAtivasNova();
                 var relProdutos = new List<Produtos>();
 
                 Dictionary<int, DateTime> ultimaEscalaPorAcolito = new();
@@ -802,11 +865,28 @@ namespace AppEscala
 
                     if (isDataRepetida)
                     {
-                        relProdutos.Add(new Produtos("", missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja, acolitoIds: acolitoIds));
+                        relProdutos.Add(new Produtos(
+                            "",
+                            missa.Data.ToString("HH:mm"),
+                            acolitos,
+                            missa.Descricao,
+                            missa.Igreja,
+                            acolitoIds: acolitoIds,
+                            missaId: missa.idMissa,
+                            quantidadeSolicitada: missa.Qnt_acolitos,
+                            dataAviso: dataFormatada));
                     }
                     else
                     {
-                        relProdutos.Add(new Produtos(dataFormatada, missa.Data.ToString("HH:mm"), acolitos, missa.Descricao, missa.Igreja, acolitoIds: acolitoIds));
+                        relProdutos.Add(new Produtos(
+                            dataFormatada,
+                            missa.Data.ToString("HH:mm"),
+                            acolitos,
+                            missa.Descricao,
+                            missa.Igreja,
+                            acolitoIds: acolitoIds,
+                            missaId: missa.idMissa,
+                            quantidadeSolicitada: missa.Qnt_acolitos));
                     }
                 }
 
@@ -956,6 +1036,13 @@ namespace AppEscala
             btnOficializarEscala.ForeColor = UiTheme.Text;
             btnOficializarEscala.Click += btnOficializarEscala_Click;
             Controls.Add(btnOficializarEscala);
+            btnAvisosEscala.Text = "!";
+            btnAvisosEscala.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            btnAvisosEscala.Size = new Size(42, 36);
+            btnAvisosEscala.Visible = false;
+            btnAvisosEscala.Click += (_, _) => ExibirAvisosEscala();
+            Controls.Add(btnAvisosEscala);
+            AplicarEstiloBotaoAviso();
             btnAdicionarLinha.BackColor = UiTheme.Surface;
             btnRemoverLinha.BackColor = UiTheme.Surface;
             btnAdicionarLinha.ForeColor = UiTheme.Text;
@@ -983,6 +1070,15 @@ namespace AppEscala
             dgvEscala.CellValueChanged -= dgvEscala_CellValueChanged;
             dgvEscala.CellValueChanged += dgvEscala_CellValueChanged;
 
+            dgvEscala.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "alerta",
+                HeaderText = "",
+                Width = 26,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+                ReadOnly = true,
+                SortMode = DataGridViewColumnSortMode.NotSortable
+            });
             dgvEscala.Columns.Add(CriarColunaTexto("data", "DATA", 95, DataGridViewAutoSizeColumnMode.AllCells));
             dgvEscala.Columns.Add(CriarColunaTexto("horario", "HORÁRIO", 80, DataGridViewAutoSizeColumnMode.AllCells));
             dgvEscala.Columns.Add(CriarColunaTexto("acolitos", "ACÓLITOS", 260, DataGridViewAutoSizeColumnMode.Fill));
@@ -1021,6 +1117,46 @@ namespace AppEscala
             return $"ESCALA DE ACÓLITOS_{mes}_{DateTime.Now.Year}.pdf";
         }
 
+        private void AtualizarBotaoAvisosEscala()
+        {
+            AplicarEstiloBotaoAviso();
+            btnAvisosEscala.Visible = avisosEscala.Count > 0;
+            btnAvisosEscala.Enabled = avisosEscala.Count > 0;
+        }
+
+        private void AplicarEstiloBotaoAviso()
+        {
+            btnAvisosEscala.UseVisualStyleBackColor = false;
+            btnAvisosEscala.FlatStyle = FlatStyle.Flat;
+            btnAvisosEscala.FlatAppearance.BorderSize = 0;
+            btnAvisosEscala.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(185, 28, 28);
+            btnAvisosEscala.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(153, 27, 27);
+            btnAvisosEscala.BackColor = UiTheme.Danger;
+            btnAvisosEscala.ForeColor = System.Drawing.Color.White;
+            btnAvisosEscala.Cursor = Cursors.Hand;
+        }
+
+        private void MarcarLinhaComAviso(int rowIndex)
+        {
+            var cell = dgvEscala.Rows[rowIndex].Cells["alerta"];
+            cell.Value = "!";
+            cell.Style.ForeColor = UiTheme.Danger;
+            cell.Style.Font = new Font(dgvEscala.Font, FontStyle.Bold);
+            cell.ToolTipText = "Missa com menos acólitos que o solicitado";
+        }
+
+        private void ExibirAvisosEscala()
+        {
+            if (avisosEscala.Count == 0)
+                return;
+
+            string mensagem = "Algumas missas foram geradas com menos acólitos do que o solicitado:\n\n"
+                + string.Join("\n", avisosEscala.Select(a =>
+                    $"- {a.Data} {a.Horario} | {a.Local} | {a.Evento}: {a.QuantidadeSelecionada}/{a.QuantidadeSolicitada} acólito(s)"));
+
+            MessageBox.Show(mensagem, "Atenção na escala", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
         private void AjustarLayout()
         {
             const int margin = 32;
@@ -1047,6 +1183,9 @@ namespace AppEscala
             btnImportarJson.Size = new Size(140, 36);
             btnOficializarEscala.Location = new System.Drawing.Point(btnImportarJson.Right + gap, secondaryTop);
             btnOficializarEscala.Size = new Size(160, 36);
+
+            btnAvisosEscala.Location = new System.Drawing.Point(btnOficializarEscala.Right + 32, secondaryTop);
+            btnAvisosEscala.Size = new Size(42, 36);
 
             btnRemoverLinha.Size = new Size(36, 30);
             btnRemoverLinha.Location = new System.Drawing.Point(Width - margin - btnRemoverLinha.Width, secondaryTop + 3);

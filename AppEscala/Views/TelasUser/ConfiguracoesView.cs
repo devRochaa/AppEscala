@@ -142,7 +142,9 @@ public sealed class ConfiguracoesView : UserControl
         try
         {
             DatabaseBackup.Importar(dialog.FileName);
-            MessageBox.Show("Configurações importadas. Feche e abra o sistema novamente para carregar todos os dados importados.");
+            MessageBox.Show("Configurações importadas. O sistema será reiniciado para carregar os dados importados.");
+            Application.Restart();
+            Environment.Exit(0);
         }
         catch (Exception ex)
         {

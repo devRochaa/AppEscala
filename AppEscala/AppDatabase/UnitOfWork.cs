@@ -8,7 +8,7 @@ public sealed partial class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _Context;
     private IDbContextTransaction? _Transaction = default!;
-    private readonly HashSet<int> _BeginTransactionCallTracking = [];
+    private int _TransactionDepth;
 
     public UnitOfWork(AppDbContext context)
     {
@@ -40,13 +40,9 @@ public sealed partial class UnitOfWork : IUnitOfWork
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_Transaction is null)
-        {
             _Transaction = await _Context.Database.BeginTransactionAsync(cancellationToken);
 
-            _BeginTransactionCallTracking.Clear();
-        }
-
-        _BeginTransactionCallTracking.Add(_BeginTransactionCallTracking.Count);
+        _TransactionDepth++;
     }
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)
@@ -54,13 +50,17 @@ public sealed partial class UnitOfWork : IUnitOfWork
         if (_Transaction is null)
             return;
 
-        if (_BeginTransactionCallTracking.Last() == 0)
+        if (_TransactionDepth > 1)
         {
-            await _Transaction.CommitAsync(cancellationToken);
-            _Transaction = null;
+            _TransactionDepth--;
+            return;
         }
 
-        _BeginTransactionCallTracking.Remove(_BeginTransactionCallTracking.Last());
+        await _Context.SaveChangesAsync(cancellationToken);
+        await _Transaction.CommitAsync(cancellationToken);
+        await _Transaction.DisposeAsync();
+        _Transaction = null;
+        _TransactionDepth = 0;
     }
 
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
@@ -68,13 +68,10 @@ public sealed partial class UnitOfWork : IUnitOfWork
         if (_Transaction is null)
             return;
 
-        if (_BeginTransactionCallTracking.Last() == 0)
-        {
-            await _Transaction.RollbackAsync(cancellationToken);
-            _Transaction = null;
-        }
-
-        _BeginTransactionCallTracking.Remove(_BeginTransactionCallTracking.Last());
+        await _Transaction.RollbackAsync(cancellationToken);
+        await _Transaction.DisposeAsync();
+        _Transaction = null;
+        _TransactionDepth = 0;
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

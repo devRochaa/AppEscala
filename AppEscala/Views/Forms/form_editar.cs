@@ -7,6 +7,7 @@ namespace AppEscala
     public partial class form_editar : Form
     {
         private readonly Database db = new();
+        private readonly CheckBox chkAtivo = new();
 
         public int? id_missa { get; set; }
 
@@ -15,6 +16,7 @@ namespace AppEscala
             InitializeComponent();
             UiTheme.Apply(this);
             Text = "Editar missa";
+            ConfigurarAtivo();
         }
 
         private void form_editar_Load(object sender, EventArgs e)
@@ -50,6 +52,7 @@ namespace AppEscala
         private string igrejaAntiga = string.Empty;
         private int qntAntiga = -1;
         private string descAntiga = string.Empty;
+        private bool ativoAntigo = true;
 
         private void carregar_missaSelecionada()
         {
@@ -67,6 +70,8 @@ namespace AppEscala
             igrejaAntiga = missaSelecionada.Igreja;
             qntAntiga = missaSelecionada.Qnt_acolitos;
             descAntiga = missaSelecionada.Descricao;
+            ativoAntigo = missaSelecionada.Ativo;
+            chkAtivo.Checked = missaSelecionada.Ativo;
 
             dtp_missa.Value = missaSelecionada.Data;
             txt_hora1.Text = missaSelecionada.Data.ToString("HH");
@@ -121,7 +126,8 @@ namespace AppEscala
                 horaAntiga != novaDataHora.ToString("HH:mm") ||
                 dataAntiga.Date != novaDataHora.Date ||
                 descAntiga != txt_desc.Text ||
-                qntAntiga != quantidade;
+                qntAntiga != quantidade ||
+                ativoAntigo != chkAtivo.Checked;
 
             if (!foiAlterado)
             {
@@ -135,7 +141,8 @@ namespace AppEscala
                 Id_igreja = selectedItem.Value,
                 Data = novaDataHora,
                 Descricao = txt_desc.Text,
-                Qnt_acolitos = quantidade
+                Qnt_acolitos = quantidade,
+                Ativo = chkAtivo.Checked
             };
 
             db.UpdateMissaNova(id_missa, dadosNovaMissaNova);
@@ -143,6 +150,15 @@ namespace AppEscala
             MessageBox.Show("A missa foi editada");
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private void ConfigurarAtivo()
+        {
+            chkAtivo.Text = "Missa ativa";
+            chkAtivo.AutoSize = true;
+            chkAtivo.Checked = true;
+            chkAtivo.Location = new Point(103, 220);
+            Controls.Add(chkAtivo);
         }
     }
 }
