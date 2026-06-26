@@ -11,6 +11,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using Microsoft.EntityFrameworkCore;
 using Svg;
+using System.Runtime.InteropServices;
 
 
 namespace AppEscala
@@ -31,6 +32,14 @@ namespace AppEscala
         private const int SidebarExpandedWidth = 190;
         private const int SidebarCollapsedWidth = 52;
         private const int SidebarItemHeight = 52;
+        private const int WmNclButtonDown = 0xA1;
+        private const int HtCaption = 0x2;
+
+        [DllImport("user32.dll")]
+        private static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 
         public form_menu(AppDbContext db)
         {
@@ -137,7 +146,7 @@ namespace AppEscala
                     //QUARTA COLUNA evento
                     tabela.AddCell(new Cell()
                         .SetTextAlignment(TextAlignment.CENTER).Add(new
-                        Paragraph(prod.evento)));
+                        Paragraph().Add(new Text(prod.evento).SetFontColor(ColorConstants.RED))));
 
                     //QUARTA COLUNA local
                     tabela.AddCell(new Cell()
@@ -313,10 +322,12 @@ namespace AppEscala
 
             panel1.BackColor = System.Drawing.Color.White;
             panel1.Height = 56;
+            panel1.MouseDown += BarraTitulo_MouseDown;
             label1.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
             label1.ForeColor = UiTheme.Text;
             label1.Text = "App Escala";
             label1.Location = new System.Drawing.Point(60, 18);
+            label1.MouseDown += BarraTitulo_MouseDown;
 
             btnHam.Size = new Size(32, 32);
             btnHam.Location = new System.Drawing.Point(16, 12);
@@ -373,6 +384,15 @@ namespace AppEscala
             Controls.Add(configuracoesView);
 
             Resize += (_, _) => AjustarLayout();
+        }
+
+        private void BarraTitulo_MouseDown(object? sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+
+            ReleaseCapture();
+            SendMessage(Handle, WmNclButtonDown, HtCaption, 0);
         }
 
         private void AjustarLayout()

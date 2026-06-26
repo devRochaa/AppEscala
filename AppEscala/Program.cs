@@ -26,9 +26,7 @@ internal static class Program
     private static void ConfigureServices(IServiceCollection services)
     {
         // Registrar o DbContext
-        string folder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        string dbPath = Path.Combine(folder, "appescala.db");
-        string connectionString = $"Data Source={dbPath}";
+        string connectionString = $"Data Source={AppDbContext.DatabasePath}";
 
         services.AddDbContextFactory<AppDbContext>(options => 
             options.UseSqlite(connectionString));

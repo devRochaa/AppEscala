@@ -209,14 +209,16 @@
             // 
             // btn_excluir
             // 
+            btn_excluir.BackColor = Color.FromArgb(220, 38, 38);
+            btn_excluir.FlatStyle = FlatStyle.Flat;
             btn_excluir.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btn_excluir.ForeColor = Color.Red;
+            btn_excluir.ForeColor = Color.White;
             btn_excluir.Location = new Point(563, 20);
             btn_excluir.Name = "btn_excluir";
             btn_excluir.Size = new Size(75, 26);
             btn_excluir.TabIndex = 12;
-            btn_excluir.Text = "Excluir";
-            btn_excluir.UseVisualStyleBackColor = true;
+            btn_excluir.Text = "Inativar";
+            btn_excluir.UseVisualStyleBackColor = false;
             btn_excluir.Click += btn_excluir_Click;
             // 
             // chk_mostrarInativas

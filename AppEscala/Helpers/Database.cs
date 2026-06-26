@@ -75,10 +75,12 @@ public sealed class Database : IDisposable
                 Data TEXT NOT NULL,
                 Descricao TEXT NOT NULL,
                 QntAcolitos INTEGER NOT NULL,
-                Ativo INTEGER NOT NULL DEFAULT 1
+                Ativo INTEGER NOT NULL DEFAULT 1,
+                AtivadaManual INTEGER NOT NULL DEFAULT 0
             );
             """);
         EnsureColumn("Missas", "Ativo", "INTEGER NOT NULL DEFAULT 1");
+        EnsureColumn("Missas", "AtivadaManual", "INTEGER NOT NULL DEFAULT 0");
     }
 
     private AppDbContext Context
@@ -261,6 +263,13 @@ public sealed class Database : IDisposable
         var registro = Context.Set<IgrejaEntity>().Find(id)
             ?? throw new InvalidOperationException("Registro nao encontrado.");
 
+        bool possuiMissas = Context.Set<MissaEntity>()
+            .AsNoTracking()
+            .Any(m => m.IgrejaId == id);
+
+        if (possuiMissas)
+            throw new InvalidOperationException("Nao e possivel excluir esta igreja porque existem missas vinculadas a ela.");
+
         Context.Set<IgrejaEntity>().Remove(registro);
         Context.SaveChanges();
     }
@@ -430,6 +439,8 @@ public sealed class Database : IDisposable
 
     public void InsertMissaNova(MissaEntity dadosMissa)
     {
+        dadosMissa.Descricao = NormalizarDescricaoMissa(dadosMissa.Descricao);
+        ValidarMissaUnica(dadosMissa, null);
         Context.Set<MissaEntity>().Add(dadosMissa);
         Context.SaveChanges();
     }
@@ -447,10 +458,15 @@ public sealed class Database : IDisposable
         var registro = Context.Set<MissaEntity>().Find(id.Value)
             ?? throw new InvalidOperationException("Missa nao encontrada.");
 
+        dadosMissa.Descricao = NormalizarDescricaoMissa(dadosMissa.Descricao);
+        ValidarMissaUnica(dadosMissa, id.Value);
+
         registro.IgrejaId = dadosMissa.IgrejaId;
         registro.Data = dadosMissa.Data;
         registro.Descricao = dadosMissa.Descricao;
         registro.QntAcolitos = dadosMissa.QntAcolitos;
+        if (!registro.Ativo && dadosMissa.Ativo)
+            registro.AtivadaManual = true;
         registro.Ativo = dadosMissa.Ativo;
         Context.SaveChanges();
     }
@@ -463,6 +479,8 @@ public sealed class Database : IDisposable
         var registro = Context.Set<MissaEntity>().Find(idMissa)
             ?? throw new InvalidOperationException("Missa nao encontrada.");
 
+        if (!registro.Ativo && ativo)
+            registro.AtivadaManual = true;
         registro.Ativo = ativo;
         Context.SaveChanges();
     }
@@ -496,7 +514,8 @@ public sealed class Database : IDisposable
                 Descricao = m.Descricao,
                 Qnt_acolitos = m.QntAcolitos,
                 Id_igreja = m.IgrejaId,
-                Ativo = m.Ativo
+                Ativo = m.Ativo,
+                AtivadaManual = m.AtivadaManual
             })
             .ToList();
 
@@ -669,6 +688,26 @@ public sealed class Database : IDisposable
     private static string NormalizarNomeAcolito(string nome)
         => nome.Trim();
 
+    private void ValidarMissaUnica(MissaEntity missa, int? ignorarId)
+    {
+        if (!missa.Ativo)
+            return;
+
+        bool existe = Context.Set<MissaEntity>()
+            .AsNoTracking()
+            .Any(m =>
+                m.Ativo &&
+                m.Data == missa.Data &&
+                m.IgrejaId == missa.IgrejaId &&
+                (ignorarId == null || m.Id != ignorarId.Value));
+
+        if (existe)
+            throw new InvalidOperationException("Ja existe uma missa cadastrada com a mesma data, horario e local.");
+    }
+
+    private static string NormalizarDescricaoMissa(string descricao)
+        => descricao.Trim();
+
     private void EnsureColumn(string tableName, string columnName, string definition)
     {
         ValidarIdentificadorSql(tableName);
@@ -761,6 +800,7 @@ public sealed class Database : IDisposable
         public int Qnt_acolitos { get; set; }
         public int Id_igreja { get; set; }
         public bool Ativo { get; set; }
+        public bool AtivadaManual { get; set; }
     }
 
     public sealed record DiaSemanaItem(int Id, string Nome);

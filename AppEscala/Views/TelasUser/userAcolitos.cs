@@ -8,7 +8,7 @@ namespace AppEscala
 
     public partial class userAcolitos : UserControl
     {
-        
+
         private readonly Database db = new();
         private readonly Button btn_adicionar = new();
 
@@ -37,7 +37,6 @@ namespace AppEscala
 
             var listaAcolitos = db.BuscarUserAcolitos(txtPesquisa.Text).ToList();
             dgv_acolitos.Rows.Clear();
-            txt_aviso.Visible = false;
 
             string[] row = new string[9];
             int idAtual = 0;
@@ -75,10 +74,9 @@ namespace AppEscala
             }
             if (string.IsNullOrEmpty(row[0])) // se não encontrar nenhum registro
             {
-                txt_aviso.Visible = true;
                 MessageBox.Show("Não foi encontrado nenhum nome relacionado.");
             }
-           
+
         }
 
         private void Carregar_Acolitos()
@@ -86,7 +84,6 @@ namespace AppEscala
 
             var listaAcolitos = db.ListaUserAcolitos().ToList();
             dgv_acolitos.Rows.Clear();
-            txt_aviso.Visible = false;
 
             string[] row = new string[9];
             int idAtual = 0;
@@ -124,7 +121,7 @@ namespace AppEscala
             }
             if (string.IsNullOrEmpty(row[0])) // se não encontrar nenhum registro
             {
-                txt_aviso.Visible = true;
+                selecionado = null;
             }
 
         }
@@ -175,7 +172,7 @@ namespace AppEscala
                 MessageBox.Show("Primeiramente selecione um acólito.");
                 return;
             }
-            
+
             form_editarAcolito form_edit = new form_editarAcolito();
             form_edit.id_acolito = selecionado;
             if (form_edit.ShowDialog() == DialogResult.OK) // Exibe Form2 como modal
@@ -230,7 +227,6 @@ namespace AppEscala
             btn_adicionar.Text = "Adicionar acólito";
             btn_adicionar.Click += (_, _) => AdicionarAcolitoRequested?.Invoke(this, EventArgs.Empty);
             btn_edit.Text = "Editar selecionado";
-            txt_aviso.ForeColor = UiTheme.MutedText;
 
             dgv_acolitos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtPesquisa.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -258,7 +254,6 @@ namespace AppEscala
             dgv_acolitos.Size = new Size(width, Math.Max(180, Height - 188));
             btn_edit.Location = new Point(margin + width - 160, Height - 52);
             btn_edit.Size = new Size(160, 36);
-            txt_aviso.Location = new Point(margin, 130);
         }
     }
 }

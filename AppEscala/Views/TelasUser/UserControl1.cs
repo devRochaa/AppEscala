@@ -12,6 +12,7 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -28,6 +29,7 @@ namespace AppEscala
         private readonly Button btnSelecionarPdf = new();
         private readonly Button btnAvisosEscala = new();
         private List<AvisoEscala> avisosEscala = [];
+        private bool atualizandoOficializacao;
 
         public UserControl1()
         {
@@ -114,20 +116,18 @@ namespace AppEscala
 
         private void btnOficializarEscala_Click(object? sender, EventArgs e)
         {
-            bool existeLinhaSemIds = dgvEscala.Rows
-                .Cast<DataGridViewRow>()
-                .Where(row => !row.IsNewRow)
-                .Any(row => !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")) && row.Tag is not EscalaLinhaTag);
+            VincularLinhasSemIdsSePossivel();
 
-            if (existeLinhaSemIds)
+            var statusOficializacao = AvaliarOficializacaoEscala();
+            if (!statusOficializacao.PodeOficializar)
             {
-                MessageBox.Show("Há linhas editadas ou adicionadas manualmente. Gere a escala novamente antes de oficializar.");
+                MessageBox.Show(statusOficializacao.MensagemErro);
                 return;
             }
 
             var idsPorMissa = dgvEscala.Rows
                 .Cast<DataGridViewRow>()
-                .Where(row => !row.IsNewRow)
+                .Where(row => !row.IsNewRow && LinhaContaParaOficializacao(row))
                 .Select(row => row.Tag as EscalaLinhaTag)
                 .Where(tag => tag is not null && tag.AcolitoIds.Count > 0)
                 .Select(tag => tag!.AcolitoIds.Distinct().ToList())
@@ -161,6 +161,105 @@ namespace AppEscala
             MessageBox.Show("Escala oficializada, missas servidas atualizadas e missas da escala inativadas.");
         }
 
+        private void VincularLinhasSemIdsSePossivel()
+        {
+            bool existeLinhaParaResolver = dgvEscala.Rows
+                .Cast<DataGridViewRow>()
+                .Any(row =>
+                    !row.IsNewRow &&
+                    row.Tag is not EscalaLinhaTag &&
+                    !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")));
+
+            if (!existeLinhaParaResolver)
+                return;
+
+            var acolitosPorNome = db.SelectAllAcolitos()
+                .GroupBy(a => NormalizarNome(a.Nome))
+                .ToDictionary(g => g.Key, g => g.First().Id);
+
+            foreach (DataGridViewRow row in dgvEscala.Rows)
+            {
+                if (row.IsNewRow || row.Tag is EscalaLinhaTag || string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")))
+                    continue;
+
+                var resolvidos = ResolverAcolitosImportados(ObterTextoCelula(row, "acolitos"), acolitosPorNome);
+                if (resolvidos.TodosReconhecidos)
+                    row.Tag = new EscalaLinhaTag(null, resolvidos.Ids);
+            }
+        }
+
+        private void AtualizarDisponibilidadeOficializacao()
+        {
+            if (atualizandoOficializacao || !dgvEscala.Columns.Contains("alerta"))
+                return;
+
+            atualizandoOficializacao = true;
+            try
+            {
+                VincularLinhasSemIdsSePossivel();
+                var status = AvaliarOficializacaoEscala();
+                btnOficializarEscala.Enabled = status.PodeOficializar;
+                btnOficializarEscala.Tag = status.MensagemErro;
+            }
+            finally
+            {
+                atualizandoOficializacao = false;
+            }
+        }
+
+        private StatusOficializacao AvaliarOficializacaoEscala()
+        {
+            LimparErrosOficializacao();
+            int linhasComIds = 0;
+
+            foreach (DataGridViewRow row in dgvEscala.Rows)
+            {
+                if (row.IsNewRow || !LinhaContaParaOficializacao(row))
+                    continue;
+
+                string horario = ObterTextoCelula(row, "horario");
+                if (!string.IsNullOrWhiteSpace(horario) && !EhHorarioEscala(horario))
+                {
+                    string mensagem = $"A linha {row.Index + 1} tem horário inválido. Use o formato 00:00 ou 7hs.";
+                    MarcarLinhaComErroOficializacao(row.Index, mensagem);
+                    return new StatusOficializacao(
+                        false,
+                        mensagem);
+                }
+
+                if (!string.IsNullOrWhiteSpace(ObterTextoCelula(row, "acolitos")) && row.Tag is not EscalaLinhaTag)
+                {
+                    string mensagem = "Esta linha tem acólitos sem vínculo com o cadastro. Dê dois cliques na coluna ACÓLITOS e selecione os acólitos antes de oficializar.";
+                    MarcarLinhaComErroOficializacao(row.Index, mensagem);
+                    return new StatusOficializacao(
+                        false,
+                        mensagem);
+                }
+
+                if (row.Tag is not EscalaLinhaTag tag || tag.AcolitoIds.Count == 0)
+                {
+                    string mensagem = "Esta linha não tem acólitos vinculados para oficializar.";
+                    MarcarLinhaComErroOficializacao(row.Index, mensagem);
+                    return new StatusOficializacao(false, mensagem);
+                }
+
+                if (tag.AcolitoIds.Count > 0)
+                    linhasComIds++;
+            }
+
+            if (linhasComIds == 0)
+                return new StatusOficializacao(false, "Não há acólitos vinculados para oficializar.");
+
+            return new StatusOficializacao(true, string.Empty);
+        }
+
+        private static bool LinhaContaParaOficializacao(DataGridViewRow row)
+            => !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "data"))
+                || !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "horario"))
+                || !string.IsNullOrWhiteSpace(ObterTextoCelula(row, "local"));
+
+        private sealed record StatusOficializacao(bool PodeOficializar, string MensagemErro);
+
         private void btnAdicionarLinha_Click(object sender, EventArgs e)
         {
             int indice = ObterIndiceLinhaSelecionada();
@@ -172,6 +271,7 @@ namespace AppEscala
             dgvEscala.Rows.Insert(novoIndice, "", "", "", "", "", "", false);
             dgvEscala.CurrentCell = dgvEscala.Rows[novoIndice].Cells["data"];
             dgvEscala.BeginEdit(true);
+            AtualizarDisponibilidadeOficializacao();
         }
 
         private void btnRemoverLinha_Click(object sender, EventArgs e)
@@ -182,23 +282,50 @@ namespace AppEscala
                 return;
 
             dgvEscala.Rows.RemoveAt(indice);
+            AtualizarDisponibilidadeOficializacao();
         }
 
         private void dgvEscala_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || dgvEscala.Columns[e.ColumnIndex].Name != "data")
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
                 return;
 
-            AbrirSeletorData(e.RowIndex, e.ColumnIndex);
+            string coluna = dgvEscala.Columns[e.ColumnIndex].Name;
+            if (coluna == "data")
+                AbrirSeletorData(e.RowIndex, e.ColumnIndex);
+            else if (coluna == "acolitos")
+                AbrirEditorAcolitos(e.RowIndex);
         }
 
         private void dgvEscala_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || dgvEscala.Columns[e.ColumnIndex].Name != "acolitos")
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
                 return;
 
-            dgvEscala.Rows[e.RowIndex].Tag = null;
+            string coluna = dgvEscala.Columns[e.ColumnIndex].Name;
+            if (coluna == "acolitos")
+                dgvEscala.Rows[e.RowIndex].Tag = null;
+            else if (coluna == "destacar")
+                AplicarDestaqueLinha(dgvEscala.Rows[e.RowIndex]);
+
+            if (coluna == "horario" && LinhaContaParaOficializacao(dgvEscala.Rows[e.RowIndex]))
+            {
+                string horario = ObterTextoCelula(dgvEscala.Rows[e.RowIndex], "horario");
+                if (!string.IsNullOrWhiteSpace(horario) && !EhHorarioEscala(horario))
+                    MessageBox.Show("Horário inválido. Use o formato 00:00 ou 7hs.");
+            }
+
+            AtualizarDisponibilidadeOficializacao();
         }
+
+        private void dgvEscala_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
+        {
+            if (dgvEscala.IsCurrentCellDirty && dgvEscala.CurrentCell?.OwningColumn.Name == "destacar")
+                dgvEscala.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        }
+
+        private void dgvEscala_RowsChanged(object? sender, EventArgs e)
+            => AtualizarDisponibilidadeOficializacao();
 
         private void AbrirSeletorData(int rowIndex, int columnIndex)
         {
@@ -256,6 +383,250 @@ namespace AppEscala
             return DateTime.Today;
         }
 
+        private void AbrirEditorAcolitos(int rowIndex)
+        {
+            DataGridViewRow row = dgvEscala.Rows[rowIndex];
+            if (row.IsNewRow)
+                return;
+
+            var acolitos = db.SelectAllAcolitos();
+            if (acolitos.Count == 0)
+            {
+                MessageBox.Show("Nenhum acólito cadastrado.");
+                return;
+            }
+
+            var tagAtual = row.Tag as EscalaLinhaTag;
+            List<int> selecionados = ObterAcolitoIdsDaLinha(row, acolitos, tagAtual);
+            HashSet<int> disponiveis = ObterAcolitosDisponiveisParaLinha(row, tagAtual);
+
+            using Form form = CriarEditorAcolitos(
+                acolitos,
+                selecionados,
+                disponiveis,
+                out ListBox lstSelecionados,
+                out ComboBox cmbAcolitos);
+
+            if (form.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            List<AcolitoComboItem> itensSelecionados = lstSelecionados.Items
+                .OfType<AcolitoComboItem>()
+                .ToList();
+
+            List<int> ids = itensSelecionados.Select(item => item.Id).Distinct().ToList();
+            string nomes = string.Join("/ ", itensSelecionados.Select(item => item.Nome));
+
+            row.Cells["acolitos"].Value = nomes;
+            row.Tag = ids.Count > 0 ? new EscalaLinhaTag(tagAtual?.MissaId, ids) : null;
+            AtualizarDisponibilidadeOficializacao();
+        }
+
+        private Form CriarEditorAcolitos(
+            List<Models.Entities.AcolitoEntity> acolitos,
+            List<int> selecionados,
+            HashSet<int> disponiveis,
+            out ListBox lstSelecionados,
+            out ComboBox cmbAcolitos)
+        {
+            Form form = new()
+            {
+                Text = "Editar acólitos da escala",
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                ClientSize = new Size(560, 410)
+            };
+
+            Label lblLista = new()
+            {
+                Text = "Acólitos escalados",
+                AutoSize = true,
+                Location = new System.Drawing.Point(24, 20)
+            };
+
+            ListBox listaSelecionados = new()
+            {
+                Location = new System.Drawing.Point(24, 46),
+                Size = new Size(512, 190)
+            };
+
+            Dictionary<int, AcolitoComboItem> itensPorId = acolitos
+                .Select(a => new AcolitoComboItem(a.Id, a.Nome, disponiveis.Contains(a.Id)))
+                .ToDictionary(item => item.Id);
+
+            foreach (int id in selecionados.Distinct())
+            {
+                if (itensPorId.TryGetValue(id, out var item))
+                    listaSelecionados.Items.Add(item);
+            }
+
+            Label lblAdicionar = new()
+            {
+                Text = "Adicionar acólito",
+                AutoSize = true,
+                Location = new System.Drawing.Point(24, 254)
+            };
+
+            ComboBox comboAcolitos = new()
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Location = new System.Drawing.Point(24, 280),
+                Size = new Size(380, 32)
+            };
+
+            foreach (var item in itensPorId.Values.OrderByDescending(item => item.Disponivel).ThenBy(item => item.Nome))
+                comboAcolitos.Items.Add(item);
+
+            if (comboAcolitos.Items.Count > 0)
+                comboAcolitos.SelectedIndex = 0;
+
+            Button btnAdicionar = new()
+            {
+                Text = "Adicionar",
+                Location = new System.Drawing.Point(416, 279),
+                Size = new Size(120, 34)
+            };
+            btnAdicionar.Click += (_, _) =>
+            {
+                if (comboAcolitos.SelectedItem is not AcolitoComboItem item)
+                    return;
+
+                bool jaSelecionado = listaSelecionados.Items
+                    .OfType<AcolitoComboItem>()
+                    .Any(selecionado => selecionado.Id == item.Id);
+
+                if (!jaSelecionado)
+                    listaSelecionados.Items.Add(item);
+            };
+
+            Button btnRemover = new()
+            {
+                Text = "Remover selecionado",
+                Location = new System.Drawing.Point(24, 330),
+                Size = new Size(160, 34)
+            };
+            btnRemover.Click += (_, _) =>
+            {
+                if (listaSelecionados.SelectedIndex >= 0)
+                    listaSelecionados.Items.RemoveAt(listaSelecionados.SelectedIndex);
+            };
+
+            Button btnCancelar = new()
+            {
+                Text = "Cancelar",
+                DialogResult = DialogResult.Cancel,
+                Location = new System.Drawing.Point(336, 354),
+                Size = new Size(96, 34)
+            };
+
+            Button btnOk = new()
+            {
+                Text = "OK",
+                DialogResult = DialogResult.OK,
+                Location = new System.Drawing.Point(440, 354),
+                Size = new Size(96, 34)
+            };
+
+            form.Controls.AddRange(new Control[] { lblLista, listaSelecionados, lblAdicionar, comboAcolitos, btnAdicionar, btnRemover, btnCancelar, btnOk });
+            form.AcceptButton = btnOk;
+            form.CancelButton = btnCancelar;
+            lstSelecionados = listaSelecionados;
+            cmbAcolitos = comboAcolitos;
+            return form;
+        }
+
+        private List<int> ObterAcolitoIdsDaLinha(
+            DataGridViewRow row,
+            List<Models.Entities.AcolitoEntity> acolitos,
+            EscalaLinhaTag? tagAtual)
+        {
+            if (tagAtual is not null)
+                return tagAtual.AcolitoIds.ToList();
+
+            Dictionary<string, int> idsPorNome = acolitos
+                .GroupBy(a => NormalizarNome(a.Nome))
+                .ToDictionary(g => g.Key, g => g.First().Id);
+
+            var resolvidos = ResolverAcolitosImportados(ObterTextoCelula(row, "acolitos"), idsPorNome);
+            return resolvidos.Ids;
+        }
+
+        private HashSet<int> ObterAcolitosDisponiveisParaLinha(DataGridViewRow row, EscalaLinhaTag? tagAtual)
+        {
+            if (!TryObterDataHorarioLinha(row, tagAtual, out DateTime dataHora))
+                return [];
+
+            int diaSemanaId = dataHora.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)dataHora.DayOfWeek;
+            int turno = Produtos.HorarioParaTurno(dataHora);
+            return db.SelecionarAcolitoDia(diaSemanaId, dataHora.ToString("dd/MM/yyyy"), turno)
+                .Select(a => a.Id_acolito)
+                .ToHashSet();
+        }
+
+        private bool TryObterDataHorarioLinha(DataGridViewRow row, EscalaLinhaTag? tagAtual, out DateTime dataHora)
+        {
+            if (tagAtual?.MissaId is int missaId)
+            {
+                try
+                {
+                    dataHora = db.SelectMissaNova(missaId).Data;
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+
+            string horarioTexto = ObterTextoCelula(row, "horario");
+            if (!TimeSpan.TryParse(horarioTexto, out var horario))
+            {
+                dataHora = default;
+                return false;
+            }
+
+            string dataTexto = ObterDataTextoDaLinha(row);
+            Match match = Regex.Match(dataTexto, @"\d{1,2}");
+            if (!match.Success || !int.TryParse(match.Value, out int dia))
+            {
+                dataHora = default;
+                return false;
+            }
+
+            DateTime hoje = DateTime.Today;
+            if (dia < 1 || dia > DateTime.DaysInMonth(hoje.Year, hoje.Month))
+            {
+                dataHora = default;
+                return false;
+            }
+
+            dataHora = new DateTime(hoje.Year, hoje.Month, dia).Add(horario);
+            return true;
+        }
+
+        private string ObterDataTextoDaLinha(DataGridViewRow row)
+        {
+            string data = ObterTextoCelula(row, "data");
+            if (!string.IsNullOrWhiteSpace(data))
+                return data;
+
+            for (int i = row.Index - 1; i >= 0; i--)
+            {
+                string anterior = ObterTextoCelula(dgvEscala.Rows[i], "data");
+                if (!string.IsNullOrWhiteSpace(anterior))
+                    return anterior;
+            }
+
+            return string.Empty;
+        }
+
+        private sealed record AcolitoComboItem(int Id, string Nome, bool Disponivel)
+        {
+            public override string ToString()
+                => $"{Nome} - {(Disponivel ? "disponível" : "indisponível")}";
+        }
+
         private int ObterIndiceLinhaSelecionada()
         {
             if (dgvEscala.CurrentCell is not null)
@@ -282,6 +653,9 @@ namespace AppEscala
             string? diretorio = System.IO.Path.GetDirectoryName(arquivo);
             if (!string.IsNullOrWhiteSpace(diretorio))
                 Directory.CreateDirectory(diretorio);
+
+            arquivo = ObterCaminhoDisponivel(arquivo);
+            txtCaminhoPdf.Text = arquivo;
 
             using (PdfWriter wPdf = new PdfWriter(arquivo, new WriterProperties().SetPdfVersion(PdfVersion.PDF_2_0)))
             {
@@ -331,16 +705,43 @@ namespace AppEscala
             }
         }
 
+        private static string ObterCaminhoDisponivel(string caminho)
+        {
+            string? diretorio = System.IO.Path.GetDirectoryName(caminho);
+            string nomeSemExtensao = RemoverSufixoNumerico(System.IO.Path.GetFileNameWithoutExtension(caminho));
+            string extensao = System.IO.Path.GetExtension(caminho);
+            string caminhoBase = string.IsNullOrWhiteSpace(diretorio)
+                ? $"{nomeSemExtensao}{extensao}"
+                : System.IO.Path.Combine(diretorio, $"{nomeSemExtensao}{extensao}");
+
+            if (!File.Exists(caminhoBase))
+                return caminhoBase;
+
+            for (int i = 2; ; i++)
+            {
+                string nomeArquivo = $"{nomeSemExtensao} ({i}){extensao}";
+                string candidato = string.IsNullOrWhiteSpace(diretorio)
+                    ? nomeArquivo
+                    : System.IO.Path.Combine(diretorio, nomeArquivo);
+
+                if (!File.Exists(candidato))
+                    return candidato;
+            }
+        }
+
+        private static string RemoverSufixoNumerico(string nome)
+            => Regex.Replace(nome, @"\s\(\d+\)$", string.Empty);
+
         private void CarregarGridEscala()
         {
             dgvEscala.Rows.Clear();
-            btnOficializarEscala.Enabled = true;
             avisosEscala = [];
 
             foreach (Produtos prod in Produtos.GetListaProdutos())
             {
                 int rowIndex = dgvEscala.Rows.Add("", prod.data, prod.horario, prod.acolitos, prod.evento, prod.local, false);
                 dgvEscala.Rows[rowIndex].Tag = new EscalaLinhaTag(prod.missaId, prod.acolitoIds);
+                AplicarDestaqueLinha(dgvEscala.Rows[rowIndex]);
 
                 if (prod.quantidadeSolicitada > prod.acolitoIds.Count)
                 {
@@ -356,6 +757,7 @@ namespace AppEscala
             }
 
             AtualizarBotaoAvisosEscala();
+            AtualizarDisponibilidadeOficializacao();
             if (avisosEscala.Count > 0)
                 ExibirAvisosEscala();
         }
@@ -385,6 +787,11 @@ namespace AppEscala
             var arquivo = JsonSerializer.Deserialize<EscalaJson>(File.ReadAllText(caminhoJson))
                 ?? throw new InvalidOperationException("JSON inválido.");
 
+            HashSet<int> acolitoIdsCadastrados = db.SelectAllAcolitos()
+                .Select(a => a.Id)
+                .ToHashSet();
+            List<int> acolitoIdsInvalidos = [];
+
             dgvEscala.Rows.Clear();
             avisosEscala = [];
             foreach (var linha in arquivo.Linhas)
@@ -399,11 +806,40 @@ namespace AppEscala
                     linha.Destacar);
 
                 var acolitoIds = linha.AcolitoIds?.Distinct().ToList() ?? [];
-                dgvEscala.Rows[rowIndex].Tag = new EscalaLinhaTag(linha.MissaId, acolitoIds);
+                var idsValidos = acolitoIds
+                    .Where(acolitoIdsCadastrados.Contains)
+                    .ToList();
+                var idsInvalidosLinha = acolitoIds
+                    .Except(idsValidos)
+                    .ToList();
+
+                if (idsInvalidosLinha.Count == 0)
+                {
+                    dgvEscala.Rows[rowIndex].Tag = new EscalaLinhaTag(linha.MissaId, idsValidos);
+                }
+                else
+                {
+                    acolitoIdsInvalidos.AddRange(idsInvalidosLinha);
+                    dgvEscala.Rows[rowIndex].Tag = null;
+                }
+
+                AplicarDestaqueLinha(dgvEscala.Rows[rowIndex]);
             }
 
-            btnOficializarEscala.Enabled = arquivo.Linhas.Any(l => l.AcolitoIds is not null && l.AcolitoIds.Count > 0);
             AtualizarBotaoAvisosEscala();
+            AtualizarDisponibilidadeOficializacao();
+
+            if (acolitoIdsInvalidos.Count > 0)
+            {
+                string ids = string.Join(", ", acolitoIdsInvalidos.Distinct().OrderBy(id => id));
+                MessageBox.Show(
+                    $"JSON importado, mas contém acólitos que não existem mais no cadastro: {ids}.\n\nRevise as linhas marcadas antes de oficializar.",
+                    "Verificar vínculos da escala",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
             MessageBox.Show("JSON importado com sucesso.");
         }
 
@@ -432,10 +868,11 @@ namespace AppEscala
 
                 int rowIndex = dgvEscala.Rows.Add("", produto.data, produto.horario, produto.acolitos, produto.evento, produto.local, false);
                 dgvEscala.Rows[rowIndex].Tag = vinculo.TodosReconhecidos ? new EscalaLinhaTag(null, vinculo.Ids) : null;
+                AplicarDestaqueLinha(dgvEscala.Rows[rowIndex]);
             }
 
-            btnOficializarEscala.Enabled = nomesNaoEncontrados.Count == 0;
             AtualizarBotaoAvisosEscala();
+            AtualizarDisponibilidadeOficializacao();
 
             if (nomesNaoEncontrados.Count > 0)
             {
@@ -571,8 +1008,8 @@ namespace AppEscala
         {
             List<int> ids = [];
             List<string> naoEncontrados = [];
-            var nomes = textoAcolitos
-                .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            var nomes = Regex.Split(textoAcolitos, @"[/;\r\n]+")
+                .Select(nome => nome.Trim())
                 .Where(nome => !string.IsNullOrWhiteSpace(nome))
                 .ToList();
 
@@ -588,7 +1025,21 @@ namespace AppEscala
         }
 
         private static string NormalizarNome(string nome)
-            => Regex.Replace(nome.Trim(), @"\s+", " ").ToUpperInvariant();
+        {
+            string texto = nome.Trim().Normalize(NormalizationForm.FormD);
+            StringBuilder builder = new();
+
+            foreach (char c in texto)
+            {
+                UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (category == UnicodeCategory.NonSpacingMark)
+                    continue;
+
+                builder.Append(char.IsLetterOrDigit(c) ? char.ToUpperInvariant(c) : ' ');
+            }
+
+            return Regex.Replace(builder.ToString(), @"\s+", " ").Trim();
+        }
 
         private sealed record EscalaJson(int Versao, DateTime GeradoEm, List<EscalaJsonLinha> Linhas);
 
@@ -708,26 +1159,27 @@ namespace AppEscala
             bool destacarLinha = prod.destacar || linhaEvento;
             iText.Kernel.Colors.Color corLinha = destacarLinha ? ColorConstants.RED : ColorConstants.BLACK;
 
-            tabela.AddCell(CriarCelulaBase(prod.data, fonte).SetTextAlignment(TextAlignment.CENTER).SetFontColor(corLinha));
-            tabela.AddCell(CriarCelulaBase(FormatarHorario(prod.horario), fonte)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontColor(corLinha));
-            tabela.AddCell(CriarCelulaBase(servico, fonte)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontColor(corLinha));
-            tabela.AddCell(CriarCelulaBase(observacao, fonte)
-                .SetTextAlignment(TextAlignment.LEFT)
-                .SetFontColor(corLinha));
-            tabela.AddCell(CriarCelulaBase(prod.local, fonte)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFontColor(corLinha));
+            tabela.AddCell(CriarCelulaBase(prod.data, fonte, corLinha).SetTextAlignment(TextAlignment.CENTER));
+            tabela.AddCell(CriarCelulaBase(FormatarHorario(prod.horario), fonte, corLinha)
+                .SetTextAlignment(TextAlignment.CENTER));
+            tabela.AddCell(CriarCelulaBase(servico, fonte, linhaEvento ? ColorConstants.RED : corLinha)
+                .SetTextAlignment(TextAlignment.CENTER));
+            tabela.AddCell(CriarCelulaBase(
+                    observacao,
+                    fonte,
+                    string.IsNullOrWhiteSpace(observacao) ? corLinha : ColorConstants.RED)
+                .SetTextAlignment(TextAlignment.LEFT));
+            tabela.AddCell(CriarCelulaBase(prod.local, fonte, corLinha)
+                .SetTextAlignment(TextAlignment.CENTER));
         }
 
-        private static Cell CriarCelulaBase(string texto, PdfFont fonte)
+        private static Cell CriarCelulaBase(string texto, PdfFont fonte, iText.Kernel.Colors.Color? corFonte = null)
             => new Cell()
-                .Add(new Paragraph(texto)
-                    .SetFont(fonte)
-                    .SetFontSize(9)
+                .Add(new Paragraph()
+                    .Add(new Text(texto)
+                        .SetFont(fonte)
+                        .SetFontSize(9)
+                        .SetFontColor(corFonte ?? ColorConstants.BLACK))
                     .SetMultipliedLeading(1.05f))
                 .SetBorder(new SolidBorder(ColorConstants.BLACK, 0.6f))
                 .SetPaddingLeft(2)
@@ -806,9 +1258,11 @@ namespace AppEscala
                     candidatos,
                     new Dictionary<int, DateTime>(),
                     new HashSet<int>(),
+                    new Dictionary<int, int>(),
                     qntAc,
                     DateTime.Today,
-                    new Random());
+                    new Random(),
+                    new HashSet<int>());
 
                 return string.Join("/ ", selecionados.Select(a => a.Nome));
             }
@@ -830,13 +1284,18 @@ namespace AppEscala
             private static int DiaSemanaParaId(DayOfWeek diaSemana)
                 => diaSemana == DayOfWeek.Sunday ? 7 : (int)diaSemana;
 
+            private static DateTime ObterChaveHorarioMissa(DateTime data)
+                => new(data.Year, data.Month, data.Day, data.Hour, data.Minute, 0);
+
             public static List<Produtos> GetListaProdutos()
             {
                 var listaMissa = db.SelectMissasAtivasNova();
                 var relProdutos = new List<Produtos>();
 
                 Dictionary<int, DateTime> ultimaEscalaPorAcolito = new();
+                Dictionary<int, int> missasNestaEscalaPorAcolito = new();
                 HashSet<int> acolitosJaNaEscala = [];
+                Dictionary<DateTime, HashSet<int>> acolitosPorHorario = new();
 
                 Random rand = new();
 
@@ -848,14 +1307,22 @@ namespace AppEscala
                     int diaSemanaId = DiaSemanaParaId(missa.Data.DayOfWeek);
 
                     var listaDisponiveis = ObterCandidatosDisponiveis(diaSemanaId, missa.Data.ToString("dd/MM/yyyy"), turno);
+                    var chaveHorario = ObterChaveHorarioMissa(missa.Data);
+                    if (!acolitosPorHorario.TryGetValue(chaveHorario, out var acolitosOcupadosNoHorario))
+                    {
+                        acolitosOcupadosNoHorario = [];
+                        acolitosPorHorario[chaveHorario] = acolitosOcupadosNoHorario;
+                    }
 
                     var selecionados = SelecionarAcolitosParaMissa(
                         listaDisponiveis,
                         ultimaEscalaPorAcolito,
                         acolitosJaNaEscala,
+                        missasNestaEscalaPorAcolito,
                         missa.Qnt_acolitos,
                         missa.Data,
-                        rand);
+                        rand,
+                        acolitosOcupadosNoHorario);
 
                     string acolitos = string.Join("/ ", selecionados.Select(a => a.Nome));
                     var acolitoIds = selecionados.Select(a => a.Id).ToList();
@@ -912,59 +1379,75 @@ namespace AppEscala
                 List<AcolitoEscala> listaDisponiveis,
                 Dictionary<int, DateTime> ultimaEscalaPorAcolito,
                 HashSet<int> acolitosJaNaEscala,
+                Dictionary<int, int> missasNestaEscalaPorAcolito,
                 int quantidade,
                 DateTime dataMissa,
-                Random rand)
+                Random rand,
+                HashSet<int> acolitosOcupadosNoHorario)
             {
-                var candidatosPorId = listaDisponiveis.ToDictionary(a => a.Id);
+                var candidatosLivresNoHorario = listaDisponiveis
+                    .Where(a => !acolitosOcupadosNoHorario.Contains(a.Id))
+                    .ToList();
+                var candidatosPorId = candidatosLivresNoHorario.ToDictionary(a => a.Id);
                 HashSet<int> selecionadosIds = [];
                 HashSet<int> padrinhosUsadosComAfilhado = [];
                 List<AcolitoEscala> selecionados = [];
 
-                var paresAcompanhamento = listaDisponiveis
-                    .Where(a => a.PrecisaAcompanhamento
-                        && a.PadrinhoId is not null
-                        && candidatosPorId.ContainsKey(a.PadrinhoId.Value))
-                    .OrderBy(a => acolitosJaNaEscala.Contains(a.Id) ? 1 : 0)
+                var candidatosOrdenados = candidatosLivresNoHorario
+                    .OrderBy(a => missasNestaEscalaPorAcolito.GetValueOrDefault(a.Id))
+                    .ThenBy(a => acolitosJaNaEscala.Contains(a.Id) ? 1 : 0)
+                    .ThenBy(a => a.PrecisaAcompanhamento(missasNestaEscalaPorAcolito.GetValueOrDefault(a.Id)) ? 0 : 1)
                     .ThenBy(a => ultimaEscalaPorAcolito.GetValueOrDefault(a.Id, DateTime.MinValue))
                     .ThenBy(_ => rand.Next())
                     .ToList();
 
-                foreach (var afilhado in paresAcompanhamento)
+                foreach (var candidato in candidatosOrdenados)
                 {
-                    int padrinhoId = afilhado.PadrinhoId!.Value;
-                    if (selecionados.Count + 2 > quantidade)
+                    if (selecionados.Count >= quantidade)
                         break;
 
-                    if (selecionadosIds.Contains(afilhado.Id)
-                        || selecionadosIds.Contains(padrinhoId)
+                    if (selecionadosIds.Contains(candidato.Id))
+                        continue;
+
+                    bool precisaAcompanhamento = candidato.PrecisaAcompanhamento(
+                        missasNestaEscalaPorAcolito.GetValueOrDefault(candidato.Id));
+
+                    if (!precisaAcompanhamento)
+                    {
+                        selecionados.Add(candidato);
+                        selecionadosIds.Add(candidato.Id);
+                        continue;
+                    }
+
+                    if (candidato.PadrinhoId is null
+                        || !candidatosPorId.ContainsKey(candidato.PadrinhoId.Value)
+                        || selecionados.Count + 2 > quantidade)
+                    {
+                        continue;
+                    }
+
+                    int padrinhoId = candidato.PadrinhoId.Value;
+                    if (selecionadosIds.Contains(padrinhoId)
+                        || acolitosOcupadosNoHorario.Contains(padrinhoId)
                         || padrinhosUsadosComAfilhado.Contains(padrinhoId))
                     {
                         continue;
                     }
 
-                    selecionados.Add(afilhado);
+                    selecionados.Add(candidato);
                     selecionados.Add(candidatosPorId[padrinhoId]);
-                    selecionadosIds.Add(afilhado.Id);
+                    selecionadosIds.Add(candidato.Id);
                     selecionadosIds.Add(padrinhoId);
                     padrinhosUsadosComAfilhado.Add(padrinhoId);
                 }
-
-                var restantes = listaDisponiveis
-                    .Where(a => !selecionadosIds.Contains(a.Id))
-                    .Where(a => !a.PrecisaAcompanhamento)
-                    .OrderBy(a => acolitosJaNaEscala.Contains(a.Id) ? 1 : 0)
-                    .ThenBy(a => ultimaEscalaPorAcolito.GetValueOrDefault(a.Id, DateTime.MinValue))
-                    .ThenBy(_ => rand.Next())
-                    .Take(Math.Max(0, quantidade - selecionados.Count))
-                    .ToList();
-
-                selecionados.AddRange(restantes);
 
                 foreach (var acolito in selecionados)
                 {
                     ultimaEscalaPorAcolito[acolito.Id] = dataMissa;
                     acolitosJaNaEscala.Add(acolito.Id);
+                    acolitosOcupadosNoHorario.Add(acolito.Id);
+                    missasNestaEscalaPorAcolito[acolito.Id] =
+                        missasNestaEscalaPorAcolito.GetValueOrDefault(acolito.Id) + 1;
                 }
 
                 return selecionados;
@@ -977,8 +1460,8 @@ namespace AppEscala
                 int MissasAcompanhadasNecessarias,
                 int MissasServidas)
             {
-                public bool PrecisaAcompanhamento =>
-                    PadrinhoId is not null && MissasServidas < MissasAcompanhadasNecessarias;
+                public bool PrecisaAcompanhamento(int missasNestaEscala) =>
+                    PadrinhoId is not null && MissasServidas + missasNestaEscala < MissasAcompanhadasNecessarias;
             }
 
             public static string FormatarDataEscala(DateTime data, string diaConvertido)
@@ -1061,6 +1544,7 @@ namespace AppEscala
             dgvEscala.ReadOnly = false;
             dgvEscala.MultiSelect = false;
             dgvEscala.SelectionMode = DataGridViewSelectionMode.CellSelect;
+            dgvEscala.EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2;
             dgvEscala.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvEscala.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             dgvEscala.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -1069,6 +1553,12 @@ namespace AppEscala
             dgvEscala.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvEscala.CellValueChanged -= dgvEscala_CellValueChanged;
             dgvEscala.CellValueChanged += dgvEscala_CellValueChanged;
+            dgvEscala.CurrentCellDirtyStateChanged -= dgvEscala_CurrentCellDirtyStateChanged;
+            dgvEscala.CurrentCellDirtyStateChanged += dgvEscala_CurrentCellDirtyStateChanged;
+            dgvEscala.RowsAdded -= dgvEscala_RowsChanged;
+            dgvEscala.RowsAdded += dgvEscala_RowsChanged;
+            dgvEscala.RowsRemoved -= dgvEscala_RowsChanged;
+            dgvEscala.RowsRemoved += dgvEscala_RowsChanged;
 
             dgvEscala.Columns.Add(new DataGridViewTextBoxColumn
             {
@@ -1081,8 +1571,12 @@ namespace AppEscala
             });
             dgvEscala.Columns.Add(CriarColunaTexto("data", "DATA", 95, DataGridViewAutoSizeColumnMode.AllCells));
             dgvEscala.Columns.Add(CriarColunaTexto("horario", "HORÁRIO", 80, DataGridViewAutoSizeColumnMode.AllCells));
-            dgvEscala.Columns.Add(CriarColunaTexto("acolitos", "ACÓLITOS", 260, DataGridViewAutoSizeColumnMode.Fill));
-            dgvEscala.Columns.Add(CriarColunaTexto("evento", "EVENTO", 130, DataGridViewAutoSizeColumnMode.Fill));
+            var colunaAcolitos = CriarColunaTexto("acolitos", "ACÓLITOS", 260, DataGridViewAutoSizeColumnMode.Fill);
+            colunaAcolitos.ReadOnly = true;
+            dgvEscala.Columns.Add(colunaAcolitos);
+            var colunaEvento = CriarColunaTexto("evento", "EVENTO", 130, DataGridViewAutoSizeColumnMode.Fill);
+            colunaEvento.DefaultCellStyle.ForeColor = System.Drawing.Color.Red;
+            dgvEscala.Columns.Add(colunaEvento);
             dgvEscala.Columns.Add(CriarColunaTexto("local", "LOCAL", 170, DataGridViewAutoSizeColumnMode.Fill));
             dgvEscala.Columns.Add(new DataGridViewCheckBoxColumn
             {
@@ -1139,10 +1633,90 @@ namespace AppEscala
         private void MarcarLinhaComAviso(int rowIndex)
         {
             var cell = dgvEscala.Rows[rowIndex].Cells["alerta"];
+            var estado = ObterEstadoAlerta(cell) with
+            {
+                Aviso = "Missa com menos acólitos que o solicitado"
+            };
+
+            AplicarEstadoAlerta(cell, estado);
+        }
+
+        private void MarcarLinhaComErroOficializacao(int rowIndex, string mensagem)
+        {
+            var cell = dgvEscala.Rows[rowIndex].Cells["alerta"];
+            var estado = ObterEstadoAlerta(cell) with
+            {
+                ErroOficializacao = mensagem
+            };
+
+            AplicarEstadoAlerta(cell, estado);
+        }
+
+        private void LimparErrosOficializacao()
+        {
+            if (!dgvEscala.Columns.Contains("alerta"))
+                return;
+
+            foreach (DataGridViewRow row in dgvEscala.Rows)
+            {
+                if (row.IsNewRow)
+                    continue;
+
+                var cell = row.Cells["alerta"];
+                var estado = ObterEstadoAlerta(cell);
+                if (estado.ErroOficializacao is null)
+                    continue;
+
+                AplicarEstadoAlerta(cell, estado with { ErroOficializacao = null });
+            }
+        }
+
+        private AlertCellState ObterEstadoAlerta(DataGridViewCell cell)
+            => cell.Tag as AlertCellState ?? new AlertCellState(null, null);
+
+        private void AplicarEstadoAlerta(DataGridViewCell cell, AlertCellState estado)
+        {
+            cell.Tag = estado;
+
+            if (estado.Aviso is null && estado.ErroOficializacao is null)
+            {
+                cell.Value = string.Empty;
+                cell.ToolTipText = string.Empty;
+                cell.Style.ForeColor = System.Drawing.Color.Empty;
+                cell.Style.Font = null;
+                return;
+            }
+
             cell.Value = "!";
             cell.Style.ForeColor = UiTheme.Danger;
             cell.Style.Font = new Font(dgvEscala.Font, FontStyle.Bold);
-            cell.ToolTipText = "Missa com menos acólitos que o solicitado";
+            cell.ToolTipText = string.Join(
+                "\n",
+                new[] { estado.ErroOficializacao, estado.Aviso }
+                    .Where(texto => !string.IsNullOrWhiteSpace(texto)));
+        }
+
+        private sealed record AlertCellState(string? Aviso, string? ErroOficializacao);
+
+        private void AplicarDestaqueLinha(DataGridViewRow row)
+        {
+            if (row.IsNewRow)
+                return;
+
+            bool destacar = row.Cells["destacar"].Value is bool value && value;
+            if (destacar)
+            {
+                row.DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(254, 226, 226);
+                row.DefaultCellStyle.ForeColor = UiTheme.Danger;
+                row.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(248, 113, 113);
+                row.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.White;
+                return;
+            }
+
+            row.DefaultCellStyle.BackColor = System.Drawing.Color.Empty;
+            row.DefaultCellStyle.ForeColor = System.Drawing.Color.Empty;
+            row.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.Empty;
+            row.DefaultCellStyle.SelectionForeColor = System.Drawing.Color.Empty;
         }
 
         private void ExibirAvisosEscala()

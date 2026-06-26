@@ -145,7 +145,15 @@ namespace AppEscala
                 Ativo = chkAtivo.Checked
             };
 
-            db.UpdateMissaNova(id_missa, dadosNovaMissaNova);
+            try
+            {
+                db.UpdateMissaNova(id_missa, dadosNovaMissaNova);
+            }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
 
             MessageBox.Show("A missa foi editada");
             DialogResult = DialogResult.OK;

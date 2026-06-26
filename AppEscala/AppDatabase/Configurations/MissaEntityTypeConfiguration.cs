@@ -12,6 +12,7 @@ public class MissaEntityTypeConfiguration : IEntityTypeConfiguration<MissaEntity
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Data).IsRequired();
         builder.Property(e => e.Ativo).HasDefaultValue(true);
+        builder.Property(e => e.AtivadaManual).HasDefaultValue(false);
         builder.HasOne(e => e.Igreja)
             .WithMany()
             .HasForeignKey(e => e.IgrejaId)

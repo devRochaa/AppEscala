@@ -184,7 +184,7 @@ public partial class AdicionarAcolitoView : UserControl
         dgvDatasIndisponiveis.Rows.Clear();
         datas.Clear();
         DiasDisponiveis.Clear();
-        cmbPadrinho.SelectedIndex = 0;
+        CarregarPadrinhos();
         numMissasNecessarias.Value = 0;
         check_semana.Checked = false;
         check_fimDsmn.Checked = false;
@@ -291,6 +291,11 @@ public partial class AdicionarAcolitoView : UserControl
         button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         button2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         Resize += (_, _) => AjustarLayout();
+        VisibleChanged += (_, _) =>
+        {
+            if (Visible)
+                CarregarPadrinhos();
+        };
     }
 
     private void ConfigurarPainelDisponibilidade()

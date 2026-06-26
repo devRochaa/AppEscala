@@ -109,7 +109,8 @@ internal static class UiTheme
         button.Cursor = Cursors.Hand;
         button.MinimumSize = new Size(36, 32);
 
-        if (button.Text.Contains("Excluir", StringComparison.OrdinalIgnoreCase))
+        if (button.Text.Contains("Excluir", StringComparison.OrdinalIgnoreCase) ||
+            button.Text.Contains("Inativar", StringComparison.OrdinalIgnoreCase))
             button.BackColor = Danger;
     }
 

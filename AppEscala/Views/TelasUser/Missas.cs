@@ -36,7 +36,7 @@ namespace AppEscala
 
             foreach (var missa in listaMissas)
             {
-                if (missa.Ativo && DateTime.Now > missa.Data)
+                if (missa.Ativo && !missa.AtivadaManual && DateTime.Now > missa.Data)
                     db.SetMissaAtiva(missa.idMissa, false);
             }
         }
@@ -123,7 +123,16 @@ namespace AppEscala
                 Qnt_acolitos = qntAcolitos
             };
 
-            db.InsertMissaNova(newMissa);
+            try
+            {
+                db.InsertMissaNova(newMissa);
+            }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
             MessageBox.Show("Missa Adicionada!");
             carregar_missas();
         }
@@ -274,6 +283,8 @@ namespace AppEscala
             btn_excluir.FlatStyle = FlatStyle.Flat;
             btn_excluir.FlatAppearance.BorderColor = Color.FromArgb(185, 28, 28);
             btn_excluir.FlatAppearance.BorderSize = 1;
+            btn_excluir.FlatAppearance.MouseOverBackColor = Color.FromArgb(185, 28, 28);
+            btn_excluir.FlatAppearance.MouseDownBackColor = Color.FromArgb(153, 27, 27);
             btn_excluir.UseVisualStyleBackColor = false;
         }
 

@@ -42,7 +42,6 @@
             sabado = new DataGridViewTextBoxColumn();
             domingo = new DataGridViewTextBoxColumn();
             oculto = new DataGridViewTextBoxColumn();
-            txt_aviso = new Label();
             btn_edit = new Button();
             ((System.ComponentModel.ISupportInitialize)dgv_acolitos).BeginInit();
             SuspendLayout();
@@ -164,16 +163,6 @@
             oculto.ReadOnly = true;
             oculto.Visible = false;
             // 
-            // txt_aviso
-            // 
-            txt_aviso.AutoSize = true;
-            txt_aviso.Location = new Point(268, 199);
-            txt_aviso.Name = "txt_aviso";
-            txt_aviso.Size = new Size(204, 15);
-            txt_aviso.TabIndex = 38;
-            txt_aviso.Text = "Não foi encontrado nenhum registro.";
-            txt_aviso.Visible = false;
-            // 
             // btn_edit
             // 
             btn_edit.Location = new Point(310, 310);
@@ -189,7 +178,6 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             Controls.Add(btn_edit);
-            Controls.Add(txt_aviso);
             Controls.Add(dgv_acolitos);
             Controls.Add(btn_buscar);
             Controls.Add(label2);
@@ -221,7 +209,6 @@
         private DataGridViewTextBoxColumn sabado;
         private DataGridViewTextBoxColumn domingo;
         private DataGridViewTextBoxColumn oculto;
-        private Label txt_aviso;
         private Button btn_edit;
     }
 }
