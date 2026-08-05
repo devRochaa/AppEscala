@@ -21,6 +21,7 @@ namespace AppEscala
         private readonly Panel menuPanel = new();
         private readonly Panel igrejasPanel = new();
         private readonly Button btnCadastrarIgreja = new();
+        private readonly Button btnEditarIgreja = new();
         private readonly DataGridView dgvIgrejas = new();
         private readonly Label lblIgrejasVazio = new();
         private readonly Database database = new();
@@ -443,6 +444,8 @@ namespace AppEscala
             label1.Text = $"App Escala | {titulo}";
             if (telaAtiva == igrejasPanel)
                 CarregarIgrejas();
+            else if (telaAtiva == missas1)
+                missas1.AtualizarDados();
 
             telaAtiva.Show();
             telaAtiva.BringToFront();
@@ -590,8 +593,16 @@ namespace AppEscala
             {
                 using form_igreja formIgreja = new();
                 if (formIgreja.ShowDialog() == DialogResult.OK)
+                {
                     CarregarIgrejas();
+                    missas1.AtualizarDados();
+                }
             };
+
+            btnEditarIgreja.Text = "Editar igreja";
+            btnEditarIgreja.Size = new Size(140, 38);
+            btnEditarIgreja.Location = new System.Drawing.Point(204, 120);
+            btnEditarIgreja.Click += (_, _) => EditarIgrejaSelecionada();
 
             dgvIgrejas.AllowUserToAddRows = false;
             dgvIgrejas.AllowUserToDeleteRows = false;
@@ -607,6 +618,11 @@ namespace AppEscala
             dgvIgrejas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvIgrejas.Size = new Size(560, 300);
             dgvIgrejas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvIgrejas.CellDoubleClick += (_, e) =>
+            {
+                if (e.RowIndex >= 0)
+                    EditarIgrejaSelecionada();
+            };
 
             lblIgrejasVazio.AutoSize = true;
             lblIgrejasVazio.Text = "Nenhuma igreja cadastrada.";
@@ -614,7 +630,7 @@ namespace AppEscala
             lblIgrejasVazio.Location = new System.Drawing.Point(40, 190);
             lblIgrejasVazio.Visible = false;
 
-            igrejasPanel.Controls.AddRange(new Control[] { titulo, descricao, btnCadastrarIgreja, dgvIgrejas, lblIgrejasVazio });
+            igrejasPanel.Controls.AddRange(new Control[] { titulo, descricao, btnCadastrarIgreja, btnEditarIgreja, dgvIgrejas, lblIgrejasVazio });
             UiTheme.Apply(igrejasPanel);
             titulo.Font = new Font("Segoe UI Semibold", 22F, FontStyle.Bold);
             titulo.ForeColor = UiTheme.Text;
@@ -631,6 +647,26 @@ namespace AppEscala
             bool vazio = dgvIgrejas.Rows.Count == 0;
             dgvIgrejas.Visible = !vazio;
             lblIgrejasVazio.Visible = vazio;
+            btnEditarIgreja.Enabled = !vazio;
+        }
+
+        private void EditarIgrejaSelecionada()
+        {
+            if (dgvIgrejas.CurrentRow is null)
+            {
+                MessageBox.Show("Selecione uma igreja para editar.");
+                return;
+            }
+
+            int id = Convert.ToInt32(dgvIgrejas.CurrentRow.Cells["id"].Value);
+            string nome = Convert.ToString(dgvIgrejas.CurrentRow.Cells["nome"].Value) ?? string.Empty;
+
+            using form_igreja formIgreja = new(new Models.Entities.IgrejaEntity { Id = id, Nome = nome });
+            if (formIgreja.ShowDialog() == DialogResult.OK)
+            {
+                CarregarIgrejas();
+                missas1.AtualizarDados();
+            }
         }
 
         private static Button CriarAtalho(string texto, EventHandler click)

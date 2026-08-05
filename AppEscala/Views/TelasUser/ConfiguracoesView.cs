@@ -9,6 +9,7 @@ namespace AppEscala;
 
 public sealed class ConfiguracoesView : UserControl
 {
+    private readonly Database db = new();
     private readonly Label titulo = new();
     private readonly Label descricao = new();
     private readonly Panel painelBackup = new();
@@ -23,12 +24,17 @@ public sealed class ConfiguracoesView : UserControl
     private readonly Label lblIndisponibilidadesTitulo = new();
     private readonly Label lblIndisponibilidadesDescricao = new();
     private readonly Button btnImportarIndisponibilidades = new();
+    private readonly Panel painelConfiguracoesMissa = new();
+    private readonly Label lblConfiguracoesMissaTitulo = new();
+    private readonly Label lblConfiguracoesMissaDescricao = new();
+    private readonly Button btnAbrirConfiguracoesMissa = new();
     private readonly Button btnAjuda = new();
     private readonly Label lblRodape = new();
     private AppSettings settings = AppSettings.Load();
 
     public ConfiguracoesView()
     {
+        db.Initialize();
         ConfigurarInterface();
     }
 
@@ -49,6 +55,7 @@ public sealed class ConfiguracoesView : UserControl
         ConfigurarPainelBackup();
         ConfigurarPainelGeracao();
         ConfigurarPainelIndisponibilidades();
+        ConfigurarPainelConfiguracoesMissa();
 
         btnAjuda.Text = "Ajuda";
         btnAjuda.Size = new Size(120, 38);
@@ -59,7 +66,7 @@ public sealed class ConfiguracoesView : UserControl
         lblRodape.Font = new Font("Segoe UI", 9F, FontStyle.Regular);
         lblRodape.ForeColor = Color.Gray;
 
-        Controls.AddRange(new Control[] { titulo, descricao, painelBackup, painelGeracao, painelIndisponibilidades, btnAjuda, lblRodape });
+        Controls.AddRange(new Control[] { titulo, descricao, painelBackup, painelGeracao, painelIndisponibilidades, painelConfiguracoesMissa, btnAjuda, lblRodape });
         Resize += (_, _) => AjustarLayout();
         AjustarLayout();
     }
@@ -130,6 +137,32 @@ public sealed class ConfiguracoesView : UserControl
         painelIndisponibilidades.Controls.AddRange(new Control[] { lblIndisponibilidadesTitulo, lblIndisponibilidadesDescricao, btnImportarIndisponibilidades });
     }
 
+    private void ConfigurarPainelConfiguracoesMissa()
+    {
+        UiTheme.StylePanelSurface(painelConfiguracoesMissa);
+
+        lblConfiguracoesMissaTitulo.Text = "Padroes para novas missas";
+        lblConfiguracoesMissaTitulo.AutoSize = true;
+        lblConfiguracoesMissaTitulo.Font = new Font("Segoe UI Semibold", 13F, FontStyle.Bold);
+        lblConfiguracoesMissaTitulo.ForeColor = UiTheme.Text;
+
+        lblConfiguracoesMissaDescricao.Text = "Defina quantidade de acolitos e horario que serao preenchidos automaticamente conforme igreja e/ou dia da semana.";
+        lblConfiguracoesMissaDescricao.AutoSize = false;
+        lblConfiguracoesMissaDescricao.ForeColor = UiTheme.MutedText;
+
+        btnAbrirConfiguracoesMissa.Text = "Configurar padroes";
+        btnAbrirConfiguracoesMissa.Size = new Size(170, 38);
+        btnAbrirConfiguracoesMissa.Click += btnAbrirConfiguracoesMissa_Click;
+        AplicarEstiloBotaoPrimario(btnAbrirConfiguracoesMissa);
+
+        painelConfiguracoesMissa.Controls.AddRange(new Control[]
+        {
+            lblConfiguracoesMissaTitulo,
+            lblConfiguracoesMissaDescricao,
+            btnAbrirConfiguracoesMissa
+        });
+    }
+
     private static void AplicarEstiloBotaoPrimario(Button button)
     {
         button.FlatStyle = FlatStyle.Flat;
@@ -139,6 +172,12 @@ public sealed class ConfiguracoesView : UserControl
         button.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
         button.Cursor = Cursors.Hand;
         button.UseVisualStyleBackColor = false;
+    }
+
+    private void btnAbrirConfiguracoesMissa_Click(object? sender, EventArgs e)
+    {
+        using FormConfiguracoesMissa form = new();
+        form.ShowDialog(this);
     }
 
     private void btnExportar_Click(object? sender, EventArgs e)
@@ -500,7 +539,25 @@ public sealed class ConfiguracoesView : UserControl
             btnImportarIndisponibilidades.Location = new Point(24, 112);
         }
 
-        btnAjuda.Location = new Point(margin, painelIndisponibilidades.Bottom + 22);
+        painelConfiguracoesMissa.Location = new Point(margin, painelIndisponibilidades.Bottom + 18);
+        painelConfiguracoesMissa.Size = new Size(contentWidth, 132);
+        lblConfiguracoesMissaTitulo.Location = new Point(24, 22);
+        lblConfiguracoesMissaDescricao.Location = new Point(24, 56);
+        btnAbrirConfiguracoesMissa.Size = new Size(170, 38);
+
+        if (painelConfiguracoesMissa.Width >= 560)
+        {
+            btnAbrirConfiguracoesMissa.Location = new Point(painelConfiguracoesMissa.Width - btnAbrirConfiguracoesMissa.Width - 24, 72);
+            lblConfiguracoesMissaDescricao.Size = new Size(Math.Max(240, btnAbrirConfiguracoesMissa.Left - 48), 48);
+        }
+        else
+        {
+            painelConfiguracoesMissa.Size = new Size(contentWidth, 164);
+            lblConfiguracoesMissaDescricao.Size = new Size(Math.Max(240, painelConfiguracoesMissa.Width - 48), 48);
+            btnAbrirConfiguracoesMissa.Location = new Point(24, 112);
+        }
+
+        btnAjuda.Location = new Point(margin, painelConfiguracoesMissa.Bottom + 22);
         lblRodape.Location = new Point(
             Math.Max(margin, margin + ((contentWidth - lblRodape.Width) / 2)),
             Math.Max(btnAjuda.Bottom + 22, Height - lblRodape.Height - 18));

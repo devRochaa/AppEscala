@@ -21,13 +21,14 @@ namespace AppEscala
         private void Missas_Load(object sender, EventArgs e)
         {
             AjustarLayout();
-            carregar_missas();
             MontarHorarios();
-            combobox_igreja();
 
             cmb_quant.Items.Clear();
             for (int i = 0; i <= 15; i++)
                 cmb_quant.Items.Add(i);
+
+            AtualizarDados();
+            AplicarConfiguracaoMissa();
         }
 
         private void ApagarMissasAntigas()
@@ -72,10 +73,27 @@ namespace AppEscala
 
         private void combobox_igreja()
         {
+            int? igrejaSelecionada = cmb_igrejas.SelectedItem is Item item ? item.Value : null;
+
             cmb_igrejas.Items.Clear();
             var listaIgreja = db.SelectAllIgreja();
             foreach (var igreja in listaIgreja)
-                cmb_igrejas.Items.Add(new Item { Display = igreja.Nome, Value = igreja.Id });
+            {
+                var novoItem = new Item { Display = igreja.Nome, Value = igreja.Id };
+                cmb_igrejas.Items.Add(novoItem);
+
+                if (igrejaSelecionada == igreja.Id)
+                    cmb_igrejas.SelectedItem = novoItem;
+            }
+
+            if (cmb_igrejas.SelectedItem is null && cmb_igrejas.Items.Count > 0)
+                cmb_igrejas.SelectedIndex = 0;
+        }
+
+        public void AtualizarDados()
+        {
+            carregar_missas();
+            combobox_igreja();
         }
 
         private void MontarHorarios()
@@ -141,7 +159,7 @@ namespace AppEscala
         {
             using form_igreja formIgreja = new();
             if (formIgreja.ShowDialog() == DialogResult.OK)
-                combobox_igreja();
+                AtualizarDados();
         }
 
         private void dgv_missas_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -231,12 +249,12 @@ namespace AppEscala
 
         private void btn_recarregarIgrejas_Click(object sender, EventArgs e)
         {
-            carregar_missas();
-            combobox_igreja();
+            AtualizarDados();
         }
 
         private void cmb_igrejas_SelectedIndexChanged(object sender, EventArgs e)
         {
+            AplicarConfiguracaoMissa();
         }
 
         private void dgv_missas_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -261,6 +279,7 @@ namespace AppEscala
             chk_mostrarInativas.Text = "Mostrar inativas";
             chk_mostrarInativas.Checked = false;
             ConfigurarBotaoInativar();
+            dateTimePicker1.ValueChanged += (_, _) => AplicarConfiguracaoMissa();
 
             cmb_igrejas.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             dateTimePicker1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
@@ -330,6 +349,27 @@ namespace AppEscala
 
             dgv_missas.Location = new Point(rightX, 68);
             dgv_missas.Size = new Size(rightWidth, Math.Max(220, Height - 92));
+        }
+
+        private void AplicarConfiguracaoMissa()
+        {
+            if (cmb_igrejas.SelectedItem is not Item igrejaSelecionada)
+                return;
+
+            var configuracao = db.BuscarConfiguracaoMissaAplicavel(igrejaSelecionada.Value, dateTimePicker1.Value.DayOfWeek);
+            if (configuracao is null)
+                return;
+
+            if (configuracao.QntAcolitos is int quantidade && quantidade >= 0 && quantidade < cmb_quant.Items.Count)
+                cmb_quant.SelectedIndex = quantidade;
+
+            if (configuracao.Horario is TimeSpan horario)
+            {
+                string horarioTexto = horario.ToString(@"hh\:mm");
+                int index = listBox1.Items.IndexOf(horarioTexto);
+                if (index >= 0)
+                    listBox1.SelectedIndex = index;
+            }
         }
     }
 }

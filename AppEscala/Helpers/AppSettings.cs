@@ -8,6 +8,8 @@ internal sealed class AppSettings
 
     public bool GerarJsonAoGerarPdf { get; set; } = true;
 
+    public string? DiretorioPadraoPdf { get; set; }
+
     public static string SettingsPath
         => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

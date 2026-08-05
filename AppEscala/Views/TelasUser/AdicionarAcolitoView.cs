@@ -345,7 +345,7 @@ public partial class AdicionarAcolitoView : UserControl
             (DayOfWeek.Wednesday, "Quarta"),
             (DayOfWeek.Thursday, "Quinta"),
             (DayOfWeek.Friday, "Sexta")
-        });
+        }, exibirCabecalho: true);
 
         panelFimSemana.Location = new Point(20, 348);
         panelFimSemana.Size = new Size(456, 70);
@@ -375,9 +375,19 @@ public partial class AdicionarAcolitoView : UserControl
         Controls.Add(panelDisponibilidade);
     }
 
-    private void CriarGrupoDias(Panel parent, (DayOfWeek Dia, string Nome)[] dias)
+    private void CriarGrupoDias(Panel parent, (DayOfWeek Dia, string Nome)[] dias, bool exibirCabecalho = false)
     {
-        int y = 0;
+        if (exibirCabecalho)
+        {
+            parent.Controls.AddRange(new Control[]
+            {
+                CriarLabelCabecalhoTurno("Manhã", 168),
+                CriarLabelCabecalhoTurno("Tarde", 258),
+                CriarLabelCabecalhoTurno("Noite", 348)
+            });
+        }
+
+        int y = exibirCabecalho ? 22 : 0;
         int index = 0;
         foreach (var dia in dias)
         {
@@ -405,6 +415,15 @@ public partial class AdicionarAcolitoView : UserControl
             index++;
         }
     }
+
+    private static Label CriarLabelCabecalhoTurno(string texto, int x)
+        => new()
+        {
+            AutoSize = true,
+            Text = texto,
+            ForeColor = UiTheme.MutedText,
+            Location = new Point(x, 0)
+        };
 
     private void CriarCheckTurno(Control parent, DayOfWeek dia, Turno turno, string texto, int x, int y)
     {
@@ -692,8 +711,12 @@ public partial class AdicionarAcolitoView : UserControl
         {
             if (control is Label label)
             {
-                if (label.Text == "Manhã" || label.Text == "Tarde" || label.Text == "Noite")
-                    label.Visible = false;
+                if (label.Text == "Manhã")
+                    label.Location = new Point(col1, label.Location.Y);
+                else if (label.Text == "Tarde")
+                    label.Location = new Point(col2, label.Location.Y);
+                else if (label.Text == "Noite")
+                    label.Location = new Point(col3, label.Location.Y);
             }
 
             if (control is Panel row)

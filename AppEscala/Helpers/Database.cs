@@ -81,6 +81,16 @@ public sealed class Database : IDisposable
             """);
         EnsureColumn("Missas", "Ativo", "INTEGER NOT NULL DEFAULT 1");
         EnsureColumn("Missas", "AtivadaManual", "INTEGER NOT NULL DEFAULT 0");
+
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS ConfiguracoesMissa (
+                Id INTEGER NOT NULL CONSTRAINT PK_ConfiguracoesMissa PRIMARY KEY AUTOINCREMENT,
+                IgrejaId INTEGER NULL,
+                DiaDaSemana INTEGER NULL,
+                QntAcolitos INTEGER NULL,
+                Horario TEXT NULL
+            );
+            """);
     }
 
     private AppDbContext Context
@@ -170,6 +180,79 @@ public sealed class Database : IDisposable
             .AsNoTracking()
             .OrderBy(i => i.Nome)
             .ToList();
+
+    public List<ConfiguracaoMissaDadosCompletos> SelectAllConfiguracoesMissa()
+        => Context.Set<ConfiguracaoMissaEntity>()
+            .Include(c => c.Igreja)
+            .AsNoTracking()
+            .OrderBy(c => c.Igreja == null ? string.Empty : c.Igreja.Nome)
+            .ThenBy(c => c.DiaDaSemana)
+            .Select(c => new ConfiguracaoMissaDadosCompletos
+            {
+                Id = c.Id,
+                IgrejaId = c.IgrejaId,
+                Igreja = c.Igreja != null ? c.Igreja.Nome : "Qualquer igreja",
+                DiaDaSemana = c.DiaDaSemana,
+                DiaDaSemanaNome = c.DiaDaSemana.HasValue ? DiaSemanaNome((DayOfWeek)c.DiaDaSemana.Value) : "Qualquer dia",
+                QntAcolitos = c.QntAcolitos,
+                Horario = c.Horario
+            })
+            .ToList();
+
+    public void InsertConfiguracaoMissa(ConfiguracaoMissaEntity configuracao)
+    {
+        ValidarConfiguracaoMissa(configuracao, null);
+        Context.Set<ConfiguracaoMissaEntity>().Add(configuracao);
+        Context.SaveChanges();
+    }
+
+    public void DeleteConfiguracaoMissa(int id)
+    {
+        var registro = Context.Set<ConfiguracaoMissaEntity>().Find(id)
+            ?? throw new InvalidOperationException("Configuracao nao encontrada.");
+
+        Context.Set<ConfiguracaoMissaEntity>().Remove(registro);
+        Context.SaveChanges();
+    }
+
+    public ConfiguracaoMissaDadosCompletos? BuscarConfiguracaoMissaAplicavel(int igrejaId, DayOfWeek diaDaSemana)
+    {
+        var aplicaveis = SelectAllConfiguracoesMissa()
+            .Where(c =>
+                (c.IgrejaId is null || c.IgrejaId == igrejaId) &&
+                (c.DiaDaSemana is null || c.DiaDaSemana == (int)diaDaSemana))
+            .ToList();
+
+        var configuracaoQuantidade = aplicaveis
+            .Where(c => c.QntAcolitos.HasValue)
+            .OrderByDescending(CalcularEspecificidadeConfiguracaoMissa)
+            .ThenByDescending(c => c.IgrejaId.HasValue)
+            .ThenByDescending(c => c.DiaDaSemana.HasValue)
+            .ThenByDescending(c => c.Id)
+            .FirstOrDefault();
+
+        var configuracaoHorario = aplicaveis
+            .Where(c => c.Horario.HasValue)
+            .OrderByDescending(CalcularEspecificidadeConfiguracaoMissa)
+            .ThenByDescending(c => c.IgrejaId.HasValue)
+            .ThenByDescending(c => c.DiaDaSemana.HasValue)
+            .ThenByDescending(c => c.Id)
+            .FirstOrDefault();
+
+        if (configuracaoQuantidade is null && configuracaoHorario is null)
+            return null;
+
+        return new ConfiguracaoMissaDadosCompletos
+        {
+            Id = 0,
+            IgrejaId = configuracaoQuantidade?.IgrejaId ?? configuracaoHorario?.IgrejaId,
+            Igreja = configuracaoQuantidade?.Igreja ?? configuracaoHorario?.Igreja ?? string.Empty,
+            DiaDaSemana = configuracaoQuantidade?.DiaDaSemana ?? configuracaoHorario?.DiaDaSemana,
+            DiaDaSemanaNome = configuracaoQuantidade?.DiaDaSemanaNome ?? configuracaoHorario?.DiaDaSemanaNome ?? string.Empty,
+            QntAcolitos = configuracaoQuantidade?.QntAcolitos,
+            Horario = configuracaoHorario?.Horario
+        };
+    }
 
     public List<AcolitoEntity> SelectAllAcolitos()
         => Context.Set<AcolitoEntity>()
@@ -270,6 +353,11 @@ public sealed class Database : IDisposable
         if (possuiMissas)
             throw new InvalidOperationException("Nao e possivel excluir esta igreja porque existem missas vinculadas a ela.");
 
+        var configuracoes = Context.Set<ConfiguracaoMissaEntity>()
+            .Where(c => c.IgrejaId == id)
+            .ToList();
+
+        Context.Set<ConfiguracaoMissaEntity>().RemoveRange(configuracoes);
         Context.Set<IgrejaEntity>().Remove(registro);
         Context.SaveChanges();
     }
@@ -708,6 +796,32 @@ public sealed class Database : IDisposable
     private static string NormalizarDescricaoMissa(string descricao)
         => descricao.Trim();
 
+    private void ValidarConfiguracaoMissa(ConfiguracaoMissaEntity configuracao, int? ignorarId)
+    {
+        if (configuracao.QntAcolitos is null && configuracao.Horario is null)
+            throw new InvalidOperationException("Informe a quantidade de acolitos, o horario ou ambos.");
+
+        if (configuracao.QntAcolitos is < 0 or > 15)
+            throw new InvalidOperationException("A quantidade de acolitos deve estar entre 0 e 15.");
+
+        if (configuracao.DiaDaSemana is not null && !Enum.IsDefined(typeof(DayOfWeek), configuracao.DiaDaSemana.Value))
+            throw new InvalidOperationException("Dia da semana invalido.");
+
+        bool existe = Context.Set<ConfiguracaoMissaEntity>()
+            .AsNoTracking()
+            .Any(c =>
+                (c.IgrejaId == configuracao.IgrejaId || (c.IgrejaId == null && configuracao.IgrejaId == null)) &&
+                (c.DiaDaSemana == configuracao.DiaDaSemana || (c.DiaDaSemana == null && configuracao.DiaDaSemana == null)) &&
+                (ignorarId == null || c.Id != ignorarId.Value));
+
+        if (existe)
+            throw new InvalidOperationException("Ja existe uma configuracao para essa igreja e esse dia.");
+    }
+
+    private static int CalcularEspecificidadeConfiguracaoMissa(ConfiguracaoMissaDadosCompletos configuracao)
+        => (configuracao.IgrejaId.HasValue ? 1 : 0) +
+           (configuracao.DiaDaSemana.HasValue ? 1 : 0);
+
     private void EnsureColumn(string tableName, string columnName, string definition)
     {
         ValidarIdentificadorSql(tableName);
@@ -801,6 +915,19 @@ public sealed class Database : IDisposable
         public int Id_igreja { get; set; }
         public bool Ativo { get; set; }
         public bool AtivadaManual { get; set; }
+    }
+
+    public sealed class ConfiguracaoMissaDadosCompletos
+    {
+        public int Id { get; set; }
+        public int? IgrejaId { get; set; }
+        public string Igreja { get; set; } = string.Empty;
+        public int? DiaDaSemana { get; set; }
+        public string DiaDaSemanaNome { get; set; } = string.Empty;
+        public int? QntAcolitos { get; set; }
+        public TimeSpan? Horario { get; set; }
+        public string QuantidadeTexto => QntAcolitos?.ToString() ?? "Nao alterar";
+        public string HorarioTexto => Horario?.ToString(@"hh\:mm") ?? "Nao alterar";
     }
 
     public sealed record DiaSemanaItem(int Id, string Nome);

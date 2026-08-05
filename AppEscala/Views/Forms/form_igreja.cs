@@ -6,6 +6,7 @@ namespace AppEscala
     public partial class form_igreja : Form
     {
         private readonly Database db = new();
+        private readonly int? igrejaId;
 
         public form_igreja()
         {
@@ -18,6 +19,15 @@ namespace AppEscala
             db.Initialize();
         }
 
+        public form_igreja(IgrejaEntity igreja)
+            : this()
+        {
+            igrejaId = igreja.Id;
+            Text = "Editar igreja";
+            txt_igreja.Text = igreja.Nome;
+            txt_igreja.SelectAll();
+        }
+
         private void btn_add_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txt_igreja.Text))
@@ -26,10 +36,22 @@ namespace AppEscala
                 return;
             }
 
-            IgrejaEntity novaIgreja = new() { Nome = txt_igreja.Text.Trim() };
-            db.InsertIgreja(novaIgreja);
-            DialogResult = DialogResult.OK;
-            Close();
+            try
+            {
+                IgrejaEntity igreja = new() { Nome = txt_igreja.Text.Trim() };
+
+                if (igrejaId is null)
+                    db.InsertIgreja(igreja);
+                else
+                    db.UpdateIgrejas(igrejaId.Value, igreja);
+
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Erro ao salvar igreja", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }
