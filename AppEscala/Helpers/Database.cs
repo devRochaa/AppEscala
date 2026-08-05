@@ -5,12 +5,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AppEscala.Helpers;
 
-public sealed class Database
+public sealed class Database : IDisposable
 {
+    private static readonly object InstancesLock = new();
+    private static readonly List<WeakReference<Database>> Instances = [];
     private AppDbContext? db;
+    private bool disposed;
+
+    public Database()
+    {
+        lock (InstancesLock)
+            Instances.Add(new WeakReference<Database>(this));
+    }
 
     public void Initialize()
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        db?.Dispose();
         db = new AppDbContext();
         db.Database.EnsureCreated();
         EnsureSchema();
@@ -21,9 +32,14 @@ public sealed class Database
         Context.Database.ExecuteSqlRaw("""
             CREATE TABLE IF NOT EXISTS Acolitos (
                 Id INTEGER NOT NULL CONSTRAINT PK_Acolitos PRIMARY KEY AUTOINCREMENT,
-                Nome TEXT NOT NULL
+                Nome TEXT NOT NULL,
+                PadrinhoId INTEGER NULL,
+                MissasAcompanhadasNecessarias INTEGER NOT NULL DEFAULT 0,
+                MissasServidas INTEGER NOT NULL DEFAULT 0
             );
             """);
+        EnsureAcolitoColumns();
+        EnsureAcolitoNomeUnicoIndex();
 
         Context.Database.ExecuteSqlRaw("""
             CREATE TABLE IF NOT EXISTS AcolitoDisponibilidade (
@@ -58,7 +74,21 @@ public sealed class Database
                 IgrejaId INTEGER NOT NULL,
                 Data TEXT NOT NULL,
                 Descricao TEXT NOT NULL,
-                QntAcolitos INTEGER NOT NULL
+                QntAcolitos INTEGER NOT NULL,
+                Ativo INTEGER NOT NULL DEFAULT 1,
+                AtivadaManual INTEGER NOT NULL DEFAULT 0
+            );
+            """);
+        EnsureColumn("Missas", "Ativo", "INTEGER NOT NULL DEFAULT 1");
+        EnsureColumn("Missas", "AtivadaManual", "INTEGER NOT NULL DEFAULT 0");
+
+        Context.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS ConfiguracoesMissa (
+                Id INTEGER NOT NULL CONSTRAINT PK_ConfiguracoesMissa PRIMARY KEY AUTOINCREMENT,
+                IgrejaId INTEGER NULL,
+                DiaDaSemana INTEGER NULL,
+                QntAcolitos INTEGER NULL,
+                Horario TEXT NULL
             );
             """);
     }
@@ -67,6 +97,8 @@ public sealed class Database
     {
         get
         {
+            ObjectDisposedException.ThrowIf(disposed, this);
+
             if (db is null)
                 Initialize();
 
@@ -74,8 +106,37 @@ public sealed class Database
         }
     }
 
+    public static void DisposeAll()
+    {
+        lock (InstancesLock)
+        {
+            foreach (var reference in Instances.ToList())
+            {
+                if (reference.TryGetTarget(out var database))
+                    database.CloseContext();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+            return;
+
+        CloseContext();
+        disposed = true;
+    }
+
+    private void CloseContext()
+    {
+        db?.Dispose();
+        db = null;
+    }
+
     public int InsertAcolito(AcolitoEntity acolito)
     {
+        acolito.Nome = NormalizarNomeAcolito(acolito.Nome);
+        ValidarNomeAcolitoUnico(acolito.Nome, null);
         Context.Set<AcolitoEntity>().Add(acolito);
         Context.SaveChanges();
         return acolito.Id;
@@ -120,8 +181,82 @@ public sealed class Database
             .OrderBy(i => i.Nome)
             .ToList();
 
+    public List<ConfiguracaoMissaDadosCompletos> SelectAllConfiguracoesMissa()
+        => Context.Set<ConfiguracaoMissaEntity>()
+            .Include(c => c.Igreja)
+            .AsNoTracking()
+            .OrderBy(c => c.Igreja == null ? string.Empty : c.Igreja.Nome)
+            .ThenBy(c => c.DiaDaSemana)
+            .Select(c => new ConfiguracaoMissaDadosCompletos
+            {
+                Id = c.Id,
+                IgrejaId = c.IgrejaId,
+                Igreja = c.Igreja != null ? c.Igreja.Nome : "Qualquer igreja",
+                DiaDaSemana = c.DiaDaSemana,
+                DiaDaSemanaNome = c.DiaDaSemana.HasValue ? DiaSemanaNome((DayOfWeek)c.DiaDaSemana.Value) : "Qualquer dia",
+                QntAcolitos = c.QntAcolitos,
+                Horario = c.Horario
+            })
+            .ToList();
+
+    public void InsertConfiguracaoMissa(ConfiguracaoMissaEntity configuracao)
+    {
+        ValidarConfiguracaoMissa(configuracao, null);
+        Context.Set<ConfiguracaoMissaEntity>().Add(configuracao);
+        Context.SaveChanges();
+    }
+
+    public void DeleteConfiguracaoMissa(int id)
+    {
+        var registro = Context.Set<ConfiguracaoMissaEntity>().Find(id)
+            ?? throw new InvalidOperationException("Configuracao nao encontrada.");
+
+        Context.Set<ConfiguracaoMissaEntity>().Remove(registro);
+        Context.SaveChanges();
+    }
+
+    public ConfiguracaoMissaDadosCompletos? BuscarConfiguracaoMissaAplicavel(int igrejaId, DayOfWeek diaDaSemana)
+    {
+        var aplicaveis = SelectAllConfiguracoesMissa()
+            .Where(c =>
+                (c.IgrejaId is null || c.IgrejaId == igrejaId) &&
+                (c.DiaDaSemana is null || c.DiaDaSemana == (int)diaDaSemana))
+            .ToList();
+
+        var configuracaoQuantidade = aplicaveis
+            .Where(c => c.QntAcolitos.HasValue)
+            .OrderByDescending(CalcularEspecificidadeConfiguracaoMissa)
+            .ThenByDescending(c => c.IgrejaId.HasValue)
+            .ThenByDescending(c => c.DiaDaSemana.HasValue)
+            .ThenByDescending(c => c.Id)
+            .FirstOrDefault();
+
+        var configuracaoHorario = aplicaveis
+            .Where(c => c.Horario.HasValue)
+            .OrderByDescending(CalcularEspecificidadeConfiguracaoMissa)
+            .ThenByDescending(c => c.IgrejaId.HasValue)
+            .ThenByDescending(c => c.DiaDaSemana.HasValue)
+            .ThenByDescending(c => c.Id)
+            .FirstOrDefault();
+
+        if (configuracaoQuantidade is null && configuracaoHorario is null)
+            return null;
+
+        return new ConfiguracaoMissaDadosCompletos
+        {
+            Id = 0,
+            IgrejaId = configuracaoQuantidade?.IgrejaId ?? configuracaoHorario?.IgrejaId,
+            Igreja = configuracaoQuantidade?.Igreja ?? configuracaoHorario?.Igreja ?? string.Empty,
+            DiaDaSemana = configuracaoQuantidade?.DiaDaSemana ?? configuracaoHorario?.DiaDaSemana,
+            DiaDaSemanaNome = configuracaoQuantidade?.DiaDaSemanaNome ?? configuracaoHorario?.DiaDaSemanaNome ?? string.Empty,
+            QntAcolitos = configuracaoQuantidade?.QntAcolitos,
+            Horario = configuracaoHorario?.Horario
+        };
+    }
+
     public List<AcolitoEntity> SelectAllAcolitos()
         => Context.Set<AcolitoEntity>()
+            .Include(a => a.Padrinho)
             .AsNoTracking()
             .OrderBy(a => a.Nome)
             .ToList();
@@ -131,10 +266,42 @@ public sealed class Database
         if (id is null)
             return;
 
+        nome = NormalizarNomeAcolito(nome);
+        ValidarNomeAcolitoUnico(nome, id.Value);
+
         var registro = Context.Set<AcolitoEntity>().Find(id.Value)
             ?? throw new InvalidOperationException("Acolito nao encontrado.");
 
         registro.Nome = nome;
+        Context.SaveChanges();
+    }
+
+    public void UpdateAcolito(
+        int? id,
+        string nome,
+        int? padrinhoId,
+        int missasAcompanhadasNecessarias,
+        int missasServidas)
+    {
+        if (id is null)
+            return;
+
+        nome = NormalizarNomeAcolito(nome);
+        ValidarNomeAcolitoUnico(nome, id.Value);
+
+        if (padrinhoId == id.Value)
+            throw new InvalidOperationException("O acólito não pode ser padrinho dele mesmo.");
+
+        if (padrinhoId is not null && CriariaCicloDePadrinhos(id.Value, padrinhoId.Value))
+            throw new InvalidOperationException("Essa relação criaria um ciclo de padrinhos.");
+
+        var registro = Context.Set<AcolitoEntity>().Find(id.Value)
+            ?? throw new InvalidOperationException("Acolito nao encontrado.");
+
+        registro.Nome = nome;
+        registro.PadrinhoId = padrinhoId;
+        registro.MissasAcompanhadasNecessarias = Math.Max(0, missasAcompanhadasNecessarias);
+        registro.MissasServidas = Math.Max(0, missasServidas);
         Context.SaveChanges();
     }
 
@@ -152,6 +319,12 @@ public sealed class Database
         var compromissos = Context.Set<AcolitoCompromissosEntity>()
             .Where(d => d.Id_acolitos == id.Value)
             .ToList();
+        var afilhados = Context.Set<AcolitoEntity>()
+            .Where(a => a.PadrinhoId == id.Value)
+            .ToList();
+
+        foreach (var afilhado in afilhados)
+            afilhado.PadrinhoId = null;
 
         Context.Set<AcolitoDisponibilidadeEntity>().RemoveRange(disponibilidades);
         Context.Set<AcolitoCompromissosEntity>().RemoveRange(compromissos);
@@ -173,6 +346,18 @@ public sealed class Database
         var registro = Context.Set<IgrejaEntity>().Find(id)
             ?? throw new InvalidOperationException("Registro nao encontrado.");
 
+        bool possuiMissas = Context.Set<MissaEntity>()
+            .AsNoTracking()
+            .Any(m => m.IgrejaId == id);
+
+        if (possuiMissas)
+            throw new InvalidOperationException("Nao e possivel excluir esta igreja porque existem missas vinculadas a ela.");
+
+        var configuracoes = Context.Set<ConfiguracaoMissaEntity>()
+            .Where(c => c.IgrejaId == id)
+            .ToList();
+
+        Context.Set<ConfiguracaoMissaEntity>().RemoveRange(configuracoes);
         Context.Set<IgrejaEntity>().Remove(registro);
         Context.SaveChanges();
     }
@@ -342,6 +527,8 @@ public sealed class Database
 
     public void InsertMissaNova(MissaEntity dadosMissa)
     {
+        dadosMissa.Descricao = NormalizarDescricaoMissa(dadosMissa.Descricao);
+        ValidarMissaUnica(dadosMissa, null);
         Context.Set<MissaEntity>().Add(dadosMissa);
         Context.SaveChanges();
     }
@@ -359,19 +546,46 @@ public sealed class Database
         var registro = Context.Set<MissaEntity>().Find(id.Value)
             ?? throw new InvalidOperationException("Missa nao encontrada.");
 
+        dadosMissa.Descricao = NormalizarDescricaoMissa(dadosMissa.Descricao);
+        ValidarMissaUnica(dadosMissa, id.Value);
+
         registro.IgrejaId = dadosMissa.IgrejaId;
         registro.Data = dadosMissa.Data;
         registro.Descricao = dadosMissa.Descricao;
         registro.QntAcolitos = dadosMissa.QntAcolitos;
+        if (!registro.Ativo && dadosMissa.Ativo)
+            registro.AtivadaManual = true;
+        registro.Ativo = dadosMissa.Ativo;
         Context.SaveChanges();
     }
 
     public void DeleteMissaNova(int idMissa)
+        => SetMissaAtiva(idMissa, false);
+
+    public void SetMissaAtiva(int idMissa, bool ativo)
     {
         var registro = Context.Set<MissaEntity>().Find(idMissa)
             ?? throw new InvalidOperationException("Missa nao encontrada.");
 
-        Context.Set<MissaEntity>().Remove(registro);
+        if (!registro.Ativo && ativo)
+            registro.AtivadaManual = true;
+        registro.Ativo = ativo;
+        Context.SaveChanges();
+    }
+
+    public void InativarMissas(IEnumerable<int> missaIds)
+    {
+        var ids = missaIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return;
+
+        var missas = Context.Set<MissaEntity>()
+            .Where(m => ids.Contains(m.Id))
+            .ToList();
+
+        foreach (var missa in missas)
+            missa.Ativo = false;
+
         Context.SaveChanges();
     }
 
@@ -387,8 +601,15 @@ public sealed class Database
                 idMissa = m.Id,
                 Descricao = m.Descricao,
                 Qnt_acolitos = m.QntAcolitos,
-                Id_igreja = m.IgrejaId
+                Id_igreja = m.IgrejaId,
+                Ativo = m.Ativo,
+                AtivadaManual = m.AtivadaManual
             })
+            .ToList();
+
+    public List<MissaNovaDadosCompletos> SelectMissasAtivasNova()
+        => SelectAllMissasNova()
+            .Where(m => m.Ativo)
             .ToList();
 
     public List<AcolitoDisponibilidade> SelecionarAcolitoPorDias(int[] diasNum)
@@ -420,14 +641,43 @@ public sealed class Database
             return null;
 
         return Context.Set<AcolitoEntity>()
+            .Include(a => a.Padrinho)
             .AsNoTracking()
             .FirstOrDefault(a => a.Id == id.Value);
+    }
+
+    public AcolitoEntity? SelectAcolitoPorNome(string nome)
+    {
+        string nomeNormalizado = NormalizarNomeAcolito(nome);
+        return Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .FirstOrDefault(a => a.Nome.ToUpper() == nomeNormalizado.ToUpper());
+    }
+
+    public void IncrementarMissasServidas(IEnumerable<int> acolitoIds)
+    {
+        var incrementosPorId = acolitoIds
+            .GroupBy(id => id)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        if (incrementosPorId.Count == 0)
+            return;
+
+        var acolitos = Context.Set<AcolitoEntity>()
+            .Where(a => incrementosPorId.Keys.Contains(a.Id))
+            .ToList();
+
+        foreach (var acolito in acolitos)
+            acolito.MissasServidas += incrementosPorId[acolito.Id];
+
+        Context.SaveChanges();
     }
 
     private IEnumerable<AcolitoDisponibilidade> QueryAcolitosDisponibilidade()
     {
         var disponibilidades = Context.Set<AcolitoDisponibilidadeEntity>()
             .Include(d => d.Acolito)
+            .ThenInclude(a => a!.Padrinho)
             .AsNoTracking()
             .OrderBy(d => d.AcolitoId)
             .ThenBy(d => d.DiaDaSemana)
@@ -438,6 +688,10 @@ public sealed class Database
             .Select(d => new AcolitoDisponibilidade
             {
                 Nome = d.Acolito != null ? d.Acolito.Nome : string.Empty,
+                PadrinhoId = d.Acolito?.PadrinhoId,
+                NomePadrinho = d.Acolito?.Padrinho?.Nome ?? string.Empty,
+                MissasAcompanhadasNecessarias = d.Acolito?.MissasAcompanhadasNecessarias ?? 0,
+                MissasServidas = d.Acolito?.MissasServidas ?? 0,
                 DiaSemana = DiaSemanaNome(d.DiaDaSemana),
                 Turno = TurnoNome(d.Turno),
                 IdDiaSemana = d.IdDiaSemana,
@@ -454,7 +708,11 @@ public sealed class Database
             .Select(a => new AcolitoDisponibilidade
             {
                 Nome = a.Nome,
-                Id_acolito = a.Id
+                Id_acolito = a.Id,
+                PadrinhoId = a.PadrinhoId,
+                NomePadrinho = a.Padrinho != null ? a.Padrinho.Nome : string.Empty,
+                MissasAcompanhadasNecessarias = a.MissasAcompanhadasNecessarias,
+                MissasServidas = a.MissasServidas
             })
             .ToList();
 
@@ -479,6 +737,136 @@ public sealed class Database
 
     private static Turno TurnoFromLegacyId(int id)
         => Enum.IsDefined(typeof(Turno), id) ? (Turno)id : Turno.None;
+
+    private void EnsureAcolitoColumns()
+    {
+        EnsureColumn("Acolitos", "PadrinhoId", "INTEGER NULL");
+        EnsureColumn("Acolitos", "MissasAcompanhadasNecessarias", "INTEGER NOT NULL DEFAULT 0");
+        EnsureColumn("Acolitos", "MissasServidas", "INTEGER NOT NULL DEFAULT 0");
+    }
+
+    private void EnsureAcolitoNomeUnicoIndex()
+    {
+        var duplicados = Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .GroupBy(a => a.Nome.ToUpper())
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        if (duplicados.Count > 0)
+            throw new InvalidOperationException("Existem acólitos com nomes duplicados. Corrija os cadastros antes de continuar.");
+
+        Context.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_Acolitos_Nome_Unico ON Acolitos (Nome COLLATE NOCASE)");
+    }
+
+    private void ValidarNomeAcolitoUnico(string nome, int? ignorarId)
+    {
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new InvalidOperationException("O nome do acólito não pode ficar vazio.");
+
+        bool existe = Context.Set<AcolitoEntity>()
+            .AsNoTracking()
+            .Any(a => a.Nome.ToUpper() == nome.ToUpper() && (ignorarId == null || a.Id != ignorarId.Value));
+
+        if (existe)
+            throw new InvalidOperationException("Já existe um acólito cadastrado com esse nome.");
+    }
+
+    private static string NormalizarNomeAcolito(string nome)
+        => nome.Trim();
+
+    private void ValidarMissaUnica(MissaEntity missa, int? ignorarId)
+    {
+        if (!missa.Ativo)
+            return;
+
+        bool existe = Context.Set<MissaEntity>()
+            .AsNoTracking()
+            .Any(m =>
+                m.Ativo &&
+                m.Data == missa.Data &&
+                m.IgrejaId == missa.IgrejaId &&
+                (ignorarId == null || m.Id != ignorarId.Value));
+
+        if (existe)
+            throw new InvalidOperationException("Ja existe uma missa cadastrada com a mesma data, horario e local.");
+    }
+
+    private static string NormalizarDescricaoMissa(string descricao)
+        => descricao.Trim();
+
+    private void ValidarConfiguracaoMissa(ConfiguracaoMissaEntity configuracao, int? ignorarId)
+    {
+        if (configuracao.QntAcolitos is null && configuracao.Horario is null)
+            throw new InvalidOperationException("Informe a quantidade de acolitos, o horario ou ambos.");
+
+        if (configuracao.QntAcolitos is < 0 or > 15)
+            throw new InvalidOperationException("A quantidade de acolitos deve estar entre 0 e 15.");
+
+        if (configuracao.DiaDaSemana is not null && !Enum.IsDefined(typeof(DayOfWeek), configuracao.DiaDaSemana.Value))
+            throw new InvalidOperationException("Dia da semana invalido.");
+
+        bool existe = Context.Set<ConfiguracaoMissaEntity>()
+            .AsNoTracking()
+            .Any(c =>
+                (c.IgrejaId == configuracao.IgrejaId || (c.IgrejaId == null && configuracao.IgrejaId == null)) &&
+                (c.DiaDaSemana == configuracao.DiaDaSemana || (c.DiaDaSemana == null && configuracao.DiaDaSemana == null)) &&
+                (ignorarId == null || c.Id != ignorarId.Value));
+
+        if (existe)
+            throw new InvalidOperationException("Ja existe uma configuracao para essa igreja e esse dia.");
+    }
+
+    private static int CalcularEspecificidadeConfiguracaoMissa(ConfiguracaoMissaDadosCompletos configuracao)
+        => (configuracao.IgrejaId.HasValue ? 1 : 0) +
+           (configuracao.DiaDaSemana.HasValue ? 1 : 0);
+
+    private void EnsureColumn(string tableName, string columnName, string definition)
+    {
+        ValidarIdentificadorSql(tableName);
+        ValidarIdentificadorSql(columnName);
+
+        string pragmaSql = $"SELECT name AS Value FROM pragma_table_info('{tableName}')";
+        var columns = Context.Database
+            .SqlQueryRaw<string>(pragmaSql)
+            .ToList();
+
+        if (columns.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            return;
+
+        string alterSql = $"ALTER TABLE {tableName} ADD COLUMN {columnName} {definition}";
+        Context.Database.ExecuteSqlRaw(alterSql);
+    }
+
+    private static void ValidarIdentificadorSql(string identifier)
+    {
+        if (identifier.Any(c => !char.IsLetterOrDigit(c) && c != '_'))
+            throw new InvalidOperationException("Identificador SQL invalido.");
+    }
+
+    private bool CriariaCicloDePadrinhos(int acolitoId, int padrinhoId)
+    {
+        int? atual = padrinhoId;
+        HashSet<int> visitados = [];
+
+        while (atual is not null)
+        {
+            if (atual == acolitoId)
+                return true;
+
+            if (!visitados.Add(atual.Value))
+                return true;
+
+            atual = Context.Set<AcolitoEntity>()
+                .AsNoTracking()
+                .Where(a => a.Id == atual.Value)
+                .Select(a => a.PadrinhoId)
+                .FirstOrDefault();
+        }
+
+        return false;
+    }
 
     private static string DiaSemanaNome(DayOfWeek day)
         => day switch
@@ -505,6 +893,11 @@ public sealed class Database
     public sealed class AcolitoDisponibilidade
     {
         public string Nome { get; set; } = string.Empty;
+        public int? PadrinhoId { get; set; }
+        public string NomePadrinho { get; set; } = string.Empty;
+        public int MissasAcompanhadasNecessarias { get; set; }
+        public int MissasServidas { get; set; }
+        public bool PrecisaAcompanhamento => PadrinhoId is not null && MissasServidas < MissasAcompanhadasNecessarias;
         public string DiaSemana { get; set; } = string.Empty;
         public string Turno { get; set; } = string.Empty;
         public int IdDiaSemana { get; set; }
@@ -520,6 +913,21 @@ public sealed class Database
         public string Descricao { get; set; } = string.Empty;
         public int Qnt_acolitos { get; set; }
         public int Id_igreja { get; set; }
+        public bool Ativo { get; set; }
+        public bool AtivadaManual { get; set; }
+    }
+
+    public sealed class ConfiguracaoMissaDadosCompletos
+    {
+        public int Id { get; set; }
+        public int? IgrejaId { get; set; }
+        public string Igreja { get; set; } = string.Empty;
+        public int? DiaDaSemana { get; set; }
+        public string DiaDaSemanaNome { get; set; } = string.Empty;
+        public int? QntAcolitos { get; set; }
+        public TimeSpan? Horario { get; set; }
+        public string QuantidadeTexto => QntAcolitos?.ToString() ?? "Nao alterar";
+        public string HorarioTexto => Horario?.ToString(@"hh\:mm") ?? "Nao alterar";
     }
 
     public sealed record DiaSemanaItem(int Id, string Nome);

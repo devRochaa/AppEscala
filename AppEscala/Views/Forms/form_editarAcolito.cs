@@ -18,6 +18,10 @@ namespace AppEscala.Views
         private readonly Button btnExcluirAcolito = new();
         private readonly DataGridView dgvDiasIndisponiveis = new();
         private readonly TextBox txtMotivoAdd = new();
+        private readonly ComboBox cmbPadrinho = new();
+        private readonly NumericUpDown numMissasNecessarias = new();
+        private readonly NumericUpDown numMissasServidas = new();
+        private readonly Label lblMissasServidasValor = new();
         private readonly Dictionary<(int Dia, int Turno), CheckBox> disponibilidadeChecks = new();
         public int? id_acolito { get; set; }
         int id_dia = -1;
@@ -40,6 +44,7 @@ namespace AppEscala.Views
         private void form_editarAcolito_Load(object sender, EventArgs e)
         {
             ComboBoxDias();
+            CarregarPadrinhos();
             carregar_acolito();
             carregarListView();
 
@@ -58,6 +63,10 @@ namespace AppEscala.Views
             {
                 txt_nome.Text = acolito.Nome;
                 nomeAntigo = acolito.Nome;
+                SelecionarPadrinho(acolito.PadrinhoId);
+                numMissasNecessarias.Value = Math.Min(numMissasNecessarias.Maximum, Math.Max(numMissasNecessarias.Minimum, acolito.MissasAcompanhadasNecessarias));
+                numMissasServidas.Value = Math.Min(numMissasServidas.Maximum, Math.Max(numMissasServidas.Minimum, acolito.MissasServidas));
+                lblMissasServidasValor.Text = acolito.MissasServidas.ToString();
             }
 
             cmb_turno1.SelectedIndex = -1;
@@ -236,12 +245,18 @@ namespace AppEscala.Views
                 return;
             }
 
-            if (!string.Equals(nomeAntigo, nomeNovo, StringComparison.CurrentCulture))
+            try
             {
-                db.UpdateAcolito(id_acolito, nomeNovo);
-                atualizou = true;
-                houveAlteracao = true;
+                db.UpdateAcolito(id_acolito, nomeNovo, ObterPadrinhoSelecionadoId(), (int)numMissasNecessarias.Value, (int)numMissasServidas.Value);
             }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+            atualizou = true;
+            houveAlteracao = true;
 
             db.SetDisponibilidadesAcolito(id_acolito, ObterDisponibilidadesSelecionadas());
             atualizou = true;
@@ -412,7 +427,7 @@ namespace AppEscala.Views
                 Text = "Dias em que pode servir",
                 Font = new Font("Segoe UI Semibold", 13F, FontStyle.Bold),
                 ForeColor = UiTheme.Text,
-                Location = new Point(20, 18)
+                Location = new Point(20, 30)
             };
 
             Label descricao = new()
@@ -420,26 +435,26 @@ namespace AppEscala.Views
                 AutoSize = true,
                 Text = "Marque os períodos em que o acólito costuma estar disponível.",
                 ForeColor = UiTheme.MutedText,
-                Location = new Point(20, 48)
+                Location = new Point(20, 60)
             };
 
             btnToggleSemana.Text = "Pode servir durante a semana";
             btnToggleSemana.Text = "Marcar semana";
             btnToggleSemana.Size = new Size(140, 34);
-            btnToggleSemana.Location = new Point(20, 416);
+            btnToggleSemana.Location = new Point(20, 428);
             btnToggleSemana.Click += (_, _) => AlternarPainel(panelSemana);
 
             btnToggleFimSemana.Text = "Marcar final de semana";
             btnToggleFimSemana.Size = new Size(170, 34);
-            btnToggleFimSemana.Location = new Point(172, 416);
+            btnToggleFimSemana.Location = new Point(172, 428);
             btnToggleFimSemana.Click += (_, _) => AlternarPainel(panelFimSemana);
 
-            panelDisponibilidade.Location = new Point(35, 264);
-            panelDisponibilidade.Size = new Size(500, 470);
+            panelDisponibilidade.Location = new Point(35, 276);
+            panelDisponibilidade.Size = new Size(500, 482);
             panelDisponibilidade.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             panelDisponibilidade.Controls.AddRange(new Control[] { titulo, descricao, btnToggleSemana, btnToggleFimSemana, panelSemana, panelFimSemana });
 
-            panelSemana.Location = new Point(20, 84);
+            panelSemana.Location = new Point(20, 96);
             panelSemana.Size = new Size(456, 216);
             panelSemana.Visible = true;
             CriarGrupoDias(panelSemana, new[]
@@ -451,7 +466,7 @@ namespace AppEscala.Views
                 (5, "Sexta")
             });
 
-            panelFimSemana.Location = new Point(20, 300);
+            panelFimSemana.Location = new Point(20, 312);
             panelFimSemana.Size = new Size(456, 112);
             panelFimSemana.Visible = true;
             CriarGrupoDias(panelFimSemana, new[]
@@ -484,7 +499,54 @@ namespace AppEscala.Views
             txt_nome.Location = new Point(20, 76);
             txt_nome.Size = new Size(300, 32);
 
-            panelDados.Controls.AddRange(new Control[] { titulo, label1, txt_nome });
+            Label lblPadrinho = new()
+            {
+                AutoSize = true,
+                Text = "Padrinho",
+                ForeColor = UiTheme.Text,
+                Location = new Point(20, 120)
+            };
+
+            cmbPadrinho.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbPadrinho.Location = new Point(20, 142);
+            cmbPadrinho.Size = new Size(190, 32);
+
+            Label lblMissasNecessarias = new()
+            {
+                AutoSize = true,
+                Text = "Missas Acomp.",
+                ForeColor = UiTheme.Text,
+                Location = new Point(236, 120)
+            };
+
+            numMissasNecessarias.Minimum = 0;
+            numMissasNecessarias.Maximum = 1000;
+            numMissasNecessarias.Location = new Point(236, 142);
+            numMissasNecessarias.Size = new Size(96, 32);
+
+            numMissasServidas.Minimum = 0;
+            numMissasServidas.Maximum = 1000;
+            numMissasServidas.Visible = false;
+
+            Label lblMissasServidas = new()
+            {
+                AutoSize = true,
+                Text = "Missas servidas",
+                ForeColor = UiTheme.Text,
+                Location = new Point(378, 120)
+            };
+
+            lblMissasServidasValor.AutoSize = false;
+            lblMissasServidasValor.Text = "0";
+            lblMissasServidasValor.TextAlign = ContentAlignment.MiddleCenter;
+            lblMissasServidasValor.BorderStyle = BorderStyle.FixedSingle;
+            lblMissasServidasValor.BackColor = Color.White;
+            lblMissasServidasValor.ForeColor = UiTheme.Text;
+            lblMissasServidasValor.Location = new Point(378, 142);
+            lblMissasServidasValor.Size = new Size(80, 32);
+
+            panelDados.Size = new Size(500, 190);
+            panelDados.Controls.AddRange(new Control[] { titulo, label1, txt_nome, lblPadrinho, cmbPadrinho, lblMissasNecessarias, numMissasNecessarias, lblMissasServidas, lblMissasServidasValor });
             Controls.Add(panelDados);
         }
 
@@ -776,6 +838,39 @@ namespace AppEscala.Views
                 if (item.Value.Checked)
                     yield return item.Key;
             }
+        }
+
+        private void CarregarPadrinhos()
+        {
+            cmbPadrinho.Items.Clear();
+            cmbPadrinho.Items.Add(new PadrinhoItem("Sem padrinho", null));
+
+            foreach (var acolito in db.SelectAllAcolitos().Where(a => a.Id != id_acolito))
+                cmbPadrinho.Items.Add(new PadrinhoItem(acolito.Nome, acolito.Id));
+
+            cmbPadrinho.SelectedIndex = 0;
+        }
+
+        private void SelecionarPadrinho(int? padrinhoId)
+        {
+            for (int i = 0; i < cmbPadrinho.Items.Count; i++)
+            {
+                if (cmbPadrinho.Items[i] is PadrinhoItem item && item.Id == padrinhoId)
+                {
+                    cmbPadrinho.SelectedIndex = i;
+                    return;
+                }
+            }
+
+            cmbPadrinho.SelectedIndex = 0;
+        }
+
+        private int? ObterPadrinhoSelecionadoId()
+            => cmbPadrinho.SelectedItem is PadrinhoItem item ? item.Id : null;
+
+        private sealed record PadrinhoItem(string Nome, int? Id)
+        {
+            public override string ToString() => Nome;
         }
 
         private static void AlternarPainel(Panel panel)

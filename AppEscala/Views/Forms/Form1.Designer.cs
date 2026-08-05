@@ -49,7 +49,6 @@ namespace AppEscala
             button9 = new Button();
             pnLogout = new Panel();
             button8 = new Button();
-            timerSideBarTransition = new System.Windows.Forms.Timer(components);
             btnHam = new PictureBox();
             label1 = new Label();
             nightControlBox1 = new ReaLTaiizor.Controls.NightControlBox();
@@ -304,11 +303,6 @@ namespace AppEscala
             button8.UseVisualStyleBackColor = false;
             button8.Click += button8_Click;
             // 
-            // timerSideBarTransition
-            // 
-            timerSideBarTransition.Interval = 7;
-            timerSideBarTransition.Tick += timerSideBarTransition_Tick;
-            // 
             // btnHam
             // 
             btnHam.Image = (Image)resources.GetObject("btnHam.Image");
@@ -458,7 +452,6 @@ namespace AppEscala
         private Button button7;
         private Panel pnConfig;
         private Button button9;
-        private System.Windows.Forms.Timer timerSideBarTransition;
         private PictureBox btnHam;
         private Label label1;
         private ReaLTaiizor.Controls.NightControlBox nightControlBox1;

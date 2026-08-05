@@ -10,6 +10,8 @@ public class MissaEntity
     public DateTime Data { get; set; }
     public string Descricao { get; set; } = string.Empty;
     public int QntAcolitos { get; set; }
+    public bool Ativo { get; set; } = true;
+    public bool AtivadaManual { get; set; }
 
     [NotMapped]
     public int Id_igreja

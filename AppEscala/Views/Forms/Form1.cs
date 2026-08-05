@@ -11,6 +11,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using Microsoft.EntityFrameworkCore;
 using Svg;
+using System.Runtime.InteropServices;
 
 
 namespace AppEscala
@@ -20,25 +21,43 @@ namespace AppEscala
         private readonly Panel menuPanel = new();
         private readonly Panel igrejasPanel = new();
         private readonly Button btnCadastrarIgreja = new();
+        private readonly Button btnEditarIgreja = new();
         private readonly DataGridView dgvIgrejas = new();
         private readonly Label lblIgrejasVazio = new();
         private readonly Database database = new();
         private readonly Panel sidebarFooterSpacer = new();
+        private readonly Panel pnConfiguracoesSistema = new();
+        private readonly Button btnConfiguracoesSistema = new();
+        private readonly ConfiguracoesView configuracoesView = new();
         private readonly Dictionary<Button, string> sidebarButtonTexts = new();
         private const int SidebarExpandedWidth = 190;
         private const int SidebarCollapsedWidth = 52;
         private const int SidebarItemHeight = 52;
-        private const int SidebarAnimationStep = 20;
-        private bool sidebarCollapsing;
+        private const int WmNclButtonDown = 0xA1;
+        private const int HtCaption = 0x2;
+
+        [DllImport("user32.dll")]
+        private static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
 
         public form_menu(AppDbContext db)
         {
             InitializeComponent();
+            AplicarIconeAplicativo();
             db.Database.EnsureCreated();
             database.Initialize();
             ModernizarInterface();
             userAcolitos.AdicionarAcolitoRequested += (_, _) => ExibirTela(userControl21, subMenu1, "NOVO ACOLITO");
             userControl21.VoltarRequested += (_, _) => ExibirTela(userAcolitos, subMenu1, "ACOLITOS");
+        }
+
+        private void AplicarIconeAplicativo()
+        {
+            Icon? appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (appIcon is not null)
+                Icon = appIcon;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -128,7 +147,7 @@ namespace AppEscala
                     //QUARTA COLUNA evento
                     tabela.AddCell(new Cell()
                         .SetTextAlignment(TextAlignment.CENTER).Add(new
-                        Paragraph(prod.evento)));
+                        Paragraph().Add(new Text(prod.evento).SetFontColor(ColorConstants.RED))));
 
                     //QUARTA COLUNA local
                     tabela.AddCell(new Cell()
@@ -201,32 +220,29 @@ namespace AppEscala
 
         }
         bool sidebarExpand = true;
-        private void timerSideBarTransition_Tick(object sender, EventArgs e)
+        private void SidebarTransitionDesativada_Tick(object sender, EventArgs e)
         {
             if (sidebarExpand)
             {
                 //velocidade em que a barra horizontal vai fechar
-                sidebar.Width = Math.Max(SidebarCollapsedWidth, sidebar.Width - SidebarAnimationStep);
+                sidebar.Width = SidebarCollapsedWidth;
                 //regula o quanto que o sidebar(barra lateral preta) vai fechar 
                 if (sidebar.Width <= SidebarCollapsedWidth)
                 {
 
-                    timerSideBarTransition.Stop();
                     sidebarExpand = false;
                     sidebar.Width = SidebarCollapsedWidth;
-                    sidebarCollapsing = false;
                     //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
                 }
             }
             else
             {
                 //velocidade em que a barra horizontal vai abrir
-                sidebar.Width = Math.Min(SidebarExpandedWidth, sidebar.Width + SidebarAnimationStep);
+                sidebar.Width = SidebarExpandedWidth;
                 //regula o quanto que o sidebar(barra lateral preta) vai abrir 
                 if (sidebar.Width >= SidebarExpandedWidth)
                 {
                     sidebarExpand = true;
-                    timerSideBarTransition.Stop();
                     sidebar.Width = SidebarExpandedWidth;
                     //permitem que as palavras após os icones surjam apenas quando a transição de expanção estiver completa 
                 }
@@ -237,12 +253,9 @@ namespace AppEscala
         //
         private void btnHam_Click(object sender, EventArgs e)
         {
-            if (timerSideBarTransition.Enabled)
-                return;
-
-            sidebarCollapsing = sidebarExpand;
-            AplicarEstadoSidebar();
-            timerSideBarTransition.Start();
+            sidebarExpand = !sidebarExpand;
+            sidebar.Width = sidebarExpand ? SidebarExpandedWidth : SidebarCollapsedWidth;
+            AjustarLayout();
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
@@ -310,16 +323,16 @@ namespace AppEscala
 
             panel1.BackColor = System.Drawing.Color.White;
             panel1.Height = 56;
+            panel1.MouseDown += BarraTitulo_MouseDown;
             label1.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold);
             label1.ForeColor = UiTheme.Text;
             label1.Text = "App Escala";
             label1.Location = new System.Drawing.Point(60, 18);
+            label1.MouseDown += BarraTitulo_MouseDown;
 
             btnHam.Size = new Size(32, 32);
             btnHam.Location = new System.Drawing.Point(16, 12);
             btnHam.Cursor = Cursors.Hand;
-            timerSideBarTransition.Interval = 10;
-
             sidebar.BackColor = UiTheme.Sidebar;
             sidebar.Padding = new Padding(0, 18, 0, 0);
             sidebar.Width = SidebarExpandedWidth;
@@ -343,6 +356,7 @@ namespace AppEscala
             button7.Text = "     Missas";
             button3.Text = "     Escalas";
             button2.Text = "      Igrejas";
+            btnConfiguracoesSistema.Text = "      Configurações";
             button8.Text = "     Sair";
 
             sidebarButtonTexts.Clear();
@@ -351,10 +365,13 @@ namespace AppEscala
             sidebarButtonTexts[button7] = "Missas";
             sidebarButtonTexts[button3] = "Escalas";
             sidebarButtonTexts[button2] = "Igrejas";
+            sidebarButtonTexts[btnConfiguracoesSistema] = "Configurações";
             sidebarButtonTexts[button8] = "Sair";
             AtribuirIconesSidebar();
 
-            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, button8 })
+            ConfigurarAbaConfiguracoes();
+
+            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, btnConfiguracoesSistema, button8 })
                 UiTheme.StyleSidebarButton(button);
 
             button2.Enabled = true;
@@ -365,14 +382,25 @@ namespace AppEscala
             CriarTelaIgrejas();
             Controls.Add(menuPanel);
             Controls.Add(igrejasPanel);
+            Controls.Add(configuracoesView);
 
             Resize += (_, _) => AjustarLayout();
+        }
+
+        private void BarraTitulo_MouseDown(object? sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return;
+
+            ReleaseCapture();
+            SendMessage(Handle, WmNclButtonDown, HtCaption, 0);
         }
 
         private void AjustarLayout()
         {
             panel1.Width = ClientSize.Width;
             nightControlBox1.Location = new System.Drawing.Point(ClientSize.Width - nightControlBox1.Width - 8, 10);
+            label1.Location = new System.Drawing.Point(60, 18);
 
             sidebar.Location = new System.Drawing.Point(0, panel1.Height);
             sidebar.Height = ClientSize.Height - panel1.Height;
@@ -382,10 +410,10 @@ namespace AppEscala
             int contentWidth = Math.Max(320, ClientSize.Width - contentX);
             int contentHeight = Math.Max(260, ClientSize.Height - contentY);
 
-            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, userControl11, userControl21, userAcolitos, missas1 })
+            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, configuracoesView, userControl11, userControl21, userAcolitos, missas1 })
                 tela.Bounds = new System.Drawing.Rectangle(contentX, contentY, contentWidth, contentHeight);
 
-            foreach (Panel panel in new[] { panel3, panel2, pnEscala, pnInfo, pnConfig, pnLogout })
+            foreach (Panel panel in new[] { panel3, panel2, pnEscala, pnInfo, pnConfig, pnConfiguracoesSistema, pnLogout })
             {
                 panel.Width = sidebar.Width;
                 panel.Height = SidebarItemHeight;
@@ -405,10 +433,10 @@ namespace AppEscala
 
         private void ExibirTela(Control telaAtiva, Button botaoAtivo, string titulo)
         {
-            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, userControl11, userControl21, userAcolitos, missas1 })
+            foreach (Control tela in new Control[] { menuPanel, igrejasPanel, configuracoesView, userControl11, userControl21, userAcolitos, missas1 })
                 tela.Hide();
 
-            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, button8 })
+            foreach (var button in new[] { menu, subMenu1, button7, button3, button2, btnConfiguracoesSistema, button8 })
                 UiTheme.StyleSidebarButton(button);
 
             UiTheme.StyleSidebarButton(botaoAtivo, active: true);
@@ -416,6 +444,8 @@ namespace AppEscala
             label1.Text = $"App Escala | {titulo}";
             if (telaAtiva == igrejasPanel)
                 CarregarIgrejas();
+            else if (telaAtiva == missas1)
+                missas1.AtualizarDados();
 
             telaAtiva.Show();
             telaAtiva.BringToFront();
@@ -430,12 +460,13 @@ namespace AppEscala
             button7.Image = CriarIconeSvg("missa.svg");
             button3.Image = CriarIconeSvg("escala.svg");
             button2.Image = CriarIconeSvg("igreja.svg");
+            btnConfiguracoesSistema.Image = CriarIconeSvg("config.svg");
             button8.Image = CriarIconeSvg("sair.svg");
         }
 
         private void AplicarEstadoSidebar()
         {
-            bool fechado = sidebarCollapsing || !sidebarExpand || sidebar.Width <= SidebarCollapsedWidth + 8;
+            bool fechado = !sidebarExpand || sidebar.Width <= SidebarCollapsedWidth + 8;
 
             foreach (var item in sidebarButtonTexts)
             {
@@ -451,9 +482,40 @@ namespace AppEscala
 
         private int CalcularAlturaEspacadorSidebar()
         {
-            int itensAntesDoRodape = 5;
-            int alturaUsada = sidebar.Padding.Top + (itensAntesDoRodape * SidebarItemHeight) + SidebarItemHeight;
+            const int itensAntesDoRodape = 5;
+            const int itensNoRodape = 2;
+            int alturaUsada = sidebar.Padding.Top + ((itensAntesDoRodape + itensNoRodape) * SidebarItemHeight);
             return Math.Max(0, sidebar.Height - alturaUsada);
+        }
+
+        private void ConfigurarAbaConfiguracoes()
+        {
+            if (!sidebar.Controls.Contains(pnConfiguracoesSistema))
+                sidebar.Controls.Add(pnConfiguracoesSistema);
+
+            if (!sidebar.Controls.Contains(sidebarFooterSpacer))
+                sidebar.Controls.Add(sidebarFooterSpacer);
+
+            sidebar.Controls.SetChildIndex(sidebarFooterSpacer, 5);
+            sidebar.Controls.SetChildIndex(pnConfiguracoesSistema, 6);
+            sidebar.Controls.SetChildIndex(pnLogout, 7);
+
+            pnConfiguracoesSistema.Margin = Padding.Empty;
+            pnConfiguracoesSistema.BackColor = UiTheme.Sidebar;
+            pnConfiguracoesSistema.Controls.Clear();
+            pnConfiguracoesSistema.Controls.Add(btnConfiguracoesSistema);
+
+            btnConfiguracoesSistema.BackColor = UiTheme.Sidebar;
+            btnConfiguracoesSistema.ForeColor = System.Drawing.Color.White;
+            btnConfiguracoesSistema.ImageAlign = ContentAlignment.MiddleLeft;
+            btnConfiguracoesSistema.TextAlign = ContentAlignment.MiddleLeft;
+            btnConfiguracoesSistema.Click -= btnConfiguracoesSistema_Click;
+            btnConfiguracoesSistema.Click += btnConfiguracoesSistema_Click;
+        }
+
+        private void btnConfiguracoesSistema_Click(object? sender, EventArgs e)
+        {
+            ExibirTela(configuracoesView, btnConfiguracoesSistema, "CONFIGURAÇÕES");
         }
 
         private static Bitmap CriarIconeSvg(string nomeArquivo)
@@ -531,8 +593,16 @@ namespace AppEscala
             {
                 using form_igreja formIgreja = new();
                 if (formIgreja.ShowDialog() == DialogResult.OK)
+                {
                     CarregarIgrejas();
+                    missas1.AtualizarDados();
+                }
             };
+
+            btnEditarIgreja.Text = "Editar igreja";
+            btnEditarIgreja.Size = new Size(140, 38);
+            btnEditarIgreja.Location = new System.Drawing.Point(204, 120);
+            btnEditarIgreja.Click += (_, _) => EditarIgrejaSelecionada();
 
             dgvIgrejas.AllowUserToAddRows = false;
             dgvIgrejas.AllowUserToDeleteRows = false;
@@ -548,6 +618,11 @@ namespace AppEscala
             dgvIgrejas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvIgrejas.Size = new Size(560, 300);
             dgvIgrejas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvIgrejas.CellDoubleClick += (_, e) =>
+            {
+                if (e.RowIndex >= 0)
+                    EditarIgrejaSelecionada();
+            };
 
             lblIgrejasVazio.AutoSize = true;
             lblIgrejasVazio.Text = "Nenhuma igreja cadastrada.";
@@ -555,7 +630,7 @@ namespace AppEscala
             lblIgrejasVazio.Location = new System.Drawing.Point(40, 190);
             lblIgrejasVazio.Visible = false;
 
-            igrejasPanel.Controls.AddRange(new Control[] { titulo, descricao, btnCadastrarIgreja, dgvIgrejas, lblIgrejasVazio });
+            igrejasPanel.Controls.AddRange(new Control[] { titulo, descricao, btnCadastrarIgreja, btnEditarIgreja, dgvIgrejas, lblIgrejasVazio });
             UiTheme.Apply(igrejasPanel);
             titulo.Font = new Font("Segoe UI Semibold", 22F, FontStyle.Bold);
             titulo.ForeColor = UiTheme.Text;
@@ -572,6 +647,26 @@ namespace AppEscala
             bool vazio = dgvIgrejas.Rows.Count == 0;
             dgvIgrejas.Visible = !vazio;
             lblIgrejasVazio.Visible = vazio;
+            btnEditarIgreja.Enabled = !vazio;
+        }
+
+        private void EditarIgrejaSelecionada()
+        {
+            if (dgvIgrejas.CurrentRow is null)
+            {
+                MessageBox.Show("Selecione uma igreja para editar.");
+                return;
+            }
+
+            int id = Convert.ToInt32(dgvIgrejas.CurrentRow.Cells["id"].Value);
+            string nome = Convert.ToString(dgvIgrejas.CurrentRow.Cells["nome"].Value) ?? string.Empty;
+
+            using form_igreja formIgreja = new(new Models.Entities.IgrejaEntity { Id = id, Nome = nome });
+            if (formIgreja.ShowDialog() == DialogResult.OK)
+            {
+                CarregarIgrejas();
+                missas1.AtualizarDados();
+            }
         }
 
         private static Button CriarAtalho(string texto, EventHandler click)
